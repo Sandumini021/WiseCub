@@ -1,0 +1,69 @@
+{
+  "appName": "WiseCub",
+  "tagline": "Learn money skills with virtual practice — never real cash.",
+  "projectId": "J26-IT-418",
+  "demoNotice": "Demo data only. No real accounts, banks, or trained AI models in this increment.",
+  "enterDemo": "Enter as demo child",
+  "nav": {
+    "market": "Market",
+    "choices": "Choices",
+    "missions": "Missions",
+    "safety": "Stay safe",
+    "leave": "Back to WiseCub home"
+  },
+  "modules": {
+    "market": {
+      "title": "Virtual Stock Market",
+      "blurb": "Practise buying and selling with pretend companies and pretend money."
+    },
+    "choices": {
+      "title": "Decision-Making",
+      "blurb": "Walk through money choices and see what happens next."
+    },
+    "missions": {
+      "title": "Financial Missions",
+      "blurb": "Budget, save, and handle surprise costs in story missions."
+    },
+    "safety": {
+      "title": "Scam Safety",
+      "blurb": "Spot fake messages inside WiseCub. Nothing is sent to a real inbox."
+    }
+  },
+  "cub": {
+    "name": "Cub",
+    "placeholder": "Hi, I’m Cub. I’ll help you find your way. Talking and avatar picking come in the next pages.",
+    "hello": "Hi, I’m Cub. I’ll help you find your way. Talking and avatar picking come in the next pages.",
+    "label": "Cub the learning companion"
+  },
+  "footer": "J26-IT-418 · WiseCub demo · virtual money only",
+  "landing": {
+    "eyebrow": "J26-IT-418",
+    "title": "A child-friendly place to practise money skills.",
+    "enterDemo": "Enter as demo child",
+    "demoNote": "Demo data only. No real accounts in this increment.",
+    "modulesHeading": "Four learning modules",
+    "stock": "Virtual Stock Market",
+    "stockHint": "Practise buying and selling with pretend companies and pretend money.",
+    "choices": "Decision-Making",
+    "choicesHint": "Walk through money choices and see what happens next.",
+    "missions": "Financial Missions",
+    "missionsHint": "Budget, save, and handle surprise costs in story missions.",
+    "safety": "Scam Safety",
+    "safetyHint": "Spot fake messages inside WiseCub. Nothing is sent to a real inbox.",
+    "virtualMoney": "Every child starts with virtual rupees. Nothing here is a real bank."
+  },
+  "login": {
+    "title": "Demo child",
+    "intro": "No password. This is a practice profile for the presentation.",
+    "continue": "Continue to the market"
+  },
+  "dashboard": {
+    "title": "Your learning home",
+    "intro": "Pick a module. Market Home is ready first.",
+    "openMarket": "Open the market"
+  },
+  "profile": {
+    "title": "My profile",
+    "intro": "Avatar picking will live here in a later increment."
+  }
+}
