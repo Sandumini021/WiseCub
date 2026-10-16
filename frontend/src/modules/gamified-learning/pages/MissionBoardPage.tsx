@@ -26,6 +26,8 @@ const missions = [
 
 const [completedMissions, setCompletedMissions] = useState<number[]>([]);
 
+const [totalCoins, setTotalCoins] = useState(0);
+
 export function MissionBoardPage() {
   const [selectedMission, setSelectedMission] =
     useState<number | null>(null);
@@ -34,6 +36,14 @@ export function MissionBoardPage() {
   setCompletedMissions((previous) =>
     previous.includes(id) ? previous : [...previous, id]
   );
+
+  if (!completedMissions.includes(id)) {
+  const mission = missions.find((item) => item.id === id);
+
+  if (mission) {
+    setTotalCoins((previous) => previous + mission.reward);
+  }
+}
 };
 
   return (
@@ -45,6 +55,8 @@ export function MissionBoardPage() {
         Complete fun financial challenges and improve
         your money management knowledge.
       </p>
+
+      <p>Virtual Coins Earned: {totalCoins}</p>
 
       <div style={{ display: "grid", gap: "16px" }}>
         {missions.map((mission) => (
