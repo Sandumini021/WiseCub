@@ -69,11 +69,39 @@ const choices: Choice[] = [
 export function LevelsPage() {
   const [selectedChoice, setSelectedChoice] =
     useState<Choice | null>(null);
+    const [currentLevel, setCurrentLevel] = useState(1);
 
   return (
     <div>
       <p className="muted">Learn · Choice Town · Level 1</p>
-      <h1>The Saturday Choice</h1>
+
+      
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+        <button
+          type="button"
+          onClick={() => {
+            setCurrentLevel(1);
+            setSelectedChoice(null);
+          }}
+          style={{ padding: "10px 16px", cursor: "pointer" }}
+        >
+          Level 1
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setCurrentLevel(2);
+            setSelectedChoice(null);
+          }}
+          style={{ padding: "10px 16px", cursor: "pointer" }}
+        >
+          Level 2
+        </button>
+      </div>
+
+
+      <h1>{currentLevel === 1 ? "The Saturday Choice" : "The Smart Shopper"}</h1>
 
       <p>
         You have 100 virtual coins. You want a snack today,
