@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Card } from "../../../components/common/Card";
 
+
 const missions = [
   {
     id: 1,
@@ -23,9 +24,17 @@ const missions = [
   },
 ];
 
+const [completedMissions, setCompletedMissions] = useState<number[]>([]);
+
 export function MissionBoardPage() {
   const [selectedMission, setSelectedMission] =
     useState<number | null>(null);
+
+    const completeMission = (id: number) => {
+  setCompletedMissions((previous) =>
+    previous.includes(id) ? previous : [...previous, id]
+  );
+};
 
   return (
     <div>
@@ -51,6 +60,17 @@ export function MissionBoardPage() {
                 ? "Selected"
                 : "Select Mission"}
             </button>
+
+            <button
+  type="button"
+  onClick={() => completeMission(mission.id)}
+  disabled={completedMissions.includes(mission.id)}
+>
+  {completedMissions.includes(mission.id)
+    ? "Completed"
+    : "Complete Mission"}
+</button>
+
           </Card>
         ))}
       </div>
