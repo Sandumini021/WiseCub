@@ -44,6 +44,26 @@ const choices: Choice[] = [
     feedback:
       "You enjoyed a snack, saved 50 coins, and kept 20 available for another choice. Planning can help balance different needs.",
   },
+  {
+    id: "shop-save",
+    title: "Buy one item and save",
+    description: "Spend 80 coins on one item and save 120 coins.",
+    spent: 80,
+    saved: 120,
+    flexible: 0,
+    feedback:
+      "You bought one item and saved 120 coins for later.",
+  },
+  {
+    id: "shop-plan",
+    title: "Plan before shopping",
+    description: "Spend 50 coins, save 100, and keep 50 flexible.",
+    spent: 50,
+    saved: 100,
+    flexible: 50,
+    feedback:
+      "You planned your spending and kept some coins available for other needs.",
+  },
 ];
 
 export function LevelsPage() {
