@@ -1,0 +1,522 @@
+.market-dash {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.market-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 28px;
+  background:
+    linear-gradient(90deg, #fff6c8 0%, #ffe27a 42%, #7ec8ff 100%);
+  overflow: hidden;
+}
+
+.market-hero-copy {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.market-hero h1 {
+  font-size: clamp(1.6rem, 3vw, 2.15rem);
+  margin: 0 0 0.4rem;
+  color: #1b2744;
+}
+
+.market-hero p {
+  margin: 0;
+  max-width: 28rem;
+  color: #334155;
+}
+
+.hero-tickers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.ticker-pill,
+.company-chip,
+.lesson-step {
+  list-style: none;
+}
+
+.ticker-pill {
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+  box-shadow: 0 6px 16px rgba(27, 39, 68, 0.12);
+}
+
+.panel {
+  background: #fff;
+  border-radius: 22px;
+  padding: 1.15rem 1.25rem 1.25rem;
+  box-shadow: 0 10px 30px rgba(27, 39, 68, 0.06);
+  margin-top: 1.15rem;
+}
+
+.panel h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.9rem;
+}
+
+.lesson-track {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+}
+
+.lesson-step {
+  border: 1px solid #e5eaf3;
+  border-radius: 18px;
+  padding: 0.9rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 8.5rem;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.lesson-step.is-open {
+  background: #fff8d6;
+  border: 3px solid #f5c400;
+  color: #1b2744;
+}
+
+.lesson-num {
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #dbe3f0;
+  font-weight: 800;
+}
+
+.lesson-step.is-open .lesson-num {
+  background: #1b2744;
+  color: #f5c400;
+}
+
+.lesson-detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.time-chip {
+  background: #eef2f8;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.85rem;
+}
+
+.lesson-detail-grid {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.share-diagram {
+  background: linear-gradient(180deg, #e8f5ff, #fff);
+  border-radius: 18px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.pie {
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 0.6rem;
+  border-radius: 50%;
+  background: conic-gradient(#3b82f6 0 40%, #fbbf24 40% 70%, #34d399 70% 100%);
+}
+
+.lesson-points {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.lesson-points li {
+  margin-bottom: 0.45rem;
+}
+
+.lesson-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.btn-gold {
+  background: #f5c400;
+  color: #1b2744;
+  border: 0;
+  border-radius: 999px;
+  min-height: 44px;
+  padding: 0 1.2rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btn-gold:hover {
+  filter: brightness(0.96);
+}
+
+.btn-ghost {
+  background: #fff;
+  border: 2px solid #d7dee9;
+  color: #1b2744;
+  border-radius: 999px;
+  min-height: 44px;
+  padding: 0 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.live-note {
+  margin: 0.9rem 0 0;
+  padding: 0.7rem 0.85rem;
+  background: #e8fff3;
+  border-radius: 12px;
+}
+
+.company-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+}
+
+.company-chip {
+  border-radius: 16px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  background: #f8fafc;
+  border: 1px solid #e5eaf3;
+}
+
+.company-chip strong {
+  font-size: 0.95rem;
+}
+
+.company-chip span,
+.company-chip em {
+  font-size: 0.78rem;
+  font-style: normal;
+  color: #64748b;
+}
+
+.tone-tea {
+  border-color: #86efac;
+}
+.tone-bank {
+  border-color: #93c5fd;
+}
+.tone-power {
+  border-color: #fde047;
+}
+.tone-logistics {
+  border-color: #c4b5fd;
+}
+.tone-energy {
+  border-color: #fdba74;
+}
+
+.wallet-card {
+  background: linear-gradient(180deg, #fff4c2, #ffe27a);
+  border-radius: 22px;
+  padding: 1.1rem;
+}
+
+.wallet-label {
+  margin: 0;
+  font-weight: 700;
+  color: #7c5c00;
+}
+
+.wallet-value {
+  margin: 0.2rem 0 0.8rem;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #1b2744;
+}
+
+.wallet-value span {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+.wallet-card dl {
+  margin: 0;
+}
+
+.wallet-card dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.25rem 0;
+}
+
+.wallet-card dt {
+  color: #6b5a20;
+}
+
+.wallet-card dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.side-card,
+.cub-says {
+  background: #fff;
+  border-radius: 22px;
+  padding: 1rem 1.1rem;
+  margin-top: 0.9rem;
+  box-shadow: 0 10px 30px rgba(27, 39, 68, 0.06);
+}
+
+.side-card h2,
+.cub-says strong {
+  margin: 0 0 0.45rem;
+  font-size: 1rem;
+}
+
+.side-card p,
+.cub-says p {
+  margin: 0;
+  color: #475569;
+}
+
+.measure-list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.measure-list li {
+  margin-bottom: 0.35rem;
+}
+
+.cub-says {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  background: #fff7d6;
+}
+
+.lesson-page h1 {
+  margin-top: 0.2rem;
+}
+
+.lesson-story {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.share-diagram.big .pie {
+  width: 110px;
+  height: 110px;
+}
+
+.check-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0.8rem 0 1rem;
+}
+
+.check-option {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  border: 2px solid #e5eaf3;
+  border-radius: 14px;
+  padding: 0.75rem 0.9rem;
+  cursor: pointer;
+  background: #fff;
+}
+
+.check-option.is-picked {
+  border-color: #f5c400;
+  background: #fffbeb;
+}
+
+.live-note.is-try {
+  background: #fff4e5;
+}
+
+.terminal-head,
+.ticker-bar,
+.range-row,
+.side-toggle,
+.stepper,
+.lesson-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.terminal-head {
+  justify-content: space-between;
+}
+
+.cash-pill {
+  background: #fff4c2;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-weight: 800;
+}
+
+.ticker-btn,
+.chip-btn,
+.side-toggle button {
+  border: 1px solid #d7dee9;
+  background: #fff;
+  border-radius: 999px;
+  min-height: 40px;
+  padding: 0 0.8rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.ticker-btn.is-on,
+.chip-btn.is-on,
+.side-toggle button.is-on {
+  background: #1b2744;
+  color: #fff;
+  border-color: #1b2744;
+}
+
+.terminal-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 1rem;
+  margin-top: 0.8rem;
+}
+
+.px {
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.px.is-up {
+  color: #15803d;
+}
+
+.px.is-down {
+  color: #dc2626;
+}
+
+.price-chart {
+  width: 100%;
+  height: auto;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.key-nums {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+}
+
+.key-nums div {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 0.5rem;
+}
+
+.key-nums dt {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.key-nums dd {
+  margin: 0;
+  font-weight: 800;
+}
+
+.stepper input {
+  width: 4.5rem;
+  min-height: 40px;
+  text-align: center;
+  font: inherit;
+}
+
+.stepper button {
+  width: 40px;
+  min-height: 40px;
+  cursor: pointer;
+}
+
+.warn-box {
+  background: #fff7d6;
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+}
+
+.holding-list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+@media (max-width: 900px) {
+  .terminal-grid,
+  .key-nums {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .terminal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1100px) {
+  .market-dash,
+  .lesson-detail-grid,
+  .company-row,
+  .lesson-track {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .market-dash {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .lesson-track,
+  .company-row,
+  .lesson-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .market-hero {
+    flex-direction: column;
+  }
+
+  .lesson-story {
+    grid-template-columns: 1fr;
+  }
+}

@@ -63,6 +63,164 @@ button {
   top: var(--space-3);
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.cub-chat {
+  position: fixed;
+  right: 1.1rem;
+  bottom: 1.1rem;
+  z-index: 50;
+  width: min(22.5rem, calc(100vw - 1.5rem));
+}
+
+.cub-chat-panel {
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 16px 40px rgba(27, 39, 68, 0.22);
+  border: 1px solid #e5eaf3;
+  overflow: hidden;
+}
+
+.cub-chat-head {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  background: #fff7d6;
+}
+
+.cub-chat-head p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #5c6b63;
+}
+
+.cub-icon-btn {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.cub-chat-log {
+  max-height: 14rem;
+  overflow: auto;
+  padding: 0.7rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.cub-bubble {
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  border-radius: 14px;
+  font-size: 0.92rem;
+}
+
+.cub-who {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  margin-bottom: 0.15rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cub-bubble-cub {
+  background: #eef6ff;
+  align-self: flex-start;
+}
+
+.cub-bubble-child {
+  background: #fff4c2;
+  align-self: flex-end;
+}
+
+.cub-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0 0.7rem 0.5rem;
+}
+
+.cub-chip {
+  border: 1px solid #f5c400;
+  background: #fffbeb;
+  border-radius: 999px;
+  padding: 0.28rem 0.65rem;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.cub-chat-form {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.35rem;
+  padding: 0 0.7rem 0.45rem;
+}
+
+.cub-chat-form input {
+  min-height: 42px;
+  border-radius: 12px;
+  border: 1px solid #d7dee9;
+  padding: 0 0.7rem;
+  font: inherit;
+}
+
+.cub-mic,
+.cub-send {
+  min-height: 42px;
+  min-width: 42px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.cub-mic {
+  border: 2px solid #1b2744;
+  background: #fff;
+}
+
+.cub-mic.is-live {
+  background: #fecaca;
+  border-color: #b91c1c;
+}
+
+.cub-chat-tools {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.75rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.cub-open-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 0;
+  background: #f5c400;
+  color: #1b2744;
+  border-radius: 999px;
+  padding: 0.25rem 0.9rem 0.25rem 0.25rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(27, 39, 68, 0.2);
+}
+
 .app-header {
   display: flex;
   align-items: center;
@@ -134,13 +292,133 @@ button {
   white-space: nowrap;
 }
 
-.app-shell {
+.app-frame {
+  min-height: 100vh;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
-  gap: var(--space-5);
-  padding: var(--space-5);
-  max-width: 1200px;
-  margin: 0 auto;
+  grid-template-columns: 232px 1fr;
+  background: #e8eef8;
+}
+
+.sidebar {
+  background: #1b2744;
+  color: #e8eef8;
+  display: flex;
+  flex-direction: column;
+  padding: 1.1rem 0.85rem 1rem;
+  min-height: 100vh;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.2rem;
+  margin: 0.2rem 0.4rem 1.2rem;
+}
+
+.sidebar-logo {
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  background: #f5c400;
+  border-radius: 10px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: #c9d4ea;
+  text-decoration: none;
+  border-radius: 14px;
+  padding: 0.7rem 0.75rem;
+  white-space: pre-line;
+  line-height: 1.15;
+}
+
+.sidebar-link:hover,
+.sidebar-link:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  outline: none;
+}
+
+.sidebar-link.active {
+  background: #f5c400;
+  color: #1b2744;
+  font-weight: 800;
+}
+
+.sidebar-settings {
+  margin-top: auto;
+}
+
+.app-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1.4rem 0.4rem;
+}
+
+.crumb {
+  margin: 0;
+  color: #64748b;
+  font-weight: 650;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lang-chip,
+.user-chip {
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.menu-btn {
+  display: none;
+  min-height: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: #1b2744;
+  color: #fff;
+  padding: 0 0.8rem;
+  cursor: pointer;
+}
+
+.nav-backdrop {
+  display: none;
+}
+
+.app-content {
+  padding: 0.4rem 1.4rem 9.5rem;
+}
+
+.sidebar-link-text {
+  white-space: pre-line;
 }
 
 .page {
@@ -288,5 +566,36 @@ button {
   .cub-dock {
     position: static;
     order: -1;
+  }
+
+  .app-frame {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(80vw, 260px);
+    transform: translateX(-105%);
+    transition: transform 0.2s ease;
+    z-index: 30;
+  }
+
+  .app-frame.is-nav-open .sidebar {
+    transform: none;
+  }
+
+  .menu-btn {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .app-frame.is-nav-open .nav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    border: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 20;
   }
 }
