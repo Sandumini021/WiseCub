@@ -11,6 +11,17 @@ type Scenario = {
   explanation: string;
 };
 
+const categories: string[] = [
+  "Phishing emails",
+  "Scam text messages",
+  "Fake QR-code offers",
+  "Prize and giveaway scams",
+  "Impersonation scams",
+  "Deceptive financial offers",
+];
+
+const demoShieldScore = 85; // Demo percentage
+
 const scenarios: Scenario[] = [
   {
     id: 1,
@@ -43,6 +54,7 @@ const scenarios: Scenario[] = [
 ];
 
 export function ScamHomePage() {
+  const [showHome, setShowHome] = useState(true);
   const [scenarioIndex, setScenarioIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<"Suspicious" | "Looks Safe" | null>(null);
 
@@ -58,6 +70,30 @@ export function ScamHomePage() {
     setScenarioIndex((currentIndex) => (currentIndex + 1) % scenarios.length);
   }
 
+  if (showHome) {
+    return (
+      <div>
+        <p className="muted">Stay safe · Scam Alley</p>
+        <h1>Scam safety practice</h1>
+        <p>Welcome! Learn to recognise warning signs in six scam categories.</p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "1rem", marginTop: "1rem" }}>
+          {categories.map((cat) => (
+            <Card key={cat} title={cat}>
+              <p>Learn about {cat.toLowerCase()}.</p>
+            </Card>
+          ))}
+        </div>
+
+        <div style={{ marginTop: "1.5rem" }}>
+          <p><strong>Demo Shield Score:</strong> {demoShieldScore}%</p>
+          <Button variant="primary" onClick={() => setShowHome(false)}>
+            Start practice scenario
+          </Button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div>
       <p className="muted">Stay safe · Scam Alley</p>
