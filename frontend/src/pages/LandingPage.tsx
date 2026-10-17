@@ -35,6 +35,7 @@ export function LandingPage() {
       </section>
 
       <p className="page-footer">{en.demoNotice}</p>
+      <p className="page-footer">Cub is in the corner on every page. Type a chat, or tap Mic to speak.</p>
     </main>
   );
 }
