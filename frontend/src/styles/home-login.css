@@ -1,0 +1,227 @@
+.login-shell {
+  min-height: 100vh;
+  background: #fdfcf9;
+}
+
+.login-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.4rem;
+  border-bottom: 1.5px solid #1b2744;
+}
+
+.login-brand {
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: #1b2744;
+  text-decoration: none;
+}
+
+.login-main {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 2rem 1.4rem 8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.login-main h1 {
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+}
+
+.login-form {
+  width: 100%;
+  margin-top: 0.8rem;
+}
+
+.login-form label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.login-row {
+  display: flex;
+  width: 100%;
+  max-width: 26rem;
+}
+
+.login-row input {
+  flex: 1;
+  min-height: 46px;
+  border: 1.5px solid #1b2744;
+  border-right: 0;
+  border-radius: 22px 0 0 22px;
+  padding: 0 1rem;
+  font: inherit;
+  background: #fff;
+}
+
+.login-row button {
+  border-radius: 0 22px 22px 0;
+  border: 1.5px solid #1b2744;
+  padding: 0 1.1rem;
+  background: #f5c400;
+}
+
+.micro {
+  font-size: 0.78rem;
+  color: #8b877e;
+  margin-top: 0.55rem;
+}
+
+.grown-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  width: 100%;
+  margin-top: 1.2rem;
+  padding: 1rem 1.1rem;
+  background: #fffbe8;
+  border: 1.5px solid #1b2744;
+  border-radius: 14px;
+}
+
+.grown-strip p {
+  margin: 0;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  border: 1.5px solid #1b2744;
+  background: #fff;
+  color: #1b2744;
+  text-decoration: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.home-dash h1 {
+  max-width: 28rem;
+}
+
+.world-map {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+  background: #fff;
+  border: 1.5px solid #1b2744;
+  border-radius: 16px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.world-card {
+  min-height: 8.5rem;
+  padding: 1rem 3.4rem 1rem 1rem;
+  border: 1.5px solid #1b2744;
+  border-radius: 12px;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.world-card:nth-child(2),
+.world-card:nth-child(4) {
+  padding: 1rem 1rem 1rem 3.4rem;
+}
+
+.world-card.is-ready {
+  background: #fffbe8;
+}
+
+.world-card p {
+  margin: 0;
+  color: #5c6b63;
+  font-size: 0.92rem;
+}
+
+.world-card strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
+.world-card span {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #1b2744;
+}
+
+.world-cub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 5.6rem;
+  height: 5.6rem;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px dashed #9a968c;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.world-cub span {
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.ask-strip {
+  border: 1.5px solid #1b2744;
+  border-radius: 22px;
+  padding: 0.7rem 1rem;
+  background: #fff;
+}
+
+.home-learn {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+  margin: 1rem 0;
+}
+
+.home-learn ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+@media (max-width: 700px) {
+  .world-map {
+    grid-template-columns: 1fr;
+  }
+
+  .world-cub {
+    display: none;
+  }
+
+  .login-row {
+    flex-direction: column;
+  }
+
+  .login-row input,
+  .login-row button {
+    border-radius: 16px;
+    border: 1.5px solid #1b2744;
+    width: 100%;
+  }
+}
