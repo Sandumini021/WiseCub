@@ -14,6 +14,8 @@ export const PAGE_GREETINGS: Record<string, string> = {
     "This is the practice terminal. Prices are synthetic. Buy or sell pretend shares, then Cub will ask you to confirm. No real money.",
   "/market/confirm":
     "Read my warning before you confirm. You may buy fewer shares, or confirm anyway. The point is noticing the risk.",
+  "/market/portfolio":
+    "This is your practice portfolio. We look at patience and spreading money — never a profit ranking against other children.",
   "/choices": "This is Choice Town. Full scenarios come next. I can take you back to the market if you like.",
   "/missions": "Missions will use story budgets later. For now I can guide you to the other rooms.",
   "/safety": "Scam practice stays inside WiseCub. We never send real messages. I can explain that, or take you home.",
@@ -40,7 +42,10 @@ export function suggestionsFor(path: string): string[] {
     return ["What is a share?", "Is this real money?", "Back to the market"];
   }
   if (path.startsWith("/market/terminal") || path.startsWith("/market/confirm")) {
-    return ["Is this real money?", "What is a share?", "Back to the market"];
+    return ["Is this real money?", "Show my portfolio", "Back to the market"];
+  }
+  if (path.startsWith("/market/portfolio")) {
+    return ["Open the terminal", "Is this real money?", "Back to the market"];
   }
   if (path === "/safety") {
     return ["Open the market", "Go home", "Are scams real here?"];
@@ -83,6 +88,9 @@ export function matchCubIntent(raw: string): CubReply {
   }
   if (/(hear|read aloud|speak|say it)/.test(text)) {
     return { text: "I’ll read this page’s tip out loud. You can also use Hear it aloud on the Market Floor.", speakPage: true };
+  }
+  if (/(portfolio|holdings|my positions|session review)/.test(text)) {
+    return { text: "Opening your practice portfolio. Habits, not profit rank.", path: "/market/portfolio" };
   }
   if (/(terminal|buy|sell|trade|order ticket)/.test(text)) {
     return {

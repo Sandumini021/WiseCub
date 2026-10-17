@@ -481,6 +481,34 @@
   padding-left: 1.1rem;
 }
 
+.spread-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.spread-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.spread-bar {
+  height: 8px;
+  background: #e5eaf3;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.spread-bar span {
+  display: block;
+  height: 100%;
+  background: #f5c400;
+}
+
 @media (max-width: 900px) {
   .terminal-grid,
   .key-nums {

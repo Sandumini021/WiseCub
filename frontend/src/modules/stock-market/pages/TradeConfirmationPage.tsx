@@ -71,9 +71,14 @@ export function TradeConfirmationPage() {
           {filled.cashAfter.toLocaleString()}.
         </p>
         <p>Come back later and see whether waiting was calmer than reacting.</p>
-        <Link className="btn-gold cub-send" to="/market/terminal">
-          Back to terminal
-        </Link>
+        <div className="lesson-actions">
+          <Link className="btn-gold cub-send" to="/market/terminal">
+            Back to terminal
+          </Link>
+          <Link className="btn-ghost" to="/market/portfolio">
+            My portfolio
+          </Link>
+        </div>
       </section>
     );
   }

@@ -8,6 +8,7 @@ const crumbs: Record<string, string> = {
   "/market": "Invest  >  Market Floor",
   "/market/terminal": "Invest  >  Market Floor  >  Terminal",
   "/market/confirm": "Invest  >  Market Floor  >  Confirm",
+  "/market/portfolio": "Invest  >  Market Floor  >  Portfolio",
   "/choices": "Learn  >  Choice Town",
   "/missions": "Learn  >  Missions",
   "/safety": "Stay safe  >  Scam Alley",

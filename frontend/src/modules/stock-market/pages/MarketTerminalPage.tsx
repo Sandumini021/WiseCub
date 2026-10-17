@@ -93,6 +93,9 @@ export function MarketTerminalPage() {
       <div className="terminal-head">
         <h1>Market terminal</h1>
         <p className="cash-pill">Cash Rs {book.cash.toLocaleString()}</p>
+        <Link className="btn-ghost" to="/market/portfolio">
+          My portfolio
+        </Link>
       </div>
 
       <div className="ticker-bar" role="list">

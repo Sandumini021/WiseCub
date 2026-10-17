@@ -5,6 +5,7 @@ import { MissionBoardPage } from "../modules/gamified-learning/pages/MissionBoar
 import { ScamHomePage } from "../modules/scam-safety/pages/ScamHomePage";
 import { MarketHomePage } from "../modules/stock-market/pages/MarketHomePage";
 import { MarketTerminalPage } from "../modules/stock-market/pages/MarketTerminalPage";
+import { PortfolioPage } from "../modules/stock-market/pages/PortfolioPage";
 import { ShareLessonPage } from "../modules/stock-market/pages/ShareLessonPage";
 import { TradeConfirmationPage } from "../modules/stock-market/pages/TradeConfirmationPage";
 import { DemoLoginPage } from "../pages/auth/DemoLoginPage";
@@ -35,6 +36,7 @@ export function AppRoutes() {
         <Route path="/market/lessons/1" element={<ShareLessonPage />} />
         <Route path="/market/terminal" element={<MarketTerminalPage />} />
         <Route path="/market/confirm" element={<TradeConfirmationPage />} />
+        <Route path="/market/portfolio" element={<PortfolioPage />} />
         <Route path="/choices" element={<LevelsPage />} />
         <Route path="/missions" element={<MissionBoardPage />} />
         <Route path="/safety" element={<ScamHomePage />} />
