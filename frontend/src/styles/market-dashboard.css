@@ -509,6 +509,31 @@
   background: #f5c400;
 }
 
+.spread-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.spread-chips span {
+  background: #eef2f8;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.is-up {
+  color: #15803d;
+  font-weight: 800;
+}
+
+.is-down {
+  color: #dc2626;
+  font-weight: 800;
+}
+
 @media (max-width: 900px) {
   .terminal-grid,
   .key-nums {
