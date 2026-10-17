@@ -53,13 +53,13 @@
     "virtualMoney": "Every child starts with virtual rupees. Nothing here is a real bank."
   },
   "login": {
-    "title": "Demo child",
-    "intro": "No password. This is a practice profile for the presentation.",
-    "continue": "Continue to the market"
+    "title": "Meet Cub. Start free.",
+    "intro": "No password. Continue as the demo child, then pick a world.",
+    "continue": "Get started"
   },
   "dashboard": {
-    "title": "Your learning home",
-    "intro": "Pick a module. Market Home is ready first.",
+    "title": "Pick a world. Cub comes with you.",
+    "intro": "Four rooms to practise money skills. The Market Floor is open first.",
     "openMarket": "Open the market"
   },
   "profile": {
