@@ -21,15 +21,24 @@ The GitHub repo already has these remote branches:
 
 **Do not invent new branch names.** Use the one for your component.
 
-Shared foundation was started on `feature/virtual-stock-market`. After it is merged to `main`, everyone should base their work on `main`.
+Shared branches:
 
-Until `main` is updated, copy the shared code into your branch like this:
+| Branch | Purpose |
+|---|---|
+| `main` | Stable copy after a reviewed release |
+| `pre-release` | Common test copy before `main` |
+
+Work on **your feature branch**. Open a pull request into **`pre-release`**. When the group has tested it, merge **`pre-release` → `main`**.
+
+Shared stock-market work is already on `main` and `pre-release`. Get it like this:
+
+Copy the shared code into your branch like this:
 
 ```bash
 git checkout feature/decision-making          # use YOUR branch name
 git pull origin feature/decision-making
 git fetch origin
-git merge origin/feature/virtual-stock-market
+git merge origin/pre-release
 ```
 
 If Git asks you to fix conflicts in shared files, **talk to Member 1 first**. Do not overwrite `App.tsx` or `AppRoutes.tsx` without agreeing.
