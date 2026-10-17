@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { CubMascot } from "../../../components/cub-assistant/CubMascot";
 import { DEMO_COMPANIES } from "../data/demoMarket";
@@ -7,33 +7,34 @@ import { cubNoticed, reviewHabits } from "../data/sessionReview";
 import { buildQuotes } from "../data/syntheticPrices";
 import "../../../styles/market-dashboard.css";
 
+function tradeTime(iso: string) {
+  try {
+    return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return "";
+  }
+}
+
 export function PortfolioPage() {
   const quotes = useMemo(() => buildQuotes(), []);
   const prices = Object.fromEntries(quotes.map((item) => [item.ticker, item.price]));
-  const [book, setBook] = useState<DemoBook | null>(null);
-
-  useEffect(() => {
-    setBook(readBook());
-  }, []);
-
-  if (!book) {
-    return <p>Loading practice account…</p>;
-  }
+  const [book] = useState<DemoBook>(() => readBook());
 
   const equity = totalEquity(book, prices);
   const flags = reviewHabits(book, prices);
   const falling = flags.valueChangePct < 0;
+  const cashPct = equity > 0 ? (book.cash / equity) * 100 : 100;
   const today = book.trades.slice(0, 8);
 
   return (
     <div className="portfolio-page">
       <p className="muted">
-        <Link to="/market/terminal">← Terminal</Link> · Practice · {flags.tradeCount} trades ·
-        virtual only
+        <Link to="/market/terminal">← Terminal</Link> · Practice · {flags.tradeCount}{" "}
+        {flags.tradeCount === 1 ? "trade" : "trades"} today · virtual only
       </p>
       <div className="terminal-head">
         <h1>My portfolio</h1>
-        <Link className="btn-ghost" to="/market/terminal">
+        <Link className="btn-gold cub-send" to="/market/terminal">
           Trade again
         </Link>
       </div>
@@ -46,34 +47,57 @@ export function PortfolioPage() {
               Rs {equity.toLocaleString(undefined, { maximumFractionDigits: 0 })}{" "}
               {falling ? "▼" : "▲"} {Math.abs(flags.valueChangePct).toFixed(1)}%
             </p>
-            <p className="muted">since you started with Rs 100,000 virtual</p>
+            <p className="muted">value since you started with Rs 100,000 virtual</p>
           </section>
 
           <section className="panel">
             <h2>How your money is spread</h2>
+            <p className="spread-chips">
+              {book.holdings.map((row) => {
+                const value = row.shares * (prices[row.ticker] ?? row.avgPrice);
+                const pct = equity > 0 ? (value / equity) * 100 : 0;
+                return (
+                  <span key={row.ticker}>
+                    {row.ticker} {pct.toFixed(0)}
+                  </span>
+                );
+              })}
+              <span>CASH {cashPct.toFixed(0)}</span>
+            </p>
+          </section>
+
+          <section className="panel">
+            <h2>Holdings</h2>
             {book.holdings.length === 0 ? (
-              <p className="muted">All cash. Buy slices on the terminal to see a spread.</p>
+              <p className="muted">
+                No slices yet.{" "}
+                <Link to="/market/terminal">Open the terminal</Link> to buy practice shares.
+              </p>
             ) : (
               <ul className="spread-list">
                 {book.holdings.map((row) => {
                   const price = prices[row.ticker] ?? row.avgPrice;
                   const value = row.shares * price;
-                  const pct = equity > 0 ? (value / equity) * 100 : 0;
+                  const change = ((price - row.avgPrice) / row.avgPrice) * 100;
+                  const down = change < 0;
                   const name = DEMO_COMPANIES.find((c) => c.ticker === row.ticker)?.name;
                   return (
                     <li key={row.ticker}>
                       <div className="spread-row">
                         <strong>
-                          {row.ticker} ×{row.shares}
+                          {row.ticker}
+                          <span className="muted"> · {name}</span>
                         </strong>
-                        <span>
-                          Rs {value.toLocaleString(undefined, { maximumFractionDigits: 0 })} ·{" "}
-                          {pct.toFixed(0)}%
+                        <span className={down ? "is-down" : "is-up"}>
+                          {down ? "▼" : "▲"} {Math.abs(change).toFixed(1)}%
                         </span>
                       </div>
-                      <p className="muted">{name}</p>
+                      <p>
+                        {row.shares} shares · Rs{" "}
+                        {value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      </p>
                       <div className="spread-bar" aria-hidden="true">
-                        <span style={{ width: `${Math.min(100, pct)}%` }} />
+                        <span style={{ width: `${Math.min(100, (value / equity) * 100)}%` }} />
                       </div>
                     </li>
                   );
@@ -96,8 +120,8 @@ export function PortfolioPage() {
               <ul className="holding-list">
                 {today.map((trade) => (
                   <li key={trade.id}>
-                    {trade.side === "buy" ? "Bought" : "Sold"} {trade.ticker} ×{trade.shares} at Rs{" "}
-                    {trade.price.toFixed(2)}
+                    {trade.side === "buy" ? "Bought" : "Sold"} {trade.ticker} ×{trade.shares}{" "}
+                    <span className="muted">{tradeTime(trade.at)}</span>
                     {trade.reducedAfterWarning ? " · reduced after Cub’s warning" : ""}
                   </li>
                 ))}
@@ -110,7 +134,7 @@ export function PortfolioPage() {
           <section className="panel cub-says">
             <CubMascot size={72} />
             <div>
-              <strong>What Cub noticed</strong>
+              <strong>What Cub noticed today</strong>
               <p>{cubNoticed(flags)}</p>
             </div>
           </section>
@@ -124,11 +148,16 @@ export function PortfolioPage() {
                 {flags.listenedToWarning ? "— you used Cub’s warning" : "— read Cub before big buys"}
               </li>
             </ul>
-            <p className="muted">This never ranks you against other children.</p>
           </section>
           <section className="panel">
-            <h2>Lesson 2 — later</h2>
-            <p>Risk and return stays locked until we build that lesson.</p>
+            <h2>Goes to the parent report</h2>
+            <p>
+              Risk behaviour and reasoning only — never a profit ranking against other children.
+            </p>
+          </section>
+          <section className="panel">
+            <h2>Lesson 2 — risk and return</h2>
+            <p>Locked until we build that lesson. The market stays a practice account.</p>
             <Link to="/market">Back to Market Floor</Link>
           </section>
         </aside>
