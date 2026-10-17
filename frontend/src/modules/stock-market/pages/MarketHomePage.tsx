@@ -122,6 +122,9 @@ export function MarketHomePage() {
               <Link className="btn-gold cub-send" to="/market/terminal">
                 Open the market terminal
               </Link>
+              <Link className="btn-ghost" to="/market/portfolio">
+                My portfolio
+              </Link>
             </p>
           ) : null}
         </section>

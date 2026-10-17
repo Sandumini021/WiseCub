@@ -15,7 +15,7 @@ export function LandingPage() {
           or a real trade.
         </p>
         <div className="hero-actions">
-          <Button to="/market">{en.enterDemo}</Button>
+          <Button to="/login">{en.enterDemo}</Button>
         </div>
       </section>
 
