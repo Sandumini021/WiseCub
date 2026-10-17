@@ -4,6 +4,8 @@ AI-Powered Multilingual Financial Literacy and Investment Education System for C
 
 Project ID: **J26-IT-418**. Virtual money and demo data only in this increment. No real banks, trades, or trained AI models.
 
+**Other members:** start with [`docs/team-guide.md`](docs/team-guide.md) — what is already built, your folder, and how to use your feature branch.
+
 ## What this increment includes
 
 - Landing page at `/`
