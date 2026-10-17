@@ -6,7 +6,7 @@ export type CubReply = {
 
 export const PAGE_GREETINGS: Record<string, string> = {
   "/": "Hi, I’m Cub. Tap Enter as demo child when you are ready. You can type to me, or tap the mic and speak.",
-  "/home": "This is your home. The Market Floor is ready first. Ask me to take you there, or tap a module.",
+  "/home": "Pick a world. I come with you. The Market Floor is open first. Missions, Scam Alley, and Choice Town come next.",
   "/market": "Welcome to the Market Floor. This is pretend money only. Lesson 1 is open. Say “start lesson 1”, or ask what a share is.",
   "/market/lessons/1":
     "This is Lesson 1. A share is one slice of a company. Read the pie, then take the quick check. Hear it aloud if you want me to read it.",
@@ -21,7 +21,7 @@ export const PAGE_GREETINGS: Record<string, string> = {
   "/safety": "Scam practice stays inside WiseCub. We never send real messages. I can explain that, or take you home.",
   "/progress": "Progress will show habits, not who made more pretend money. Want the market?",
   "/profile": "Avatar picking will live here soon. I can take you back to the market.",
-  "/login": "No password. Continue as the demo child, then we can talk as we go.",
+  "/login": "No password. Type a name if you like, then Get started. I will meet you on the dashboard.",
 };
 
 export function greetingFor(path: string): string {
@@ -49,6 +49,12 @@ export function suggestionsFor(path: string): string[] {
   }
   if (path === "/safety") {
     return ["Open the market", "Go home", "Are scams real here?"];
+  }
+  if (path === "/login") {
+    return ["Is this real money?", "What can you do?"];
+  }
+  if (path === "/home") {
+    return ["Open the market", "Go to Safety", "Is this real money?"];
   }
   return ["Open the market", "What can you do?", "Is this real money?", "Go home"];
 }
