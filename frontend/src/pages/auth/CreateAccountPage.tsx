@@ -126,7 +126,7 @@ export function CreateAccountPage() {
         setError(err.message);
         return;
       }
-      setError("Could not create the account. Start MongoDB and the API, then try again.");
+      setError("Could not create the account. The API did not accept this page origin — refresh and try again.");
     }
   }
 

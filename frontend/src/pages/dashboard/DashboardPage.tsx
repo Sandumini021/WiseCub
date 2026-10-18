@@ -2,7 +2,6 @@ import { Link, Navigate } from "react-router-dom";
 import { SiteTopBar } from "../../components/layout/SiteTopBar";
 import { readLesson1Complete } from "../../modules/stock-market/data/demoMarket";
 import { readBook } from "../../modules/stock-market/data/demoPortfolio";
-import { buildQuotes } from "../../modules/stock-market/data/syntheticPrices";
 import { ChildAvatar } from "../auth/ChildAvatar";
 import { useDemoChild } from "../auth/demoSession";
 import { homePathForRole } from "../auth/roles";
@@ -52,10 +51,6 @@ function firstName(full?: string) {
   return first.charAt(0).toUpperCase() + first.slice(1);
 }
 
-function rupees(value: number) {
-  return `Rs. ${Math.round(value).toLocaleString("en-LK")}`;
-}
-
 export function DashboardPage() {
   const { child } = useDemoChild();
   if (child?.role === "teacher" || child?.role === "guardian") {
@@ -63,7 +58,6 @@ export function DashboardPage() {
   }
   const name = firstName(child?.name);
   const book = readBook();
-  const quotes = buildQuotes().slice(0, 3);
   const lessonDone = readLesson1Complete();
   const progressPct = lessonDone ? 25 : 8;
   const level = lessonDone ? 2 : 1;
@@ -156,32 +150,21 @@ export function DashboardPage() {
           </Link>
         </div>
         <div className="dash-learn-art">
-          <img className="dash-scene" src="/images/dash/bg-learn-room.png" alt="" />
-          <ChildAvatar className="dash-portrait is-avatar" avatarId={child?.avatarId} name={child?.name} />
-          <div className="dash-chip-float">Budgeting basics</div>
-          <div className="dash-chip-float is-2">Needs vs Wants</div>
-          <div className="dash-chip-float is-3">Saving goals</div>
+          <img
+            className="dash-scene"
+            src="/images/dash/learn-by-doing.jpg"
+            alt="A student and Cub practising money skills at a desk."
+          />
         </div>
       </section>
 
       <section className="dash-market-band">
-        <div className="dash-folio">
-          <img className="dash-chart-bg" src="/images/dash/bg-market-chart.png" alt="" />
-          <p className="dash-kicker">My Portfolio</p>
-          <p className="dash-cash">{rupees(book.cash)}</p>
-          <p className="muted">Practice cash · not real money</p>
-          <ul className="dash-quotes">
-            {quotes.map((quote) => (
-              <li key={quote.ticker}>
-                <span>{quote.ticker}</span>
-                <b>{rupees(quote.price)}</b>
-                <em className={quote.changePct >= 0 ? "up" : "down"}>
-                  {quote.changePct >= 0 ? "+" : ""}
-                  {quote.changePct.toFixed(1)}%
-                </em>
-              </li>
-            ))}
-          </ul>
+        <div className="dash-learn-art">
+          <img
+            className="dash-scene"
+            src="/images/dash/real-market.jpg"
+            alt="Cub showing a practice stock chart on a laptop."
+          />
         </div>
         <div>
           <p className="dash-kicker">Market</p>
@@ -221,14 +204,12 @@ export function DashboardPage() {
       </section>
 
       <section className="dash-choice-band">
-        <div className="dash-choice-art">
-          <ChildAvatar className="dash-portrait is-avatar" avatarId={child?.avatarId} name={child?.name} />
-          <div className="dash-choice-icons" aria-hidden="true">
-            <span>🏠</span>
-            <span>🚗</span>
-            <span>✈️</span>
-            <span>🎓</span>
-          </div>
+        <div className="dash-learn-art">
+          <img
+            className="dash-scene"
+            src="/images/dash/life-choices.jpg"
+            alt="A student imagining a house, car, trip, savings, and graduation."
+          />
         </div>
         <div>
           <p className="dash-kicker">Life Choices</p>
