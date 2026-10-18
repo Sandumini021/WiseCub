@@ -11,20 +11,67 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiGet<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`);
+async function parse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     throw new ApiError(`Request failed: ${response.status}`, response.status);
   }
   return (await response.json()) as T;
 }
 
+export async function apiGet<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`);
+  return parse<T>(response);
+}
+
+export async function apiPut<T>(path: string, body: unknown): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return parse<T>(response);
+}
+
 export type HealthResponse = {
   status: string;
   service: string;
   database: string;
+  db_name?: string;
 };
 
 export function getHealth() {
   return apiGet<HealthResponse>("/health");
+}
+
+export function saveChildRemote(childId: string, name: string, enteredAt: string) {
+  return apiPut(`/api/children/${childId}`, { name, entered_at: enteredAt });
+}
+
+export function saveAccountRemote(
+  childId: string,
+  account: {
+    name: string;
+    email: string;
+    age: string;
+    gender: string;
+    avatarId: string;
+    enteredAt: string;
+  },
+) {
+  return apiPut(`/api/accounts/${childId}`, {
+    name: account.name,
+    email: account.email,
+    age: account.age,
+    gender: account.gender,
+    avatar_id: account.avatarId,
+    entered_at: account.enteredAt,
+  });
+}
+
+export function saveModuleState(childId: string, module: string, data: unknown) {
+  return apiPut(`/api/state/${childId}/${module}`, { data });
+}
+
+export function loadModuleState<T>(childId: string, module: string) {
+  return apiGet<{ child_id: string; module: string; data: T }>(`/api/state/${childId}/${module}`);
 }
