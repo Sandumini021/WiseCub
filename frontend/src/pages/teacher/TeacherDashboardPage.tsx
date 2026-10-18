@@ -13,7 +13,7 @@ const LINKS = [
 ];
 
 export function TeacherDashboardPage() {
-  const session = useDemoChild();
+  const { child: session } = useDemoChild();
   return (
     <RequireRole role="teacher">
       <RoleShell

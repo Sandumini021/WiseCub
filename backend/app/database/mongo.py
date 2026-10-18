@@ -46,6 +46,12 @@ async def connect() -> None:
             unique=True,
             sparse=True,
         )
+        await db.accounts.create_index(
+            "email",
+            unique=True,
+            sparse=True,
+            partialFilterExpression={"email": {"$gt": ""}},
+        )
         await db.module_state.create_index(
             [("child_id", 1), ("module", 1)],
             unique=True,

@@ -12,7 +12,7 @@ const STUDENT_TABS = [
 ] as const;
 
 export function SiteTopBar() {
-  const child = useDemoChild();
+  const { child } = useDemoChild();
   const location = useLocation();
   const navigate = useNavigate();
   const onMarket = location.pathname.startsWith("/market");

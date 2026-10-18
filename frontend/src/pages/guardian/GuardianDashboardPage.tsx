@@ -12,7 +12,7 @@ const LINKS = [
 ];
 
 export function GuardianDashboardPage() {
-  const session = useDemoChild();
+  const { child: session } = useDemoChild();
   return (
     <RequireRole role="guardian">
       <RoleShell

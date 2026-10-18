@@ -1,15 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CubMascot } from "../../components/cub-assistant/CubMascot";
-import { loadAccountByEmail, loadAccountByUsername } from "../../services/apiClient";
-import { setChildId, writeDemoChild } from "./demoSession";
-import { homePathForRole, isAccountRole, normalizeUsername } from "./roles";
+import { ApiError, loginAccount } from "../../services/apiClient";
+import { applyRemoteSession } from "./demoSession";
+import { homePathForRole } from "./roles";
 import "../../styles/login-card.css";
-
-function nameFromEmail(email: string) {
-  const local = email.split("@")[0]?.trim() ?? "";
-  return local || "Demo child";
-}
 
 export function DemoLoginPage() {
   const navigate = useNavigate();
@@ -18,60 +13,32 @@ export function DemoLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  function finishLogin(name: string, extras?: Parameters<typeof writeDemoChild>[1]) {
-    const saved = writeDemoChild(name, extras);
-    if (remember) {
-      window.localStorage.setItem("wisecub.rememberMe", "1");
-    }
-    navigate(homePathForRole(saved.role));
-  }
-
-  async function enterDemo(label?: string) {
-    const raw = identifier.trim();
-    const asEmail = raw.includes("@") ? raw.toLowerCase() : "";
-    const asUser = asEmail ? "" : normalizeUsername(raw);
-    try {
-      const account = asEmail
-        ? await loadAccountByEmail(asEmail)
-        : asUser
-          ? await loadAccountByUsername(asUser)
-          : null;
-      if (account) {
-        if (account.child_id) {
-          setChildId(account.child_id);
-        }
-        finishLogin(account.name || label || nameFromEmail(raw), {
-          email: account.email,
-          username: account.username,
-          role: isAccountRole(account.role) ? account.role : "student",
-          age: account.age,
-          gender: account.gender,
-          avatarId: account.avatar_id,
-          language: account.language,
-          classCode: account.class_code,
-          institution: account.institution,
-          enteredAt: account.entered_at,
-        });
-        return;
-      }
-    } catch {
-      // Practice login still works if Mongo is down or the name is new.
-    }
-    finishLogin(label ?? (asEmail ? nameFromEmail(asEmail) : raw || "Demo child"), {
-      email: asEmail || undefined,
-      username: asUser || undefined,
-      role: "student",
-    });
-  }
-
-  function onSubmit(event: FormEvent) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
-    if (!identifier.trim()) {
-      setNote("Enter your username (students) or email (teachers and guardians).");
+    if (!identifier.trim() || !password) {
+      setNote("Enter your username or email, and your password.");
       return;
     }
-    void enterDemo();
+    setBusy(true);
+    setNote(null);
+    try {
+      const account = await loginAccount(identifier.trim(), password, remember);
+      if (remember) {
+        window.localStorage.setItem("wisecub.rememberMe", "1");
+      }
+      const saved = applyRemoteSession(account);
+      navigate(homePathForRole(saved.role));
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setNote(error.message);
+      } else {
+        setNote("Could not log in. Start MongoDB and the API, then try again.");
+      }
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -93,7 +60,7 @@ export function DemoLoginPage() {
         <h1>Welcome Back!</h1>
         <p className="login-lead">Login to continue your learning journey</p>
 
-        <form className="login-fields" onSubmit={onSubmit}>
+        <form className="login-fields" onSubmit={(event) => void onSubmit(event)}>
           <label className="login-field">
             <span className="visually-hidden">Username or email</span>
             <span className="login-ico" aria-hidden="true">
@@ -143,35 +110,36 @@ export function DemoLoginPage() {
             <button
               className="login-text-btn"
               type="button"
-              onClick={() =>
-                setNote("This demo has no real passwords. Tap Login to continue.")
-              }
+              onClick={() => setNote("Password reset is not built yet. Ask a teammate if you are stuck.")}
             >
               Forgot password?
             </button>
           </div>
 
-          <button className="login-submit" type="submit">
-            Login
+          <button className="login-submit" type="submit" disabled={busy}>
+            {busy ? "Checking…" : "Login"}
           </button>
         </form>
 
         <p className="login-or">or continue with</p>
 
         <div className="login-social">
-          <button type="button" onClick={() => enterDemo("Google demo")}>
+          <button type="button" onClick={() => setNote("Google sign-in is not enabled in this practice app.")}>
             <span className="g-icon" aria-hidden="true">
               G
             </span>
             Google
           </button>
-          <button type="button" onClick={() => enterDemo("Microsoft demo")}>
+          <button
+            type="button"
+            onClick={() => setNote("Microsoft sign-in is not enabled in this practice app.")}
+          >
             <span className="ms-icon" aria-hidden="true">
               ⊞
             </span>
             Microsoft
           </button>
-          <button type="button" onClick={() => enterDemo("Apple demo")}>
+          <button type="button" onClick={() => setNote("Apple sign-in is not enabled in this practice app.")}>
             <span className="ap-icon" aria-hidden="true">
               
             </span>
@@ -186,7 +154,10 @@ export function DemoLoginPage() {
           </Link>
         </p>
         {note ? <p className="login-note">{note}</p> : null}
-        <p className="login-note">Demo login only. Passwords are not checked yet. No real accounts, banks, or cards.</p>
+        <p className="login-note">
+          Practice login. Passwords are hashed on the server. Students use a username. Teachers and
+          guardians may use email. Not a bank.
+        </p>
       </main>
     </div>
   );
