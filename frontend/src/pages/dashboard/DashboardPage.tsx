@@ -1,17 +1,10 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { SiteTopBar } from "../../components/layout/SiteTopBar";
 import { readLesson1Complete } from "../../modules/stock-market/data/demoMarket";
 import { readBook } from "../../modules/stock-market/data/demoPortfolio";
 import { buildQuotes } from "../../modules/stock-market/data/syntheticPrices";
 import { useDemoChild } from "../auth/demoSession";
 import "../../styles/dashboard-long.css";
-
-const TABS = [
-  { to: "/home", label: "Home" },
-  { to: "/missions", label: "Learn" },
-  { to: "/market", label: "Market" },
-  { to: "/safety", label: "Stay Safe" },
-  { to: "/choices", label: "Life Choices" },
-] as const;
 
 const WORLDS = [
   {
@@ -72,35 +65,7 @@ export function DashboardPage() {
 
   return (
     <div className="dash-long" id="main">
-      <header className="dash-top">
-        <div className="dash-top-inner">
-          <Link className="dash-brand" to="/home">
-            <img className="dash-brand-face" src="/images/dash/cub-logo.png" alt="" />
-            Wise<span>Cub</span>
-          </Link>
-          <nav className="dash-nav" aria-label="Component homes">
-            {TABS.map((tab) => (
-              <NavLink
-                key={tab.to}
-                to={tab.to}
-                className={({ isActive }) => (isActive ? "is-on" : undefined)}
-                end={tab.to === "/home"}
-              >
-                {tab.label}
-              </NavLink>
-            ))}
-          </nav>
-          <div className="dash-top-right">
-            <span className="dash-en" title="English first. Sinhala comes later.">
-              EN
-            </span>
-            <Link className="dash-user" to={child ? "/profile" : "/login"} title={child?.name ?? "Login"}>
-              <img src="/images/dash/cub-logo.png" alt="" />
-              <span>{child?.name?.trim() || "Guest"}</span>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteTopBar />
 
       <section className="dash-hero-long">
         <div className="dash-hero-copy">

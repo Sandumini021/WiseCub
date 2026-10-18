@@ -34,8 +34,8 @@ export function AppRoutes() {
       <Route path="/login" element={<DemoLoginPage />} />
       <Route path="/signup" element={<CreateAccountPage />} />
       <Route path="/home" element={<DashboardPage />} />
+      <Route path="/market" element={<MarketHomePage />} />
       <Route element={<AppLayout />}>
-        <Route path="/market" element={<MarketHomePage />} />
         <Route path="/market/lessons/1" element={<ShareLessonPage />} />
         <Route path="/market/terminal" element={<MarketTerminalPage />} />
         <Route path="/market/confirm" element={<TradeConfirmationPage />} />
