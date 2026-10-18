@@ -10,7 +10,6 @@ import { MarketLessonPage } from "../modules/stock-market/pages/MarketLessonPage
 import { TradeConfirmationPage } from "../modules/stock-market/pages/TradeConfirmationPage";
 import { CreateAccountPage } from "../pages/auth/CreateAccountPage";
 import { DemoLoginPage } from "../pages/auth/DemoLoginPage";
-import { DashboardPage } from "../pages/dashboard/DashboardPage";
 import { GuardianDashboardPage, GuardianStubPage } from "../pages/guardian/GuardianDashboardPage";
 import { SplashPage } from "../pages/SplashPage";
 import { StudentDashboardPage } from "../pages/student/StudentDashboardPage";
@@ -36,7 +35,7 @@ export function AppRoutes() {
       <Route path="/welcome" element={<SplashPage />} />
       <Route path="/login" element={<DemoLoginPage />} />
       <Route path="/signup" element={<CreateAccountPage />} />
-      <Route path="/home" element={<DashboardPage />} />
+      <Route path="/home" element={<StudentDashboardPage />} />
       <Route path="/student/dashboard" element={<StudentDashboardPage />} />
       <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
       <Route path="/teacher/classes" element={<TeacherStubPage title="Classes" />} />

@@ -1,58 +1,33 @@
-import { useRef, type PointerEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "../styles/splash.css";
 
-const SWIPE_PX = 40;
-
 export function SplashPage() {
-  const navigate = useNavigate();
-  const start = useRef<{ x: number; y: number } | null>(null);
-
-  function goLogin() {
-    navigate("/login");
-  }
-
-  function onPointerDown(event: PointerEvent<HTMLElement>) {
-    start.current = { x: event.clientX, y: event.clientY };
-  }
-
-  function onPointerUp(event: PointerEvent<HTMLElement>) {
-    if (!start.current) {
-      return;
-    }
-    const dx = event.clientX - start.current.x;
-    const dy = event.clientY - start.current.y;
-    start.current = null;
-    if (Math.abs(dx) >= SWIPE_PX || Math.abs(dy) >= SWIPE_PX) {
-      event.preventDefault();
-      goLogin();
-    }
-  }
-
   return (
-    <main className="splash" id="main">
-      <img
-        className="splash-art"
-        src="/images/wisecub-splash.jpg"
-        alt="WiseCub. Cub waves beside the WiseCub logo."
-        draggable={false}
-      />
-      <Link
-        className="splash-go"
-        to="/login"
-        aria-label="Continue to login"
-        onPointerDown={onPointerDown}
-        onPointerUp={onPointerUp}
-        onPointerCancel={() => {
-          start.current = null;
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " " || event.key === "ArrowRight") {
-            event.preventDefault();
-            goLogin();
-          }
-        }}
-      />
-    </main>
+    <Link className="splash" id="main" to="/login" aria-label="WiseCub. Tap anywhere to continue to login.">
+      <span className="splash-star splash-star-a" aria-hidden="true">
+        ✦
+      </span>
+      <span className="splash-star splash-star-b" aria-hidden="true">
+        ★
+      </span>
+      <span className="splash-star splash-star-c" aria-hidden="true">
+        ✦
+      </span>
+      <span className="splash-plane" aria-hidden="true">
+        ✈
+      </span>
+
+      <img className="splash-cub" src="/images/cub-wave.png" alt="" draggable={false} />
+
+      <p className="splash-wordmark">
+        Wise<span>Cub</span>
+      </p>
+      <span className="splash-underline" aria-hidden="true" />
+
+      <span className="splash-cta" aria-hidden="true">
+        →
+      </span>
+      <span className="visually-hidden">Continue to login</span>
+    </Link>
   );
 }

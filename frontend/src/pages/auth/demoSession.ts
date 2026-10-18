@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import {
-  loadAccountByEmail,
-  loadAccountByUsername,
-  saveAccountRemote,
-  saveChildRemote,
+  getMe,
+  logoutAccount,
+  patchMe,
+  registerAccount,
   saveModuleState,
+  type RemoteAccount,
 } from "../../services/apiClient";
 import { type AccountRole, isAccountRole } from "./roles";
 
@@ -34,6 +35,7 @@ export type SignupProfile = {
   name: string;
   email?: string;
   username: string;
+  password: string;
   role: AccountRole;
   age?: string;
   gender?: string;
@@ -72,11 +74,37 @@ export function setChildId(id: string) {
   window.localStorage.setItem(ID_KEY, id);
 }
 
-function mergeSession(name: string, extras?: Partial<DemoChild>): DemoChild {
-  const prev = readDemoChild();
+function fromRemote(account: RemoteAccount): DemoChild {
   return {
+    name: account.name,
+    enteredAt: account.entered_at || new Date().toISOString(),
+    email: account.email,
+    username: account.username,
+    role: isAccountRole(account.role) ? account.role : "student",
+    age: account.age,
+    gender: account.gender,
+    avatarId: account.avatar_id,
+    language: account.language,
+    classCode: account.class_code,
+    institution: account.institution,
+  };
+}
+
+export function applyRemoteSession(account: RemoteAccount): DemoChild {
+  if (account.child_id) {
+    setChildId(account.child_id);
+  }
+  const next = fromRemote(account);
+  window.localStorage.setItem(KEY, JSON.stringify(next));
+  notifySession();
+  return next;
+}
+
+export function writeDemoChild(name: string, extras?: Partial<DemoChild>): DemoChild {
+  const prev = readDemoChild();
+  const next: DemoChild = {
     name: name.trim() || prev?.name || "Demo child",
-    enteredAt: extras?.enteredAt ?? new Date().toISOString(),
+    enteredAt: extras?.enteredAt ?? prev?.enteredAt ?? new Date().toISOString(),
     email: extras?.email ?? prev?.email,
     username: extras?.username ?? prev?.username,
     role: extras?.role ?? prev?.role ?? "student",
@@ -87,50 +115,26 @@ function mergeSession(name: string, extras?: Partial<DemoChild>): DemoChild {
     classCode: extras?.classCode ?? prev?.classCode,
     institution: extras?.institution ?? prev?.institution,
   };
-}
-
-export function writeDemoChild(name: string, extras?: Partial<DemoChild>): DemoChild {
-  const next = mergeSession(name, extras);
   window.localStorage.setItem(KEY, JSON.stringify(next));
   notifySession();
-  void saveChildRemote(childId(), next.name, next.enteredAt).catch(() => {
-    // Keep the demo working if Mongo is not running yet.
-  });
   return next;
 }
 
-export function writeSignupProfile(profile: SignupProfile): DemoChild {
-  const next: DemoChild = {
+export async function writeSignupProfile(profile: SignupProfile): Promise<DemoChild> {
+  const account = await registerAccount({
     name: profile.name.trim() || "Demo child",
-    enteredAt: new Date().toISOString(),
-    email: profile.email?.trim(),
     username: profile.username.trim().toLowerCase(),
+    password: profile.password,
     role: profile.role,
+    email: profile.email?.trim(),
     age: profile.age,
-    gender: profile.gender,
     avatarId: profile.avatarId,
     language: profile.language ?? "en",
     classCode: profile.classCode,
     institution: profile.institution,
-  };
-  window.localStorage.setItem(KEY, JSON.stringify(next));
-  notifySession();
-  const id = childId();
-  void saveChildRemote(id, next.name, next.enteredAt).catch(() => {});
-  void saveAccountRemote(id, {
-    name: next.name,
-    email: next.email,
-    username: next.username,
-    role: next.role,
-    age: next.age,
-    gender: next.gender,
-    avatarId: next.avatarId,
-    language: next.language,
-    classCode: next.classCode,
-    institution: next.institution,
-    enteredAt: next.enteredAt,
-  }).catch(() => {});
-  void saveModuleState(id, "child", {
+  });
+  const next = applyRemoteSession(account);
+  void saveModuleState(childId(), "child", {
     name: next.name,
     username: next.username,
     role: next.role,
@@ -140,51 +144,27 @@ export function writeSignupProfile(profile: SignupProfile): DemoChild {
     language: next.language,
   }).catch(() => {});
   return next;
+}
+
+export function persistAvatar(avatarId: string) {
+  const current = readDemoChild();
+  if (!current) {
+    return;
+  }
+  writeDemoChild(current.name, { avatarId });
+  void patchMe({ avatar_id: avatarId }).catch(() => {});
 }
 
 export function clearDemoChild() {
   window.localStorage.removeItem(KEY);
   window.localStorage.setItem(ID_KEY, window.crypto.randomUUID());
   notifySession();
-}
-
-function applyRemoteAccount(account: {
-  child_id?: string;
-  name?: string;
-  email?: string;
-  username?: string;
-  role?: string;
-  age?: string;
-  gender?: string;
-  avatar_id?: string;
-  language?: string;
-  class_code?: string;
-  institution?: string;
-  entered_at?: string;
-}) {
-  if (account.child_id) {
-    setChildId(account.child_id);
-  }
-  const latest = readDemoChild();
-  if (!latest) {
-    return;
-  }
-  writeDemoChild(account.name || latest.name, {
-    email: account.email || latest.email,
-    username: account.username || latest.username,
-    role: isAccountRole(account.role) ? account.role : latest.role,
-    age: account.age || latest.age,
-    gender: account.gender || latest.gender,
-    avatarId: account.avatar_id || latest.avatarId,
-    language: account.language || latest.language,
-    classCode: account.class_code || latest.classCode,
-    institution: account.institution || latest.institution,
-    enteredAt: account.entered_at,
-  });
+  void logoutAccount().catch(() => {});
 }
 
 export function useDemoChild() {
   const [child, setChild] = useState<DemoChild | null>(() => readDemoChild());
+  const [authReady, setAuthReady] = useState(false);
   useEffect(() => {
     const refresh = () => setChild(readDemoChild());
     window.addEventListener("storage", refresh);
@@ -195,14 +175,23 @@ export function useDemoChild() {
     };
   }, []);
   useEffect(() => {
-    const current = readDemoChild();
-    if (current?.username) {
-      void loadAccountByUsername(current.username).then(applyRemoteAccount).catch(() => {});
-      return;
-    }
-    if (current?.email) {
-      void loadAccountByEmail(current.email).then(applyRemoteAccount).catch(() => {});
-    }
+    let cancelled = false;
+    void getMe()
+      .then((account) => {
+        if (cancelled) {
+          return;
+        }
+        applyRemoteSession(account);
+        setAuthReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setAuthReady(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
-  return child;
+  return { child, authReady };
 }

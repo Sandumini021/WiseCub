@@ -1,7 +1,7 @@
 import { useState, type CSSProperties, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CubMascot } from "../../components/cub-assistant/CubMascot";
-import { checkUsername } from "../../services/apiClient";
+import { ApiError, checkUsername } from "../../services/apiClient";
 import { ChildAvatar } from "./ChildAvatar";
 import { PRACTICE_AVATARS } from "./avatars";
 import { writeSignupProfile } from "./demoSession";
@@ -38,8 +38,8 @@ export function CreateAccountPage() {
   const [error, setError] = useState<string | null>(null);
 
   function commonPasswordOk() {
-    if (password.length < 4) {
-      setError("Choose a practice password (at least 4 characters).");
+    if (password.length < 6) {
+      setError("Choose a password with at least 6 characters.");
       return false;
     }
     if (password !== confirm) {
@@ -91,37 +91,50 @@ export function CreateAccountPage() {
     }
     setError(null);
     setSuggestions([]);
-    setPassword("");
-    setConfirm("");
     setUsername(user);
     if (role === "student") {
       setStep("avatar");
       return;
     }
-    finishSignup(role, user);
-    setStep("done");
+    await finishSignup(role, user);
   }
 
-  function finishSignup(nextRole: AccountRole, user = username) {
-    writeSignupProfile({
-      name,
-      email: nextRole === "student" ? undefined : email,
-      username: user,
-      role: nextRole,
-      age: nextRole === "student" ? age : undefined,
-      avatarId: nextRole === "student" ? avatarId : undefined,
-      language,
-      classCode: nextRole === "student" ? classCode : undefined,
-      institution: nextRole === "teacher" ? institution : undefined,
-    });
+  async function finishSignup(nextRole: AccountRole, user = username) {
+    try {
+      await writeSignupProfile({
+        name,
+        email: nextRole === "student" ? undefined : email,
+        username: user,
+        password,
+        role: nextRole,
+        age: nextRole === "student" ? age : undefined,
+        avatarId: nextRole === "student" ? avatarId : undefined,
+        language,
+        classCode: nextRole === "student" ? classCode : undefined,
+        institution: nextRole === "teacher" ? institution : undefined,
+      });
+      setPassword("");
+      setConfirm("");
+      setStep("done");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        const detail = err.detail;
+        if (detail && typeof detail === "object" && "suggestions" in detail) {
+          const extra = (detail as { suggestions?: string[] }).suggestions ?? [];
+          setSuggestions(extra);
+        }
+        setError(err.message);
+        return;
+      }
+      setError("Could not create the account. The API did not accept this page origin — refresh and try again.");
+    }
   }
 
   function completeStudent() {
     if (!role) {
       return;
     }
-    finishSignup(role);
-    setStep("done");
+    void finishSignup(role);
   }
 
   const stepIndex = step === "role" ? 0 : step === "details" ? 1 : step === "avatar" ? 2 : 3;
@@ -159,7 +172,7 @@ export function CreateAccountPage() {
         </aside>
 
         <section className="signup-pane" id="main">
-          <p className="signup-demo-flag">Demo mode — passwords are not stored. Not production login.</p>
+          <p className="signup-demo-flag">Practice accounts. Passwords are hashed on the server. Not a bank.</p>
           <ol className="signup-steps" aria-label="Account setup steps">
             <li className={stepIndex === 0 ? "is-current" : "is-done"}>
               <span>1</span>
@@ -427,6 +440,7 @@ export function CreateAccountPage() {
                   </button>
                 ))}
               </div>
+              {error ? <p className="signup-error">{error}</p> : null}
               <div className="signup-actions">
                 <button className="signup-back" type="button" onClick={() => setStep("details")}>
                   Back
@@ -442,8 +456,8 @@ export function CreateAccountPage() {
             <div className="signup-form signup-done">
               <h2>All Set!</h2>
               <p className="signup-sub">
-                Welcome, {name.trim() || "friend"} (@{username}). This is a demo {role} account. No real
-                money, banks, or passwords are stored.
+                Welcome, {name.trim() || "friend"} (@{username}). This is a practice {role} account. No
+                real money or banks. Your password is stored as a hash, not as plain text.
               </p>
               {role === "student" ? <ChildAvatar className="signup-picked" avatarId={avatarId} name={name} /> : null}
               <button className="signup-next" type="button" onClick={() => navigate(homePathForRole(role))}>

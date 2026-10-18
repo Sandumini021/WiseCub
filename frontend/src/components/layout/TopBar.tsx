@@ -7,7 +7,7 @@ type TopBarProps = {
 };
 
 export function TopBar({ crumb }: TopBarProps) {
-  const child = useDemoChild();
+  const { child } = useDemoChild();
   const label = child?.name?.trim() || "Guest";
 
   return (
