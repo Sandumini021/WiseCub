@@ -389,11 +389,26 @@
   border: 1.5px solid #e6ebf3;
   border-radius: 16px;
   background: #fff;
-  padding: 0.7rem 0.4rem;
+  padding: 0.55rem 0.4rem 0.65rem;
   cursor: pointer;
   display: grid;
   place-items: center;
-  gap: 0.3rem;
+  gap: 0.25rem;
+}
+
+.signup-avatar img,
+.signup-picked {
+  width: 92px;
+  height: 104px;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.signup-picked {
+  width: 140px;
+  height: 158px;
+  display: block;
+  margin: 0.4rem auto 1rem;
 }
 
 .signup-avatar span {
@@ -425,6 +440,61 @@
 
 .signup-done {
   text-align: center;
+}
+
+.signup-demo-flag {
+  margin: 0 0 0.8rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+  background: #fff6d4;
+  color: #5c4a10;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.signup-roles {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.signup-role {
+  text-align: left;
+  border: 1.5px solid #e6ebf3;
+  border-radius: 16px;
+  background: #fff;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+}
+
+.signup-role strong {
+  display: block;
+  color: #163a8a;
+}
+
+.signup-role span {
+  color: #5c6b80;
+  font-size: 0.9rem;
+}
+
+.signup-role.is-on {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+.signup-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.signup-suggestions button {
+  border: 0;
+  border-radius: 999px;
+  background: #eef4ff;
+  color: #163a8a;
+  font-weight: 700;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
 }
 
 @media (max-width: 860px) {

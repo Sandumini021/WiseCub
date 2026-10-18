@@ -14,9 +14,10 @@ const crumbs: Record<string, string> = {
 
 export function AppLayout() {
   const location = useLocation();
+  const lessonMatch = location.pathname.match(/\/market\/lessons\/(\d+)/);
   const crumb =
     crumbs[location.pathname] ??
-    (location.pathname.startsWith("/market/lessons") ? "Market  >  Lesson 1" : "WiseCub");
+    (lessonMatch ? `Market  >  Lesson ${lessonMatch[1]}` : "WiseCub");
 
   return (
     <div className="app-frame">

@@ -7,9 +7,15 @@ export type CubReply = {
 export const PAGE_GREETINGS: Record<string, string> = {
   "/": "Hi, I’m Cub. Tap Enter as demo child when you are ready. You can type to me, or tap the mic and speak.",
   "/home": "Hi. This is your long home. The greeting uses the name from login. Tabs open Missions, Market, Safety, and Choice Town.",
-  "/market": "Welcome to the Market Floor. This is pretend money only. Lesson 1 is open. Say “start lesson 1”, or ask what a share is.",
+  "/market": "Welcome to the Market Floor. This is pretend money only. Four lessons unlock in order. Say “start lesson 1”, or ask what a share is.",
   "/market/lessons/1":
     "This is Lesson 1. A share is one slice of a company. Read the pie, then take the quick check. Hear it aloud if you want me to read it.",
+  "/market/lessons/2":
+    "Lesson 2 is risk and return. Prices can rise or fall. A bigger possible gain often means a bigger possible drop. Pretend money only.",
+  "/market/lessons/3":
+    "Lesson 3 is spreading money. One fictional company can have a bad day. Several names share the bump. Habits, not profit rank.",
+  "/market/lessons/4":
+    "Lesson 4 is compounding. A small pretend gain can grow if you leave it — and a loss can grow too. Nothing here is real cash.",
   "/market/terminal":
     "This is the practice terminal. Prices are synthetic. Buy or sell pretend shares, then Cub will ask you to confirm. No real money.",
   "/market/confirm":
@@ -22,7 +28,7 @@ export const PAGE_GREETINGS: Record<string, string> = {
   "/progress": "Progress will show habits, not who made more pretend money. Want the market?",
   "/profile": "Avatar picking will live here soon. I can take you back to the market.",
   "/login": "No password. Type a name if you like, then Get started. I will meet you on the dashboard.",
-  "/signup": "This is practice signup. Cub does not keep real passwords. Fill the form, pick an avatar, then go to the playground.",
+  "/signup": "First pick Student, Teacher, or Parent. Students pick a username and an avatar. Passwords are not stored in this demo.",
 };
 
 export function greetingFor(path: string): string {
@@ -40,7 +46,7 @@ export function suggestionsFor(path: string): string[] {
     return ["What is a share?", "Start lesson 1", "Go to Safety", "Is this real money?"];
   }
   if (path.startsWith("/market/lessons")) {
-    return ["What is a share?", "Is this real money?", "Back to the market"];
+    return ["What is a share?", "What is risk?", "Is this real money?", "Back to the market"];
   }
   if (path.startsWith("/market/terminal") || path.startsWith("/market/confirm")) {
     return ["Is this real money?", "Show my portfolio", "Back to the market"];
@@ -88,6 +94,24 @@ export function matchCubIntent(raw: string): CubReply {
     return {
       text: "Opening Lesson 1 — What is a share? Read the pie, then the quick check.",
       path: "/market/lessons/1",
+    };
+  }
+  if (/(lesson 2|risk and return|what is risk)/.test(text)) {
+    return {
+      text: "Opening Lesson 2 — Risk and return. Finish Lesson 1 first if it is still locked.",
+      path: "/market/lessons/2",
+    };
+  }
+  if (/(lesson 3|spread|diversif)/.test(text)) {
+    return {
+      text: "Opening Lesson 3 — Spreading money. Finish Lesson 2 first if it is still locked.",
+      path: "/market/lessons/3",
+    };
+  }
+  if (/(lesson 4|compound)/.test(text)) {
+    return {
+      text: "Opening Lesson 4 — Compounding. Finish Lesson 3 first if it is still locked.",
+      path: "/market/lessons/4",
     };
   }
   if (/(back to the market|market floor)/.test(text)) {

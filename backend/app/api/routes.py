@@ -1,11 +1,13 @@
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
 from app.database.mongo import get_db, ping_db
+from app.modules.accounts.router import current_account
+from app.modules.accounts.security import public_account
 
 router = APIRouter()
 
@@ -26,10 +28,15 @@ class ChildIn(BaseModel):
 
 class AccountIn(BaseModel):
     name: str = Field(min_length=1, max_length=80)
-    email: str = Field(min_length=3, max_length=120)
-    age: str = Field(min_length=1, max_length=8)
-    gender: str = Field(min_length=1, max_length=24)
-    avatar_id: str = Field(default="cub-gold", max_length=40)
+    email: str = Field(default="", max_length=120)
+    username: str = Field(default="", max_length=32)
+    role: str = Field(default="student", max_length=24)
+    age: str = Field(default="", max_length=8)
+    gender: str = Field(default="", max_length=24)
+    avatar_id: str = Field(default="", max_length=40)
+    language: str = Field(default="en", max_length=8)
+    class_code: str = Field(default="", max_length=24)
+    institution: str = Field(default="", max_length=120)
     entered_at: str | None = None
 
 
@@ -68,30 +75,56 @@ async def save_child(child_id: str, body: ChildIn) -> dict[str, Any]:
     return doc
 
 
-@router.put("/api/accounts/{child_id}")
-async def save_account(child_id: str, body: AccountIn) -> dict[str, Any]:
+def _username_suggestions(base: str) -> list[str]:
+    clean = "".join(ch for ch in base.lower() if ch.isalnum() or ch == "_")[:16] or "cub"
+    return [f"{clean}{n}" for n in (2, 12, 16, 24)]
+
+
+@router.get("/api/accounts/username-check")
+async def username_check(username: str) -> dict[str, Any]:
     db = require_db()
-    doc = {
-        "child_id": child_id,
+    key = username.strip().lower()
+    if len(key) < 3:
+        return {"taken": False, "valid": False, "suggestions": []}
+    existing = await db.accounts.find_one({"username": key}, {"_id": 1})
+    if not existing:
+        return {"taken": False, "valid": True, "suggestions": []}
+    return {"taken": True, "valid": True, "suggestions": _username_suggestions(key)}
+
+
+@router.put("/api/accounts/{child_id}")
+async def save_account(request: Request, child_id: str, body: AccountIn) -> dict[str, Any]:
+    db = require_db()
+    account = await current_account(request)
+    if account["child_id"] != child_id:
+        raise HTTPException(status_code=403, detail="You can only update your own account.")
+    role = account.get("role") or "student"
+    updates = {
         "name": body.name.strip(),
-        "email": body.email.strip().lower(),
-        "age": body.age.strip(),
+        "age": body.age.strip() if role == "student" else account.get("age", ""),
         "gender": body.gender.strip(),
-        "avatar_id": body.avatar_id.strip() or "cub-gold",
-        "entered_at": body.entered_at or datetime.now(timezone.utc).isoformat(),
+        "avatar_id": body.avatar_id.strip() if role == "student" else account.get("avatar_id", ""),
+        "language": body.language.strip() or "en",
+        "class_code": body.class_code.strip() if role == "student" else account.get("class_code", ""),
+        "institution": body.institution.strip() if role == "teacher" else account.get("institution", ""),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
-    await db.accounts.update_one({"child_id": child_id}, {"$set": doc}, upsert=True)
-    return doc
+    await db.accounts.update_one({"child_id": child_id}, {"$set": updates})
+    fresh = await db.accounts.find_one({"child_id": child_id})
+    return public_account(fresh) or {}
+
+
+@router.get("/api/accounts/search")
+async def search_account() -> dict[str, Any]:
+    raise HTTPException(status_code=401, detail="Use /api/login instead of searching accounts.")
 
 
 @router.get("/api/accounts/{child_id}")
-async def read_account(child_id: str) -> dict[str, Any]:
-    db = require_db()
-    doc = await db.accounts.find_one({"child_id": child_id}, {"_id": 0})
-    if not doc:
-        raise HTTPException(status_code=404, detail="Account not found.")
-    return doc
+async def read_account(request: Request, child_id: str) -> dict[str, Any]:
+    account = await current_account(request)
+    if account["child_id"] != child_id:
+        raise HTTPException(status_code=403, detail="You can only open your own account.")
+    return account
 
 
 @router.get("/api/children/{child_id}")

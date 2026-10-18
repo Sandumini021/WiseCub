@@ -1,40 +1,50 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CubMascot } from "../../components/cub-assistant/CubMascot";
-import { writeDemoChild } from "./demoSession";
+import { ApiError, loginAccount } from "../../services/apiClient";
+import { applyRemoteSession } from "./demoSession";
+import { homePathForRole } from "./roles";
 import "../../styles/login-card.css";
-
-function nameFromEmail(email: string) {
-  const local = email.split("@")[0]?.trim() ?? "";
-  return local || "Demo child";
-}
 
 export function DemoLoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  function enterDemo(label?: string) {
-    const name = label ?? nameFromEmail(email);
-    writeDemoChild(name);
-    if (remember) {
-      window.localStorage.setItem("wisecub.rememberMe", "1");
-    }
-    navigate("/home");
-  }
-
-  function onSubmit(event: FormEvent) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
-    enterDemo();
+    if (!identifier.trim() || !password) {
+      setNote("Enter your username or email, and your password.");
+      return;
+    }
+    setBusy(true);
+    setNote(null);
+    try {
+      const account = await loginAccount(identifier.trim(), password, remember);
+      if (remember) {
+        window.localStorage.setItem("wisecub.rememberMe", "1");
+      }
+      const saved = applyRemoteSession(account);
+      navigate(homePathForRole(saved.role));
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setNote(error.message);
+      } else {
+        setNote("Could not log in. Start MongoDB and the API, then try again.");
+      }
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
     <div className="login-screen">
-      <Link className="login-back" to="/home">
-        ← Back to Home
+      <Link className="login-back" to="/">
+        ← Back
       </Link>
 
       <main id="main" className="login-card">
@@ -50,19 +60,18 @@ export function DemoLoginPage() {
         <h1>Welcome Back!</h1>
         <p className="login-lead">Login to continue your learning journey</p>
 
-        <form className="login-fields" onSubmit={onSubmit}>
+        <form className="login-fields" onSubmit={(event) => void onSubmit(event)}>
           <label className="login-field">
-            <span className="visually-hidden">Email address</span>
+            <span className="visually-hidden">Username or email</span>
             <span className="login-ico" aria-hidden="true">
               ✉
             </span>
             <input
-              type="email"
-              name="email"
+              name="username"
               autoComplete="username"
-              placeholder="Email address"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              placeholder="Username or email"
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
             />
           </label>
 
@@ -101,35 +110,36 @@ export function DemoLoginPage() {
             <button
               className="login-text-btn"
               type="button"
-              onClick={() =>
-                setNote("This demo has no real passwords. Tap Login to continue as a practice child.")
-              }
+              onClick={() => setNote("Password reset is not built yet. Ask a teammate if you are stuck.")}
             >
               Forgot password?
             </button>
           </div>
 
-          <button className="login-submit" type="submit">
-            Login
+          <button className="login-submit" type="submit" disabled={busy}>
+            {busy ? "Checking…" : "Login"}
           </button>
         </form>
 
         <p className="login-or">or continue with</p>
 
         <div className="login-social">
-          <button type="button" onClick={() => enterDemo("Google demo")}>
+          <button type="button" onClick={() => setNote("Google sign-in is not enabled in this practice app.")}>
             <span className="g-icon" aria-hidden="true">
               G
             </span>
             Google
           </button>
-          <button type="button" onClick={() => enterDemo("Microsoft demo")}>
+          <button
+            type="button"
+            onClick={() => setNote("Microsoft sign-in is not enabled in this practice app.")}
+          >
             <span className="ms-icon" aria-hidden="true">
               ⊞
             </span>
             Microsoft
           </button>
-          <button type="button" onClick={() => enterDemo("Apple demo")}>
+          <button type="button" onClick={() => setNote("Apple sign-in is not enabled in this practice app.")}>
             <span className="ap-icon" aria-hidden="true">
               
             </span>
@@ -144,7 +154,10 @@ export function DemoLoginPage() {
           </Link>
         </p>
         {note ? <p className="login-note">{note}</p> : null}
-        <p className="login-note">Practice login only. No real accounts, banks, or cards.</p>
+        <p className="login-note">
+          Practice login. Passwords are hashed on the server. Students use a username. Teachers and
+          guardians may use email. Not a bank.
+        </p>
       </main>
     </div>
   );

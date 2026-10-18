@@ -6,12 +6,14 @@ import { ScamHomePage } from "../modules/scam-safety/pages/ScamHomePage";
 import { MarketHomePage } from "../modules/stock-market/pages/MarketHomePage";
 import { MarketTerminalPage } from "../modules/stock-market/pages/MarketTerminalPage";
 import { PortfolioPage } from "../modules/stock-market/pages/PortfolioPage";
-import { ShareLessonPage } from "../modules/stock-market/pages/ShareLessonPage";
+import { MarketLessonPage } from "../modules/stock-market/pages/MarketLessonPage";
 import { TradeConfirmationPage } from "../modules/stock-market/pages/TradeConfirmationPage";
 import { CreateAccountPage } from "../pages/auth/CreateAccountPage";
 import { DemoLoginPage } from "../pages/auth/DemoLoginPage";
-import { DashboardPage } from "../pages/dashboard/DashboardPage";
+import { GuardianDashboardPage, GuardianStubPage } from "../pages/guardian/GuardianDashboardPage";
 import { SplashPage } from "../pages/SplashPage";
+import { StudentDashboardPage } from "../pages/student/StudentDashboardPage";
+import { TeacherDashboardPage, TeacherStubPage } from "../pages/teacher/TeacherDashboardPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
 
 function ProgressPage() {
@@ -33,10 +35,22 @@ export function AppRoutes() {
       <Route path="/welcome" element={<SplashPage />} />
       <Route path="/login" element={<DemoLoginPage />} />
       <Route path="/signup" element={<CreateAccountPage />} />
-      <Route path="/home" element={<DashboardPage />} />
+      <Route path="/home" element={<StudentDashboardPage />} />
+      <Route path="/student/dashboard" element={<StudentDashboardPage />} />
+      <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
+      <Route path="/teacher/classes" element={<TeacherStubPage title="Classes" />} />
+      <Route path="/teacher/students" element={<TeacherStubPage title="Students" />} />
+      <Route path="/teacher/quizzes" element={<TeacherStubPage title="Quizzes" />} />
+      <Route path="/teacher/assignments" element={<TeacherStubPage title="Assignments" />} />
+      <Route path="/teacher/reports" element={<TeacherStubPage title="Reports" />} />
+      <Route path="/guardian/dashboard" element={<GuardianDashboardPage />} />
+      <Route path="/guardian/children" element={<GuardianStubPage title="Linked children" />} />
+      <Route path="/guardian/progress" element={<GuardianStubPage title="Progress" />} />
+      <Route path="/guardian/quizzes" element={<GuardianStubPage title="Quiz results" />} />
+      <Route path="/guardian/tips" element={<GuardianStubPage title="Recommendations" />} />
       <Route path="/market" element={<MarketHomePage />} />
       <Route element={<AppLayout />}>
-        <Route path="/market/lessons/1" element={<ShareLessonPage />} />
+        <Route path="/market/lessons/:n" element={<MarketLessonPage />} />
         <Route path="/market/terminal" element={<MarketTerminalPage />} />
         <Route path="/market/confirm" element={<TradeConfirmationPage />} />
         <Route path="/market/portfolio" element={<PortfolioPage />} />

@@ -41,10 +41,23 @@ async def connect() -> None:
         db = _client[settings.mongodb_db]
         await db.children.create_index("child_id", unique=True)
         await db.accounts.create_index("child_id", unique=True)
+        await db.accounts.create_index(
+            "username",
+            unique=True,
+            sparse=True,
+        )
+        await db.accounts.create_index(
+            "email",
+            unique=True,
+            sparse=True,
+            partialFilterExpression={"email": {"$gt": ""}},
+        )
         await db.module_state.create_index(
             [("child_id", 1), ("module", 1)],
             unique=True,
         )
+        await db.market_events.create_index([("child_id", 1), ("at", 1)])
+        await db.market_events.create_index([("child_id", 1), ("session_id", 1)])
     except PyMongoError:
         # API still starts. /health reports database as down until Mongo is running.
         pass
