@@ -1,12 +1,11 @@
 import { ChildAvatar } from "../auth/ChildAvatar";
 import { PRACTICE_AVATARS } from "../auth/avatars";
-import { childId, useDemoChild, writeDemoChild } from "../auth/demoSession";
-import { saveAccountRemote } from "../../services/apiClient";
+import { persistAvatar, useDemoChild } from "../auth/demoSession";
 import en from "../../locales/en.json";
 import "../../styles/signup.css";
 
 export function ProfilePage() {
-  const child = useDemoChild();
+  const { child } = useDemoChild();
   const name = child?.name?.trim() || "Guest";
   const isStudent = (child?.role ?? "student") === "student";
 
@@ -14,19 +13,7 @@ export function ProfilePage() {
     if (!child) {
       return;
     }
-    writeDemoChild(child.name, { avatarId });
-    void saveAccountRemote(childId(), {
-      name: child.name,
-      email: child.email,
-      username: child.username,
-      role: child.role,
-      age: child.age,
-      avatarId,
-      language: child.language,
-      classCode: child.classCode,
-      institution: child.institution,
-      enteredAt: child.enteredAt,
-    }).catch(() => {});
+    persistAvatar(avatarId);
   }
 
   return (
