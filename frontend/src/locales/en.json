@@ -31,9 +31,10 @@
   },
   "cub": {
     "name": "Cub",
-    "placeholder": "Hi, I’m Cub. I’ll help you find your way. Talking and avatar picking come in the next pages.",
-    "hello": "Hi, I’m Cub. I’ll help you find your way. Talking and avatar picking come in the next pages.",
-    "label": "Cub the learning companion"
+    "placeholder": "Hi, I’m Cub. Ask me in English or Sinhala. I am a simple guide, not a trained AI model.",
+    "hello": "Hi, I’m Cub. Ask me in English or Sinhala. I am a simple guide, not a trained AI model.",
+    "label": "Cub the learning companion",
+    "ask": "Ask Cub"
   },
   "footer": "J26-IT-418 · WiseCub demo · virtual money only",
   "landing": {
