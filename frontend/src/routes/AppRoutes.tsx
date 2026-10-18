@@ -6,7 +6,7 @@ import { ScamHomePage } from "../modules/scam-safety/pages/ScamHomePage";
 import { MarketHomePage } from "../modules/stock-market/pages/MarketHomePage";
 import { MarketTerminalPage } from "../modules/stock-market/pages/MarketTerminalPage";
 import { PortfolioPage } from "../modules/stock-market/pages/PortfolioPage";
-import { ShareLessonPage } from "../modules/stock-market/pages/ShareLessonPage";
+import { MarketLessonPage } from "../modules/stock-market/pages/MarketLessonPage";
 import { TradeConfirmationPage } from "../modules/stock-market/pages/TradeConfirmationPage";
 import { CreateAccountPage } from "../pages/auth/CreateAccountPage";
 import { DemoLoginPage } from "../pages/auth/DemoLoginPage";
@@ -36,7 +36,7 @@ export function AppRoutes() {
       <Route path="/home" element={<DashboardPage />} />
       <Route path="/market" element={<MarketHomePage />} />
       <Route element={<AppLayout />}>
-        <Route path="/market/lessons/1" element={<ShareLessonPage />} />
+        <Route path="/market/lessons/:n" element={<MarketLessonPage />} />
         <Route path="/market/terminal" element={<MarketTerminalPage />} />
         <Route path="/market/confirm" element={<TradeConfirmationPage />} />
         <Route path="/market/portfolio" element={<PortfolioPage />} />

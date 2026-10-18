@@ -405,6 +405,29 @@ button {
   font-weight: 700;
 }
 
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.user-chip img,
+.user-chip .avatar-fallback {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center 12%;
+}
+
+.profile-face {
+  width: 160px;
+  height: 180px;
+  object-fit: contain;
+  display: block;
+  margin: 0.75rem 0 1rem;
+}
+
 .menu-btn {
   display: none;
   min-height: 40px;

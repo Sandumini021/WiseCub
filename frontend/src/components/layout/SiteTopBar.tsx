@@ -1,5 +1,6 @@
-import { Link, NavLink, useLocation } from "react-router-dom";
-import { useDemoChild } from "../../pages/auth/demoSession";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { ChildAvatar } from "../../pages/auth/ChildAvatar";
+import { clearDemoChild, useDemoChild } from "../../pages/auth/demoSession";
 
 const TABS = [
   { to: "/home", label: "Home", icon: "⌂" },
@@ -12,7 +13,14 @@ const TABS = [
 export function SiteTopBar() {
   const child = useDemoChild();
   const location = useLocation();
+  const navigate = useNavigate();
   const onMarket = location.pathname.startsWith("/market");
+  const displayName = child?.name?.trim() || "";
+
+  function onSignOut() {
+    clearDemoChild();
+    navigate("/home");
+  }
 
   return (
     <header className="dash-top">
@@ -44,10 +52,26 @@ export function SiteTopBar() {
           <span className="dash-en" title="English first. Sinhala comes later.">
             EN
           </span>
-          <Link className="dash-user" to={child ? "/profile" : "/login"} title={child?.name ?? "Login"}>
-            <img src="/images/dash/cub-logo.png" alt="" />
-            <span>{child?.name?.trim() || "Guest"}</span>
-          </Link>
+          {displayName ? (
+            <>
+              <Link className="dash-user" to="/profile" title={displayName}>
+                <ChildAvatar avatarId={child?.avatarId} name={displayName} />
+                <span>{displayName}</span>
+              </Link>
+              <button className="dash-signout" type="button" onClick={onSignOut}>
+                Sign out
+              </button>
+            </>
+          ) : (
+            <div className="dash-auth">
+              <Link className="dash-login" to="/login">
+                Login
+              </Link>
+              <Link className="dash-signup" to="/signup">
+                Sign up
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </header>

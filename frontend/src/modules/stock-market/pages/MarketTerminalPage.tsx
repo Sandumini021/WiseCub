@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { flushQueuedEvents, recordMarketEvent } from "../data/behaviourEvents";
+import { CROWD_SCENARIO, DROP_SCENARIO } from "../data/crowdScenarios";
 import { DEMO_COMPANIES, readLesson1Complete } from "../data/demoMarket";
 import {
   concentrationAfter,
@@ -28,11 +30,39 @@ export function MarketTerminalPage() {
   const [side, setSide] = useState<"buy" | "sell">("buy");
   const [shares, setShares] = useState(10);
   const [error, setError] = useState<string | null>(null);
+  const [crowdSeen, setCrowdSeen] = useState(false);
+  const [dropSeen, setDropSeen] = useState(false);
 
   useEffect(() => {
     setUnlocked(readLesson1Complete());
     setBook(readBook());
+    void flushQueuedEvents();
   }, []);
+
+  useEffect(() => {
+    if (!unlocked || crowdSeen) {
+      return;
+    }
+    recordMarketEvent({
+      type: "market_trend_viewed",
+      ticker: CROWD_SCENARIO.ticker,
+      scenarioId: CROWD_SCENARIO.scenarioId,
+    });
+    setCrowdSeen(true);
+  }, [unlocked, crowdSeen]);
+
+  useEffect(() => {
+    if (!unlocked || side !== "sell" || ticker !== DROP_SCENARIO.ticker || dropSeen) {
+      return;
+    }
+    recordMarketEvent({
+      type: "price_drop_observed",
+      ticker: DROP_SCENARIO.ticker,
+      scenarioId: DROP_SCENARIO.scenarioId,
+      changePct: DROP_SCENARIO.changePct,
+    });
+    setDropSeen(true);
+  }, [unlocked, side, ticker, dropSeen]);
 
   const quote = quotes.find((item) => item.ticker === ticker) as Quote;
   const prices = Object.fromEntries(quotes.map((item) => [item.ticker, item.price]));
@@ -65,6 +95,9 @@ export function MarketTerminalPage() {
         price: quote.price,
         concentration: preview.percent,
         cashAfter: preview.cashAfter,
+        owned,
+        crowdScenario: crowdSeen ? CROWD_SCENARIO.scenarioId : undefined,
+        dropScenario: dropSeen && side === "sell" ? DROP_SCENARIO.scenarioId : undefined,
       },
     });
   }
@@ -98,6 +131,17 @@ export function MarketTerminalPage() {
         </Link>
       </div>
 
+      {crowdSeen ? (
+        <p className="warn-box" role="status">
+          {CROWD_SCENARIO.text}
+        </p>
+      ) : null}
+      {side === "sell" && ticker === DROP_SCENARIO.ticker ? (
+        <p className="warn-box" role="status">
+          {DROP_SCENARIO.text}
+        </p>
+      ) : null}
+
       <div className="ticker-bar" role="list">
         {quotes.map((item) => (
           <button
@@ -105,7 +149,10 @@ export function MarketTerminalPage() {
             type="button"
             role="listitem"
             className={`ticker-btn${item.ticker === ticker ? " is-on" : ""}`}
-            onClick={() => setTicker(item.ticker)}
+            onClick={() => {
+              setTicker(item.ticker);
+              recordMarketEvent({ type: "company_viewed", ticker: item.ticker, price: item.price });
+            }}
           >
             {item.ticker} {item.changePct >= 0 ? "▲" : "▼"}
           </button>

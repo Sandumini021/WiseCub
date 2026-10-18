@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { ChildAvatar } from "../../pages/auth/ChildAvatar";
 import { useDemoChild } from "../../pages/auth/demoSession";
 
 type TopBarProps = {
@@ -19,7 +20,10 @@ export function TopBar({ crumb }: TopBarProps) {
         <span className="lang-chip" title="English first. Sinhala comes later.">
           EN
         </span>
-        <span className="user-chip">{label}</span>
+        <span className="user-chip">
+          <ChildAvatar avatarId={child?.avatarId} name={label} />
+          {label}
+        </span>
       </div>
     </header>
   );

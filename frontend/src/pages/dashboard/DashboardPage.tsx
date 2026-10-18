@@ -3,6 +3,7 @@ import { SiteTopBar } from "../../components/layout/SiteTopBar";
 import { readLesson1Complete } from "../../modules/stock-market/data/demoMarket";
 import { readBook } from "../../modules/stock-market/data/demoPortfolio";
 import { buildQuotes } from "../../modules/stock-market/data/syntheticPrices";
+import { ChildAvatar } from "../auth/ChildAvatar";
 import { useDemoChild } from "../auth/demoSession";
 import "../../styles/dashboard-long.css";
 
@@ -106,7 +107,11 @@ export function DashboardPage() {
               </li>
             </ul>
           </aside>
-          <img className="dash-hero-cub" src="/images/dash/cub-hero.png" alt="Cub waving" />
+          {child?.avatarId ? (
+            <ChildAvatar className="dash-hero-cub" avatarId={child.avatarId} name={child.name} alt="" />
+          ) : (
+            <img className="dash-hero-cub" src="/images/dash/cub-hero.png" alt="Cub waving" />
+          )}
         </div>
       </section>
 
@@ -140,7 +145,7 @@ export function DashboardPage() {
         </div>
         <div className="dash-learn-art">
           <img className="dash-scene" src="/images/dash/bg-learn-room.png" alt="" />
-          <img className="dash-portrait" src="/images/dash/child-luna.png" alt="" />
+          <ChildAvatar className="dash-portrait is-avatar" avatarId={child?.avatarId} name={child?.name} />
           <div className="dash-chip-float">Budgeting basics</div>
           <div className="dash-chip-float is-2">Needs vs Wants</div>
           <div className="dash-chip-float is-3">Saving goals</div>
@@ -205,7 +210,7 @@ export function DashboardPage() {
 
       <section className="dash-choice-band">
         <div className="dash-choice-art">
-          <img className="dash-portrait" src="/images/dash/child-sky.png" alt="" />
+          <ChildAvatar className="dash-portrait is-avatar" avatarId={child?.avatarId} name={child?.name} />
           <div className="dash-choice-icons" aria-hidden="true">
             <span>🏠</span>
             <span>🚗</span>
@@ -262,6 +267,7 @@ export function DashboardPage() {
           </Link>
         </div>
         <div className="dash-parent-card">
+          <ChildAvatar className="dash-parent-face" avatarId={child?.avatarId} name={child?.name} />
           <p>
             {child?.name?.trim() || "Demo child"}
             {child?.age ? ` · age ${child.age}` : ""}

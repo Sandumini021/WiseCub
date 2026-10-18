@@ -51,12 +51,39 @@
 }
 
 .dash-brand-face,
-.dash-user img {
+.dash-user img,
+.dash-user .avatar-fallback {
   width: 36px;
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  background: #ffe7b8;
+  object-position: center 12%;
+  background: #eef4ff;
+}
+
+.dash-user .avatar-fallback,
+.user-chip .avatar-fallback,
+.avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #163a8a;
+}
+
+.dash-portrait.is-avatar {
+  object-fit: contain;
+  object-position: center bottom;
+  background: transparent;
+  box-shadow: none;
+}
+
+.dash-parent-face {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
 .dash-nav {
@@ -111,6 +138,44 @@
   color: #163a8a;
   font-weight: 800;
   font-size: 0.88rem;
+}
+
+.dash-auth {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.dash-login,
+.dash-signout {
+  border: 0;
+  background: transparent;
+  color: #163a8a;
+  font-weight: 800;
+  font-size: 0.88rem;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0.35rem 0.55rem;
+  font-family: inherit;
+}
+
+.dash-signup {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 0.95rem;
+  border-radius: 999px;
+  background: #ffe566;
+  color: #163a8a;
+  font-weight: 800;
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+
+.dash-signup:hover,
+.dash-login:hover,
+.dash-signout:hover {
+  filter: brightness(0.97);
 }
 
 .dash-hero-long {

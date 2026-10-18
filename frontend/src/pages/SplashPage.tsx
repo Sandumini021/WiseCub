@@ -8,15 +8,15 @@ export function SplashPage() {
   const navigate = useNavigate();
   const start = useRef<{ x: number; y: number } | null>(null);
 
-  function goHome() {
-    navigate("/home");
+  function goLogin() {
+    navigate("/login");
   }
 
-  function onPointerDown(event: PointerEvent<HTMLAnchorElement>) {
+  function onPointerDown(event: PointerEvent<HTMLElement>) {
     start.current = { x: event.clientX, y: event.clientY };
   }
 
-  function onPointerUp(event: PointerEvent<HTMLAnchorElement>) {
+  function onPointerUp(event: PointerEvent<HTMLElement>) {
     if (!start.current) {
       return;
     }
@@ -25,17 +25,22 @@ export function SplashPage() {
     start.current = null;
     if (Math.abs(dx) >= SWIPE_PX || Math.abs(dy) >= SWIPE_PX) {
       event.preventDefault();
-      goHome();
+      goLogin();
     }
   }
 
   return (
-    <main className="splash">
+    <main className="splash" id="main">
+      <img
+        className="splash-art"
+        src="/images/wisecub-splash.jpg"
+        alt="WiseCub. Cub waves beside the WiseCub logo."
+        draggable={false}
+      />
       <Link
-        id="main"
-        className="splash-stage"
-        to="/home"
-        aria-label="WiseCub. Tap, swipe, or press the yellow arrow to open home."
+        className="splash-go"
+        to="/login"
+        aria-label="Continue to login"
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
         onPointerCancel={() => {
@@ -44,17 +49,10 @@ export function SplashPage() {
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " " || event.key === "ArrowRight") {
             event.preventDefault();
-            goHome();
+            goLogin();
           }
         }}
-      >
-        <img
-          className="splash-art"
-          src="/images/wisecub-splash.jpg"
-          alt=""
-          draggable={false}
-        />
-      </Link>
+      />
     </main>
   );
 }
