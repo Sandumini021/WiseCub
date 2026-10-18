@@ -70,6 +70,7 @@
   min-height: 40px;
   display: inline-flex;
   align-items: center;
+  gap: 0.35rem;
   padding: 0 0.75rem;
   border-radius: 999px;
   text-decoration: none;
@@ -83,6 +84,11 @@
 .dash-nav a.active {
   background: #eef4ff;
   color: #1b3a8a;
+}
+
+.dash-nav a.is-gold {
+  background: #ffe566;
+  color: #163a8a;
 }
 
 .dash-top-right {
