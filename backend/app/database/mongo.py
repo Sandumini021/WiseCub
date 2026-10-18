@@ -41,6 +41,11 @@ async def connect() -> None:
         db = _client[settings.mongodb_db]
         await db.children.create_index("child_id", unique=True)
         await db.accounts.create_index("child_id", unique=True)
+        await db.accounts.create_index(
+            "username",
+            unique=True,
+            sparse=True,
+        )
         await db.module_state.create_index(
             [("child_id", 1), ("module", 1)],
             unique=True,
