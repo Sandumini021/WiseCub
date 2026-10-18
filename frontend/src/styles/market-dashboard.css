@@ -338,6 +338,104 @@
   height: 110px;
 }
 
+.lesson-art {
+  min-height: 110px;
+  display: grid;
+  place-items: center;
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  height: 110px;
+}
+
+.bars i {
+  width: 22px;
+  border-radius: 8px 8px 0 0;
+}
+
+.bars i:nth-child(1) {
+  height: 42%;
+  background: #34d399;
+}
+
+.bars i:nth-child(2) {
+  height: 72%;
+  background: #fbbf24;
+}
+
+.bars i:nth-child(3) {
+  height: 100%;
+  background: #fb7185;
+}
+
+.spread-row {
+  display: flex;
+  gap: 8px;
+}
+
+.spread-row span {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.spread-row span:nth-child(1) {
+  background: #3b82f6;
+}
+
+.spread-row span:nth-child(2) {
+  background: #fbbf24;
+}
+
+.spread-row span:nth-child(3) {
+  background: #34d399;
+}
+
+.spread-row span:nth-child(4) {
+  background: #fb7185;
+}
+
+.coins {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+  height: 110px;
+}
+
+.coins b {
+  width: 20px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #ffe27a, #f5c400);
+}
+
+.coins b:nth-child(1) {
+  height: 28%;
+}
+
+.coins b:nth-child(2) {
+  height: 48%;
+}
+
+.coins b:nth-child(3) {
+  height: 72%;
+}
+
+.coins b:nth-child(4) {
+  height: 100%;
+}
+
+.cub-says .btn-ghost,
+.cub-says .btn-gold {
+  margin: 0.45rem 0.45rem 0 0;
+  display: inline-flex;
+  align-items: center;
+}
+
 .check-options {
   display: flex;
   flex-direction: column;
@@ -572,4 +670,18 @@
   .lesson-story {
     grid-template-columns: 1fr;
   }
+}
+
+.confirm-page label,
+.confirm-page select {
+  display: block;
+  width: min(100%, 28rem);
+  margin: 0.6rem 0 1rem;
+}
+
+.confirm-page select {
+  min-height: 40px;
+  border-radius: 10px;
+  border: 2px solid #e5eaf3;
+  padding: 0.35rem 0.6rem;
 }
