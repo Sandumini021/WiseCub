@@ -2,10 +2,10 @@ import { NavLink } from "react-router-dom";
 
 const mainLinks = [
   { to: "/home", label: "Home", icon: "home" },
-  { to: "/market", label: "Invest\nMarket Floor", icon: "chart" },
-  { to: "/choices", label: "Choices", icon: "choices" },
+  { to: "/market", label: "Market Floor", icon: "chart" },
+  { to: "/choices", label: "Choice Town", icon: "choices" },
   { to: "/missions", label: "Missions", icon: "flag" },
-  { to: "/safety", label: "Safety", icon: "shield" },
+  { to: "/safety", label: "Scam Alley", icon: "shield" },
   { to: "/progress", label: "My Progress", icon: "bars" },
 ] as const;
 

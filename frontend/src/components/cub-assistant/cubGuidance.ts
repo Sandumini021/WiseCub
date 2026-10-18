@@ -6,7 +6,7 @@ export type CubReply = {
 
 export const PAGE_GREETINGS: Record<string, string> = {
   "/": "Hi, I’m Cub. Tap Enter as demo child when you are ready. You can type to me, or tap the mic and speak.",
-  "/home": "Pick a world. I come with you. The Market Floor is open first. Missions, Scam Alley, and Choice Town come next.",
+  "/home": "Hi. This is your long home. The greeting uses the name from login. Tabs open Missions, Market, Safety, and Choice Town.",
   "/market": "Welcome to the Market Floor. This is pretend money only. Lesson 1 is open. Say “start lesson 1”, or ask what a share is.",
   "/market/lessons/1":
     "This is Lesson 1. A share is one slice of a company. Read the pie, then take the quick check. Hear it aloud if you want me to read it.",
@@ -22,6 +22,7 @@ export const PAGE_GREETINGS: Record<string, string> = {
   "/progress": "Progress will show habits, not who made more pretend money. Want the market?",
   "/profile": "Avatar picking will live here soon. I can take you back to the market.",
   "/login": "No password. Type a name if you like, then Get started. I will meet you on the dashboard.",
+  "/signup": "This is practice signup. Cub does not keep real passwords. Fill the form, pick an avatar, then go to the playground.",
 };
 
 export function greetingFor(path: string): string {

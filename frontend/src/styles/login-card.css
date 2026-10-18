@@ -1,0 +1,239 @@
+.login-screen {
+  min-height: 100vh;
+  padding: 1.2rem 1.2rem 6rem;
+  background:
+    radial-gradient(circle at 8% 18%, #7eb6ff 0 70px, transparent 71px),
+    radial-gradient(circle at 92% 88%, #c9b6ff 0 110px, transparent 111px),
+    radial-gradient(circle at 12% 92%, #f7d48a 0 90px, transparent 91px),
+    linear-gradient(180deg, #eef6ff 0%, #f4f7ff 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-screen::after {
+  content: "✈";
+  position: absolute;
+  right: 8%;
+  top: 7%;
+  font-size: 1.6rem;
+  color: #7aa7e8;
+  transform: rotate(28deg);
+  pointer-events: none;
+}
+
+.login-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 0.2rem 0 1.1rem 0.4rem;
+}
+
+.login-card {
+  width: min(28.5rem, 100%);
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 28px;
+  padding: 1.7rem 1.6rem 1.4rem;
+  box-shadow: 0 22px 50px rgba(80, 110, 170, 0.16);
+  text-align: center;
+}
+
+.login-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.login-face {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #ffe7b8;
+  display: grid;
+  place-items: start center;
+}
+
+.login-face svg {
+  margin-top: -4px;
+}
+
+.login-wordmark {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #163a8a;
+}
+
+.login-wordmark span {
+  background: linear-gradient(90deg, #f5b400, #ff7a18);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.login-card h1 {
+  margin: 1.1rem 0 0.25rem;
+  color: #163a8a;
+  font-size: 1.85rem;
+}
+
+.login-lead {
+  margin: 0 0 1.2rem;
+  color: #7b8798;
+}
+
+.login-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  text-align: left;
+}
+
+.login-field {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 48px;
+  border: 1.5px solid #e6ebf3;
+  border-radius: 14px;
+  padding: 0 0.75rem;
+  background: #fff;
+}
+
+.login-field input {
+  flex: 1;
+  border: 0;
+  min-height: 44px;
+  font: inherit;
+  background: transparent;
+}
+
+.login-field input:focus {
+  outline: none;
+}
+
+.login-field:focus-within {
+  border-color: #f5c400;
+}
+
+.login-ico {
+  color: #9aa6b8;
+  width: 1.2rem;
+  text-align: center;
+}
+
+.login-eye {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: #9aa6b8;
+  min-height: 40px;
+}
+
+.login-row-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.login-remember {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #5b6573;
+}
+
+.login-text-btn {
+  border: 0;
+  background: transparent;
+  color: #2f6bff;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  text-decoration: none;
+}
+
+.login-submit {
+  margin-top: 0.35rem;
+  min-height: 50px;
+  border: 0;
+  border-radius: 999px;
+  background: #ffd54a;
+  color: #1b2744;
+  font-weight: 800;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+
+.login-submit:hover {
+  filter: brightness(0.97);
+}
+
+.login-or {
+  margin: 1rem 0 0.7rem;
+  color: #9aa6b8;
+  font-size: 0.88rem;
+}
+
+.login-social {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.login-social button {
+  min-height: 44px;
+  border: 1.5px solid #e6ebf3;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+}
+
+.g-icon {
+  color: #ea4335;
+  font-weight: 800;
+}
+
+.ms-icon {
+  color: #00a4ef;
+}
+
+.ap-icon {
+  font-size: 1.05rem;
+}
+
+.login-signup {
+  margin: 1.05rem 0 0.35rem;
+  color: #5b6573;
+}
+
+.login-note {
+  margin: 0.35rem 0 0;
+  color: #9aa6b8;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 640px) {
+  .login-social {
+    grid-template-columns: 1fr;
+  }
+
+  .login-card {
+    padding: 1.4rem 1.1rem 1.2rem;
+  }
+}

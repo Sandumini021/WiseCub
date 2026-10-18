@@ -11,27 +11,35 @@ export const DEMO_COMPANIES = [
 export const LESSONS = [
   {
     n: 1,
-    title: "What a share is",
+    title: "What is a Share?",
+    blurb: "Learn the basics of shares and companies.",
     status: "open" as const,
     duration: "4 min",
+    icon: "pie",
   },
   {
     n: 2,
-    title: "Risk and return",
+    title: "Risk and Return",
+    blurb: "Understand how prices go up and down.",
     status: "locked" as const,
     duration: "5 min",
+    icon: "bars",
   },
   {
     n: 3,
-    title: "Spreading money",
+    title: "Spreading Money",
+    blurb: "Learn why diversification matters.",
     status: "locked" as const,
     duration: "5 min",
+    icon: "trend",
   },
   {
     n: 4,
-    title: "Compounding growth",
+    title: "Compounding",
+    blurb: "See how small gains can grow big over time.",
     status: "locked" as const,
     duration: "6 min",
+    icon: "coins",
   },
 ];
 

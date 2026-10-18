@@ -8,9 +8,10 @@ import { MarketTerminalPage } from "../modules/stock-market/pages/MarketTerminal
 import { PortfolioPage } from "../modules/stock-market/pages/PortfolioPage";
 import { ShareLessonPage } from "../modules/stock-market/pages/ShareLessonPage";
 import { TradeConfirmationPage } from "../modules/stock-market/pages/TradeConfirmationPage";
+import { CreateAccountPage } from "../pages/auth/CreateAccountPage";
 import { DemoLoginPage } from "../pages/auth/DemoLoginPage";
 import { DashboardPage } from "../pages/dashboard/DashboardPage";
-import { LandingPage } from "../pages/LandingPage";
+import { SplashPage } from "../pages/SplashPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
 
 function ProgressPage() {
@@ -28,11 +29,13 @@ function ProgressPage() {
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<SplashPage />} />
+      <Route path="/welcome" element={<SplashPage />} />
       <Route path="/login" element={<DemoLoginPage />} />
+      <Route path="/signup" element={<CreateAccountPage />} />
+      <Route path="/home" element={<DashboardPage />} />
+      <Route path="/market" element={<MarketHomePage />} />
       <Route element={<AppLayout />}>
-        <Route path="/home" element={<DashboardPage />} />
-        <Route path="/market" element={<MarketHomePage />} />
         <Route path="/market/lessons/1" element={<ShareLessonPage />} />
         <Route path="/market/terminal" element={<MarketTerminalPage />} />
         <Route path="/market/confirm" element={<TradeConfirmationPage />} />
