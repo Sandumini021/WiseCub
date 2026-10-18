@@ -1,3 +1,5 @@
+import { childId } from "../../../pages/auth/demoSession";
+import { loadModuleState, saveModuleState } from "../../../services/apiClient";
 import { PRACTICE_CASH_LKR } from "./demoMarket";
 import type { Ticker } from "./syntheticPrices";
 
@@ -46,6 +48,26 @@ export function readBook(): DemoBook {
 }
 
 export function writeBook(book: DemoBook) {
+  window.localStorage.setItem(KEY, JSON.stringify(book));
+  void saveModuleState(childId(), "market", book).catch(() => {
+    // Keep trading if the API or Mongo is offline.
+  });
+}
+
+export async function hydrateBookFromApi(): Promise<DemoBook> {
+  try {
+    const remote = await loadModuleState<DemoBook>(childId(), "market");
+    if (remote.data && typeof remote.data.cash === "number") {
+      writeBookLocal(remote.data);
+      return remote.data;
+    }
+  } catch {
+    // Fall back to the device copy.
+  }
+  return readBook();
+}
+
+function writeBookLocal(book: DemoBook) {
   window.localStorage.setItem(KEY, JSON.stringify(book));
 }
 
