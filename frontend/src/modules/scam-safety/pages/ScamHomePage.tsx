@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { SiteTopBar } from "../../../components/layout/SiteTopBar";
+import "../../../styles/dashboard-long.css";
+import "../../../styles/scam-safety.css";
 import { Button } from "../../../components/common/Button";
 import { Card } from "../../../components/common/Card";
 import { getOrCreateSessionId } from "../services/researchSession";
@@ -362,7 +366,7 @@ export function ScamHomePage() {
   const [completedCategories, setCompletedCategories] = useState<CategoryId[]>(
     () => loadScamProgress().completedCategories
   );
-  const [, setCategoryScores] = useState<Partial<Record<CategoryId, number>>>(
+  const [categoryScores, setCategoryScores] = useState<Partial<Record<CategoryId, number>>>(
     () => loadScamProgress().categoryScores
   );
   const [activeCategory, setActiveCategory] = useState<CategoryId | null>(null);
@@ -607,177 +611,307 @@ export function ScamHomePage() {
     setView("cat-learn");
   }
 
+  function renderShell(content: React.ReactNode) {
+    return (
+      <div className="safety-shell">
+        <SiteTopBar />
+        <div className="safety-body">
+          <aside className="safety-side" aria-label="Scam safety navigation">
+            <div className="safety-side-header">Stay Safe</div>
+            <button
+              type="button"
+              className={view === "home" ? "is-on" : undefined}
+              onClick={() => setView("home")}
+            >
+              <span aria-hidden="true">🛡️</span>
+              Scam Safety Home
+            </button>
+            <button
+              type="button"
+              className={
+                view === "cat-learn" || view === "cat-practice" || view === "cat-results"
+                  ? "is-on"
+                  : undefined
+              }
+              onClick={() => {
+                if (activeCategory) {
+                  setView("cat-learn");
+                } else {
+                  handleOpenCategory("phishing");
+                }
+              }}
+            >
+              <span aria-hidden="true">📚</span>
+              Six Levels
+            </button>
+            <button
+              type="button"
+              className={view === "practice" || view === "results" ? "is-on" : undefined}
+              onClick={handleStartPractice}
+            >
+              <span aria-hidden="true">🎯</span>
+              Quick Practice
+            </button>
+            <button
+              type="button"
+              className={view === "drill" ? "is-on" : undefined}
+              onClick={handleOpenDrill}
+            >
+              <span aria-hidden="true">✉️</span>
+              Safety Drill
+            </button>
+            <Link to="/student/dashboard">
+              <span aria-hidden="true">⌂</span>
+              Student Home
+            </Link>
+          </aside>
+
+          <main className="safety-main" id="main">
+            {content}
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   // ══════════════════════════════════════════════════════════════════
   //  RENDER — HOME SCREEN
   // ══════════════════════════════════════════════════════════════════
   if (view === "home") {
     const allComplete = CATEGORY_ORDER.every((id) => completedCategories.includes(id));
 
-    return (
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "1.5rem" }}>
-        <p className="muted" style={{ marginBottom: "0.5rem" }}>Stay safe · Scam Alley</p>
-        <h1 style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>Scam safety practice</h1>
-        <p style={{ marginBottom: "1.5rem" }}>
-          Welcome! Learn to recognise warning signs in six scam categories.
-        </p>
-
+    return renderShell(
+      <>
         {/* All categories complete banner */}
         {allComplete && (
           <div
             style={{
               background: "#eaf8ef",
-              border: "1px solid #9fd3b0",
-              borderRadius: "12px",
-              padding: "1rem 1.25rem",
-              marginBottom: "1.5rem",
+              border: "2px solid #86efac",
+              borderRadius: "18px",
+              padding: "1.1rem 1.4rem",
+              marginBottom: "1.25rem",
+              boxShadow: "0 8px 24px rgba(34, 197, 94, 0.12)",
             }}
           >
-            <p style={{ margin: 0, fontWeight: "700", fontSize: "1.1rem" }}>
+            <p style={{ margin: 0, fontWeight: "800", fontSize: "1.15rem", color: "#166534" }}>
               🏆 You completed all six Scam Safety levels!
             </p>
-            <p style={{ margin: "0.35rem 0 0" }}>
-              Amazing work! You can revisit any category below to review your knowledge.
+            <p style={{ margin: "0.35rem 0 0", color: "#15803d", fontSize: "0.95rem" }}>
+              Amazing work Detective! You can revisit any level below to review your skills and keep your coins safe.
             </p>
           </div>
         )}
 
-        {/* Six category cards with lock/unlock/complete states */}
-        <section
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: "1.25rem",
-            marginBottom: "2rem",
-          }}
-        >
-          {CATEGORY_META.map((cat) => {
-            const status = getCategoryStatus(cat.id, completedCategories);
-            const isLocked = status === "locked";
-            const isDone = status === "completed";
-            const isAvail = status === "available";
+        {/* Hero Section */}
+        <section className="safety-hero" aria-labelledby="safety-hero-title">
+          <div className="safety-hero-art">
+            <img src="/images/cub-wave.png" alt="Detective Cub" />
+            <p className="safety-speech">
+              Let’s spot tricky scams and protect your coins together!
+            </p>
+          </div>
+          <div className="safety-hero-copy">
+            <h1 id="safety-hero-title">
+              Spot the trick.
+              <br />
+              Save your coins. No regrets.
+            </h1>
+            <p>
+              Learn to spot fake emails, tricky text messages, and suspicious offers with Detective Cub.
+              Pass each level with 80% to unlock the next level and protect your virtual wallet!
+            </p>
+          </div>
+          <aside className="safety-wallet">
+            <div className="safety-wallet-head">
+              <strong>Your Safety Wallet</strong>
+              <span>Virtual Coins</span>
+            </div>
+            <p className="safety-cash">
+              🛡️ Rs {walletBalance}
+            </p>
+            <dl>
+              <div>
+                <dt>Levels Completed</dt>
+                <dd>{completedCategories.length} of 6</dd>
+              </div>
+              <div>
+                <dt>Safety Shield</dt>
+                <dd>
+                  {lifetimeTotal === 0
+                    ? "100%"
+                    : `${Math.round((lifetimeCorrect / lifetimeTotal) * 100)}%`}
+                </dd>
+              </div>
+              <div>
+                <dt>Coins Protected</dt>
+                <dd>Rs {walletBalance}</dd>
+              </div>
+            </dl>
+            <button
+              type="button"
+              className="safety-start-btn"
+              onClick={handleStartPractice}
+            >
+              Start Scam Alley Practice →
+            </button>
+          </aside>
+        </section>
 
-            return (
-              <div
-                key={cat.id}
-                onClick={() => !isLocked && handleOpenCategory(cat.id)}
-                role={isLocked ? undefined : "button"}
-                tabIndex={isLocked ? undefined : 0}
-                onKeyDown={(e) => {
-                  if (!isLocked && (e.key === "Enter" || e.key === " ")) {
-                    handleOpenCategory(cat.id);
-                  }
-                }}
-                style={{
-                  borderRadius: "12px",
-                  border: `2px solid ${
-                    isDone ? "#9fd3b0" : isAvail ? "#3b82f6" : "#e2e8f0"
-                  }`,
-                  background: isDone
-                    ? "#f0fdf4"
-                    : isAvail
-                    ? "#f0f8ff"
-                    : "#f8fafc",
-                  padding: "1.1rem",
-                  cursor: isLocked ? "default" : "pointer",
-                  opacity: isLocked ? 0.65 : 1,
-                  transition: "box-shadow 0.15s",
-                  position: "relative",
-                }}
-                aria-label={
-                  isLocked
-                    ? `${cat.label} — locked`
-                    : isDone
-                    ? `${cat.label} — completed`
-                    : `${cat.label} — available, start learning`
-                }
-              >
-                {/* Status badge */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "0.65rem",
-                    right: "0.75rem",
-                    fontSize: "1.1rem",
+        {/* Six Lessons Container */}
+        <section className="safety-lessons" aria-labelledby="lessons-title">
+          <div className="safety-lessons-head">
+            <h2 id="lessons-title">Six Lessons — Unlock Scam Alley</h2>
+            <p>Complete each lesson with 80% or more to unlock the next. Pass all six to master scam safety!</p>
+          </div>
+          <ol className="safety-lessons-grid">
+            {CATEGORY_META.map((cat, index) => {
+              const status = getCategoryStatus(cat.id, completedCategories);
+              const isLocked = status === "locked";
+              const isDone = status === "completed";
+              const isAvail = status === "available";
+              const score = categoryScores[cat.id];
+
+              return (
+                <li
+                  key={cat.id}
+                  className={`safety-level-item ${
+                    isDone ? "is-completed" : isAvail ? "is-open" : "is-locked"
+                  }`}
+                  onClick={() => !isLocked && handleOpenCategory(cat.id)}
+                  role={isLocked ? undefined : "button"}
+                  tabIndex={isLocked ? undefined : 0}
+                  onKeyDown={(e) => {
+                    if (!isLocked && (e.key === "Enter" || e.key === " ")) {
+                      handleOpenCategory(cat.id);
+                    }
                   }}
+                  style={{ cursor: isLocked ? "default" : "pointer" }}
                 >
-                  {isDone ? "✅" : isLocked ? "🔒" : "▶️"}
-                </div>
+                  <div className="safety-level-top">
+                    <span className="safety-level-num">{index + 1}</span>
+                    {isDone && (
+                      <span className="safety-level-tag tag-passed">
+                        Passed {score ? `(${score}%)` : "✓"}
+                      </span>
+                    )}
+                    {isAvail && !isDone && (
+                      <span className="safety-level-tag tag-open">
+                        Ready to Learn
+                      </span>
+                    )}
+                    {isLocked && (
+                      <span className="safety-level-tag tag-locked">
+                        Locked
+                      </span>
+                    )}
+                  </div>
 
-                <p style={{ fontSize: "1.5rem", margin: "0 0 0.4rem" }}>
-                  {cat.icon}
-                </p>
-                <p style={{ fontWeight: "700", margin: "0 0 0.3rem" }}>
-                  {cat.label}
-                </p>
-                <p
-                  style={{
-                    margin: "0 0 0.5rem",
-                    fontSize: "0.88rem",
-                    color: "#475569",
-                  }}
-                >
-                  {isLocked ? cat.unlockHint : cat.description}
-                </p>
+                  <h3 className="safety-level-title">
+                    <span>{cat.icon}</span> {cat.label}
+                  </h3>
 
-                {isDone && (
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: "0.8rem",
-                      color: "#16a34a",
-                      fontWeight: "600",
-                    }}
-                  >
-                    Completed ✓
+                  <p className="safety-level-desc">
+                    {isLocked ? cat.unlockHint : cat.description}
                   </p>
-                )}
-                {isAvail && !isDone && (
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: "0.8rem",
-                      color: "#1d4ed8",
-                      fontWeight: "600",
-                    }}
-                  >
-                    Tap to start →
+
+                  {isLocked ? (
+                    <div className="safety-level-locked">
+                      <span>🔒</span> Locked level
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className={`safety-level-btn ${isDone ? "btn-completed" : ""}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenCategory(cat.id);
+                      }}
+                    >
+                      {isDone ? "Review Lesson" : "Start Lesson"} →
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+
+        {/* Bottom 3-Card Grid */}
+        <div className="safety-grid">
+          <section className="safety-card" aria-labelledby="rules-title">
+            <div className="safety-card-head">
+              <h2 id="rules-title">🔍 Detective Cub's 4 Rules</h2>
+            </div>
+            <ul className="safety-rule-list">
+              <li className="safety-rule-item">
+                <span className="safety-rule-icon">1</span>
+                <div>
+                  <strong>Check URLs & Senders:</strong> Scammers use lookalike links that differ slightly from real brands.
+                </div>
+              </li>
+              <li className="safety-rule-item">
+                <span className="safety-rule-icon">2</span>
+                <div>
+                  <strong>Never Share Secret Codes:</strong> OTPs and passwords are for you alone. Real banks never ask for them!
+                </div>
+              </li>
+              <li className="safety-rule-item">
+                <span className="safety-rule-icon">3</span>
+                <div>
+                  <strong>Beware of Fake Urgency:</strong> Messages saying "Act in 10 minutes or lose account" are trying to rush you.
+                </div>
+              </li>
+              <li className="safety-rule-item">
+                <span className="safety-rule-icon">4</span>
+                <div>
+                  <strong>Ask a Trusted Adult:</strong> When in doubt, ask a parent or teacher before clicking anything.
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <section className="safety-card" aria-labelledby="shield-title">
+            <div className="safety-card-head">
+              <h2 id="shield-title">🛡️ Shield Score & Mastery</h2>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <div style={{ background: "#f8fafc", borderRadius: "14px", padding: "0.85rem 1rem", border: "1px solid #e2e8f0" }}>
+                <p style={{ margin: 0, fontWeight: "700", color: "#1e293b", fontSize: "0.95rem" }}>
+                  Lifetime Shield: {lifetimeTotal === 0 ? "Not assessed yet" : `${Math.round((lifetimeCorrect / lifetimeTotal) * 100)}%`}
+                </p>
+                {lifetimeTotal > 0 && (
+                  <p style={{ margin: "0.25rem 0 0", fontSize: "0.84rem", color: "#64748b" }}>
+                    {lifetimeCorrect} correct out of {lifetimeTotal} answered across all practice rounds
                   </p>
                 )}
               </div>
-            );
-          })}
-        </section>
+              <p style={{ margin: 0, fontSize: "0.86rem", color: "#64748b", lineHeight: 1.5 }}>
+                Score <strong>80% or more</strong> in each lesson quiz to unlock the next level and protect your virtual coins.
+              </p>
+              <p style={{ margin: 0, fontSize: "0.78rem", color: "#94a3b8" }}>
+                (Practice indicator only — not a formal assessment)
+              </p>
+            </div>
+          </section>
 
-        {/* Lifetime Shield Score */}
-        <section
-          style={{
-            background: "#f0f8ff",
-            border: "1px solid #cce4ff",
-            borderRadius: "12px",
-            padding: "1rem",
-            marginBottom: "1.5rem",
-          }}
-        >
-          <p style={{ margin: 0, fontWeight: "600" }}>
-            Scam Safety Shield Score:{" "}
-            {lifetimeTotal === 0
-              ? "Not assessed yet - complete a practice round to see your score"
-              : `${Math.round((lifetimeCorrect / lifetimeTotal) * 100)}%`}
-          </p>
-          {lifetimeTotal > 0 && (
-            <p style={{ marginTop: "0.25rem" }}>
-              {lifetimeCorrect} correct out of {lifetimeTotal} answered across all rounds
-            </p>
-          )}
-          <p className="muted" style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
-            (Practice indicator only - not a formal assessment)
-          </p>
-        </section>
-
-        <Button variant="primary" onClick={handleStartPractice} style={{ width: "100%" }}>
-          Start practice scenario
-        </Button>
-      </div>
+          <section className="safety-card safety-cub-tip-card" aria-labelledby="tip-title">
+            <div className="safety-card-head">
+              <h2 id="tip-title">🐾 Cub's Tip</h2>
+            </div>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
+              <img
+                src="/images/dash/cub-detective.png"
+                alt="Cub Detective"
+                className="safety-cub-avatar"
+              />
+              <p style={{ margin: 0, fontSize: "0.86rem", color: "#334155", lineHeight: 1.5 }}>
+                "Scammers try to create excitement or panic to make you act fast. Take a deep breath, look for clues, and always protect your personal details!"
+              </p>
+            </div>
+          </section>
+        </div>
+      </>
     );
   }
 
@@ -786,22 +920,37 @@ export function ScamHomePage() {
   // ══════════════════════════════════════════════════════════════════
   if (view === "cat-learn") {
     if (activeCategory !== "phishing" && activeCategory !== "sms") {
-      return (
-        <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
-          <p className="muted">Stay safe · Scam Alley</p>
-          <h1>
-            {CATEGORY_META.find((c) => c.id === activeCategory)?.icon}{" "}
-            {CATEGORY_META.find((c) => c.id === activeCategory)?.label}
-          </h1>
-          <Card title="Coming soon">
-            <p>
-              This level's lesson content is being prepared. Check back soon! You can
-              return to Scam Safety Home and try a different level.
-            </p>
-            <Button variant="secondary" onClick={() => setView("home")}>
+      return renderShell(
+        <div className="safety-inner-container">
+          <div className="safety-main-card">
+            <div className="safety-top-nav">
+              <button
+                type="button"
+                className="safety-back-link"
+                onClick={() => setView("home")}
+              >
+                ← Back to Scam Safety Home
+              </button>
+            </div>
+            <h1 style={{ fontSize: "1.75rem", color: "#163a8a", margin: "0.5rem 0" }}>
+              {CATEGORY_META.find((c) => c.id === activeCategory)?.icon}{" "}
+              {CATEGORY_META.find((c) => c.id === activeCategory)?.label}
+            </h1>
+            <div style={{ background: "#f8fafc", borderRadius: "16px", padding: "1.5rem", border: "1px solid #e2e8f0", margin: "1rem 0" }}>
+              <p style={{ margin: 0, fontSize: "1rem", color: "#475569", lineHeight: 1.6 }}>
+                This level's lesson content is currently being prepared. Check back soon! You can
+                return to Scam Safety Home to practice an unlocked level.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="safety-start-btn"
+              onClick={() => setView("home")}
+              style={{ width: "auto", padding: "0 1.5rem" }}
+            >
               Back to Scam Safety Home
-            </Button>
-          </Card>
+            </button>
+          </div>
         </div>
       );
     }
@@ -811,72 +960,113 @@ export function ScamHomePage() {
     const section = sections[lessonSectionIndex] ?? sections[0];
     const isLastSection = lessonSectionIndex === sections.length - 1;
 
-    return (
-      <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
-        <p className="muted">Stay safe · Scam Alley · {catMeta?.label ?? "Lesson"}</p>
-        <h1 style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}>
-          {catMeta?.icon} {catMeta?.label} — Learn
-        </h1>
-        <p style={{ marginBottom: "1.25rem", color: "#64748b", fontSize: "0.9rem" }}>
-          Section {lessonSectionIndex + 1} of {sections.length}
-        </p>
+    return renderShell(
+      <div className="safety-inner-container">
+        <div className="safety-main-card">
+          <div className="safety-top-nav">
+            <button
+              type="button"
+              className="safety-back-link"
+              onClick={() => setView("home")}
+            >
+              ← Back to Scam Safety Home
+            </button>
+            <span className="safety-badge-pill">
+              {catMeta?.icon} {catMeta?.label}
+            </span>
+          </div>
 
-        {/* Section progress bar */}
-        <div
-          style={{
-            height: "6px",
-            background: "#e5e7eb",
-            borderRadius: "999px",
-            marginBottom: "1.5rem",
-            overflow: "hidden",
-          }}
-        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.35rem" }}>
+            <h1 style={{ fontSize: "1.65rem", fontWeight: "800", color: "#163a8a", margin: 0 }}>
+              {section.heading}
+            </h1>
+            <span style={{ fontSize: "0.88rem", fontWeight: "700", color: "#64748b" }}>
+              Step {lessonSectionIndex + 1} of {sections.length}
+            </span>
+          </div>
+
+          {/* Section progress bar */}
+          <div className="safety-progress-bar-bg">
+            <div
+              className="safety-progress-bar-fill"
+              style={{ width: `${((lessonSectionIndex + 1) / sections.length) * 100}%` }}
+            />
+          </div>
+
+          {/* Mascot note */}
           <div
             style={{
-              height: "100%",
-              width: `${((lessonSectionIndex + 1) / sections.length) * 100}%`,
-              background: "#3b82f6",
-              borderRadius: "999px",
-              transition: "width 0.3s ease",
+              background: "#eff6ff",
+              border: "1.5px solid #bfdbfe",
+              borderRadius: "16px",
+              padding: "0.85rem 1.1rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              marginBottom: "1.5rem",
             }}
-          />
-        </div>
+          >
+            <img
+              src="/images/dash/cub-logo.png"
+              alt="Cub Helper"
+              style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#ffffff" }}
+            />
+            <p style={{ margin: 0, fontSize: "0.88rem", color: "#1e40af", fontWeight: "600", lineHeight: 1.4 }}>
+              Detective Cub tip: Read this lesson carefully to spot the clues before starting the practice quiz!
+            </p>
+          </div>
 
-        <Card title={section.heading}>
-          <p style={{ lineHeight: "1.7", fontSize: "1rem" }}>{section.body}</p>
-        </Card>
+          <div
+            style={{
+              fontSize: "1.02rem",
+              lineHeight: "1.75",
+              color: "#334155",
+              background: "#f8fafc",
+              borderRadius: "18px",
+              padding: "1.5rem",
+              border: "1px solid #e2e8f0",
+              marginBottom: "1.75rem",
+            }}
+          >
+            {section.body}
+          </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: "0.75rem",
-            flexWrap: "wrap",
-            marginTop: "1.25rem",
-          }}
-        >
-          {lessonSectionIndex > 0 && (
-            <Button
-              variant="secondary"
-              onClick={() => setLessonSectionIndex((prev) => prev - 1)}
-            >
-              ← Previous
-            </Button>
-          )}
-          {!isLastSection ? (
-            <Button
-              variant="primary"
-              onClick={() => setLessonSectionIndex((prev) => prev + 1)}
-            >
-              Next →
-            </Button>
-          ) : (
-            <Button variant="primary" onClick={handleStartCategoryPractice}>
-              Start practice ▶
-            </Button>
-          )}
-          <Button variant="secondary" onClick={() => setView("home")}>
-            Back to Home
-          </Button>
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              {lessonSectionIndex > 0 && (
+                <button
+                  type="button"
+                  className="safety-back-link"
+                  onClick={() => setLessonSectionIndex((prev) => prev - 1)}
+                  style={{ minHeight: "42px", padding: "0 1.25rem", fontSize: "0.92rem" }}
+                >
+                  ← Previous Step
+                </button>
+              )}
+            </div>
+
+            <div style={{ display: "flex", gap: "0.75rem" }}>
+              {!isLastSection ? (
+                <button
+                  type="button"
+                  className="safety-start-btn"
+                  onClick={() => setLessonSectionIndex((prev) => prev + 1)}
+                  style={{ minHeight: "42px", padding: "0 1.5rem", width: "auto" }}
+                >
+                  Next Step →
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="safety-start-btn"
+                  onClick={handleStartCategoryPractice}
+                  style={{ minHeight: "42px", padding: "0 1.5rem", width: "auto" }}
+                >
+                  Start practice ▶
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -887,11 +1077,19 @@ export function ScamHomePage() {
   // ══════════════════════════════════════════════════════════════════
   if (view === "cat-practice") {
     if (phishingCurrentScenario === null) {
-      return (
-        <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
-          <p className="muted">Stay safe · Scam Alley · Phishing emails</p>
-          <p>Loading practice scenario…</p>
-          <Button variant="secondary" onClick={() => setView("home")}>Back to Home</Button>
+      return renderShell(
+        <div className="safety-inner-container">
+          <div className="safety-main-card">
+            <p className="muted">Stay safe · Scam Alley · Practice</p>
+            <p>Loading practice scenario…</p>
+            <button
+              type="button"
+              className="safety-back-link"
+              onClick={() => setView("home")}
+            >
+              Back to Home
+            </button>
+          </div>
         </div>
       );
     }
@@ -907,51 +1105,38 @@ export function ScamHomePage() {
     const catMeta = CATEGORY_META.find((c) => c.id === activeCategory);
     const catLabel = catMeta?.label ?? "Practice";
 
-    return (
-      <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
-        <p className="muted">Stay safe · Scam Alley · {catLabel}</p>
-        <h1 style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}>
-          {catMeta?.icon} {catLabel} — Practice
-        </h1>
+    return renderShell(
+      <div className="safety-inner-container">
+        <div className="safety-main-card">
+          <div className="safety-top-nav">
+            <button
+              type="button"
+              className="safety-back-link"
+              onClick={() => setView("home")}
+            >
+              ← Exit Practice
+            </button>
+            <span className="safety-badge-pill">
+              {catMeta?.icon} {catLabel}
+            </span>
+          </div>
 
-        {/* Adaptive practice note */}
-        <div
-          style={{
-            background: "#f0f8ff",
-            border: "1px solid #cce4ff",
-            borderRadius: "8px",
-            padding: "0.5rem 0.85rem",
-            marginBottom: "1rem",
-            fontSize: "0.85rem",
-            color: "#1d4ed8",
-          }}
-        >
-          Adaptive practice based on your answers — the next question is chosen to match your learning needs.
-        </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.35rem" }}>
+            <h1 style={{ fontSize: "1.65rem", fontWeight: "800", color: "#163a8a", margin: 0 }}>
+              Question {Math.min(phishingTotal + 1, PHISHING_MAX_SCENARIOS)} of {PHISHING_MAX_SCENARIOS}
+            </h1>
+            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: "#64748b" }}>
+              Adaptive Practice
+            </span>
+          </div>
 
-        {/* Progress */}
-        <p style={{ marginBottom: "0.25rem", fontWeight: "600", color: "#555" }}>
-          Question {Math.min(phishingTotal + 1, PHISHING_MAX_SCENARIOS)} of {PHISHING_MAX_SCENARIOS}
-        </p>
-        <div
-          style={{
-            height: "6px",
-            background: "#e5e7eb",
-            borderRadius: "999px",
-            marginBottom: "1.25rem",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              height: "100%",
-              width: `${(phishingTotal / PHISHING_MAX_SCENARIOS) * 100}%`,
-              background: "#3b82f6",
-              borderRadius: "999px",
-              transition: "width 0.3s ease",
-            }}
-          />
-        </div>
+          {/* Section progress bar */}
+          <div className="safety-progress-bar-bg">
+            <div
+              className="safety-progress-bar-fill"
+              style={{ width: `${(phishingTotal / PHISHING_MAX_SCENARIOS) * 100}%` }}
+            />
+          </div>
 
         {/* Simulated scenario card (SMS or Email) */}
         <Card
@@ -1171,27 +1356,32 @@ export function ScamHomePage() {
           )}
 
           {pAnswered && (
-            <div style={{ marginTop: "1rem" }}>
+            <div style={{ marginTop: "1.25rem" }}>
               {!isLastPractice ? (
-                <Button variant="secondary" onClick={handlePhishingNext}>
+                <button
+                  type="button"
+                  className="safety-start-btn"
+                  onClick={handlePhishingNext}
+                  style={{ width: "auto", padding: "0 1.75rem", minHeight: "44px" }}
+                >
                   Next question →
-                </Button>
+                </button>
               ) : (
-                <Button variant="primary" onClick={handleFinishPhishingPractice}>
-                  View my results
-                </Button>
+                <button
+                  type="button"
+                  className="safety-start-btn"
+                  onClick={handleFinishPhishingPractice}
+                  style={{ width: "auto", padding: "0 1.75rem", minHeight: "44px" }}
+                >
+                  View my results 🏆
+                </button>
               )}
             </div>
           )}
         </Card>
-
-        <div style={{ marginTop: "1rem" }}>
-          <Button variant="secondary" onClick={() => setView("home")}>
-            Back to Home
-          </Button>
-        </div>
       </div>
-    );
+    </div>
+  );
   }
 
   // ══════════════════════════════════════════════════════════════════
@@ -1204,83 +1394,115 @@ export function ScamHomePage() {
     const catLabel =
       CATEGORY_META.find((c) => c.id === activeCategory)?.label ?? "Category";
 
-    return (
-      <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
-        <p className="muted">Stay safe · Scam Alley · {catLabel}</p>
-        <h1 style={{ fontSize: "1.9rem", marginBottom: "1rem" }}>
-          {passed ? "🎉 Level complete!" : "📝 Practice round complete"}
-        </h1>
-
-        <Card title="Your results">
-          <div style={{ textAlign: "center", padding: "0.5rem 0 1.25rem" }}>
-            <p
-              style={{
-                fontSize: "3rem",
-                fontWeight: "800",
-                margin: 0,
-                color: passed ? "#16a34a" : "#b91c1c",
-              }}
+    return renderShell(
+      <div className="safety-inner-container">
+        <div className="safety-main-card">
+          <div className="safety-top-nav">
+            <button
+              type="button"
+              className="safety-back-link"
+              onClick={() => setView("home")}
             >
-              {pct}%
-            </p>
-            <p style={{ fontSize: "1.05rem", marginTop: "0.25rem" }}>
-              {phishingCorrect} correct out of {phishingTotal} questions
-            </p>
-            <p
-              style={{
-                marginTop: "0.35rem",
-                fontSize: "0.9rem",
-                color: "#64748b",
-              }}
-            >
-              Mastery threshold: {PASSING_PERCENTAGE}%
-            </p>
+              ← Back to Scam Safety Home
+            </button>
+            <span className="safety-badge-pill">
+              {catLabel} Results
+            </span>
           </div>
 
-          {/* Pass / Fail message */}
           <div
             style={{
-              background: passed ? "#eaf8ef" : "#fff0f0",
-              border: `1px solid ${passed ? "#9fd3b0" : "#e3b5b5"}`,
-              borderRadius: "10px",
-              padding: "0.85rem 1rem",
-              marginBottom: "1.25rem",
+              textAlign: "center",
+              padding: "1.25rem 1rem",
+              background: passed ? "linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%)" : "linear-gradient(180deg, #fffbeb 0%, #ffffff 100%)",
+              borderRadius: "20px",
+              border: `2px solid ${passed ? "#86efac" : "#fde68a"}`,
+              marginBottom: "1.5rem",
+              position: "relative",
+            }}
+          >
+            <img
+              src="/images/cub-wave.png"
+              alt="Cub celebrating"
+              style={{
+                width: "120px",
+                height: "150px",
+                objectFit: "contain",
+                margin: "0 auto 0.5rem",
+                display: "block",
+                filter: "drop-shadow(0 10px 16px rgba(40, 70, 110, 0.15))",
+              }}
+            />
+            <h1 style={{ fontSize: "1.85rem", fontWeight: "800", color: "#163a8a", margin: "0 0 0.5rem" }}>
+              {passed ? "🎉 Fantastic Job, Detective!" : "💡 Great Practice Effort!"}
+            </h1>
+            <p style={{ fontSize: "2.8rem", fontWeight: "800", margin: "0.25rem 0", color: passed ? "#16a34a" : "#d97706" }}>
+              {pct}%
+            </p>
+            <p style={{ fontSize: "1.05rem", fontWeight: "700", color: "#334155", margin: "0 0 0.25rem" }}>
+              {phishingCorrect} of {phishingTotal} questions answered correctly
+            </p>
+            <span
+              style={{
+                display: "inline-block",
+                fontSize: "0.84rem",
+                color: "#64748b",
+                background: "#ffffff",
+                padding: "0.25rem 0.75rem",
+                borderRadius: "999px",
+                border: "1px solid #e2e8f0",
+              }}
+            >
+              Mastery threshold: {PASSING_PERCENTAGE}% to unlock the next level
+            </span>
+          </div>
+
+          {/* Pass / Fail banner */}
+          <div
+            style={{
+              background: passed ? "#eaf8ef" : "#fffbeb",
+              border: `1.5px solid ${passed ? "#9fd3b0" : "#fcd34d"}`,
+              borderRadius: "16px",
+              padding: "1rem 1.25rem",
+              marginBottom: "1.5rem",
+              fontSize: "0.96rem",
+              lineHeight: "1.5",
+              color: passed ? "#166534" : "#92400e",
             }}
           >
             {passed ? (
               <p style={{ margin: 0 }}>
-                <strong>Well done!</strong> You have shown a strong understanding
-                of {catLabel.toLowerCase()} warning signs.{" "}
+                <strong>Well done!</strong> You have shown strong skills in spotting{" "}
+                {catLabel.toLowerCase()} warning signs.{" "}
                 {(() => {
                   const next = getNextCategory(activeCategory ?? "phishing");
                   if (next) {
                     const nextLabel =
                       CATEGORY_META.find((c) => c.id === next)?.label ?? "Next level";
-                    return `${nextLabel} is now unlocked!`;
+                    return `✨ ${nextLabel} is now unlocked!`;
                   }
-                  return "You have completed all levels in Scam Alley!";
+                  return "🏆 You have completed all levels in Scam Alley!";
                 })()}
               </p>
             ) : (
               <p style={{ margin: 0 }}>
-                <strong>Good effort!</strong> You are building your skills. Review
-                the lesson and try again — you can always improve!
+                <strong>Good effort!</strong> You are building great detective instincts. Review the lesson and try again — you need 80% to unlock the next level!
               </p>
             )}
           </div>
 
           {/* Concept breakdown */}
-          <p style={{ fontWeight: "600", marginBottom: "0.5rem" }}>
-            What you understand:
-          </p>
-          <ul style={{ margin: "0 0 0.75rem 1.2rem", padding: 0 }}>
+          <h2 style={{ fontSize: "1.1rem", fontWeight: "800", color: "#163a8a", margin: "0 0 0.65rem" }}>
+            Detective Clues Breakdown:
+          </h2>
+          <ul style={{ margin: "0 0 1rem", padding: "0 0 0 1.25rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
             {(Object.keys(phishingConceptScores) as Concept[])
               .filter((c) => phishingConceptScores[c].attempted > 0)
               .map((c) => {
                 const { correct, attempted } = phishingConceptScores[c];
                 const ok = correct === attempted;
                 return (
-                  <li key={c} style={{ marginBottom: "0.25rem" }}>
+                  <li key={c} style={{ fontSize: "0.92rem", color: "#334155" }}>
                     {ok ? "✅" : "⚠️"}{" "}
                     <strong>
                       {c.charAt(0).toUpperCase() + c.slice(1)}
@@ -1293,54 +1515,62 @@ export function ScamHomePage() {
           </ul>
 
           {weak.length > 0 && (
-            <>
-              <p style={{ fontWeight: "600", marginBottom: "0.4rem" }}>
-                Concepts to practise more:
+            <div style={{ background: "#fffbeb", borderRadius: "14px", padding: "0.85rem 1rem", border: "1px solid #fde68a", marginBottom: "1.25rem" }}>
+              <p style={{ fontWeight: "700", color: "#92400e", margin: "0 0 0.35rem", fontSize: "0.9rem" }}>
+                Topics to practice more:
               </p>
-              <ul style={{ margin: "0 0 0.75rem 1.2rem", padding: 0 }}>
+              <ul style={{ margin: 0, paddingLeft: "1.25rem", color: "#78350f", fontSize: "0.86rem" }}>
                 {weak.map((c) => (
                   <li key={c}>
-                    {c.charAt(0).toUpperCase() + c.slice(1)} — review
-                    the lesson section on this topic
+                    {c.charAt(0).toUpperCase() + c.slice(1)} — review the lesson tips on this topic
                   </li>
                 ))}
               </ul>
-            </>
+            </div>
           )}
 
-          <p className="muted" style={{ fontSize: "0.85rem" }}>
-            (Practice indicator only — not a formal assessment)
-          </p>
-        </Card>
-
-        {/* Navigation */}
-        <div
-          style={{
-            display: "flex",
-            gap: "0.75rem",
-            flexWrap: "wrap",
-            marginTop: "1.25rem",
-          }}
-        >
-          {passed ? (
-            <Button variant="primary" onClick={handleContinueToNextLevel}>
-              {getNextCategory(activeCategory ?? "phishing")
-                ? "Continue to next level →"
-                : "🏆 Back to Scam Alley"}
-            </Button>
-          ) : (
-            <>
-              <Button variant="primary" onClick={handleCategoryRetry}>
-                Review lesson
-              </Button>
-              <Button variant="secondary" onClick={handleStartCategoryPractice}>
-                Try practice again
-              </Button>
-            </>
-          )}
-          <Button variant="secondary" onClick={() => setView("home")}>
-            Back to Scam Safety Home
-          </Button>
+          {/* Navigation Action Buttons */}
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1.5rem" }}>
+            {passed ? (
+              <button
+                type="button"
+                className="safety-start-btn"
+                onClick={handleContinueToNextLevel}
+                style={{ width: "auto", padding: "0 1.75rem", minHeight: "44px" }}
+              >
+                {getNextCategory(activeCategory ?? "phishing")
+                  ? "Continue to next level →"
+                  : "🏆 Back to Scam Alley"}
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="safety-start-btn"
+                  onClick={handleCategoryRetry}
+                  style={{ width: "auto", padding: "0 1.5rem", minHeight: "44px" }}
+                >
+                  Review lesson
+                </button>
+                <button
+                  type="button"
+                  className="safety-back-link"
+                  onClick={handleStartCategoryPractice}
+                  style={{ minHeight: "44px", padding: "0 1.5rem", fontSize: "0.92rem" }}
+                >
+                  Try practice again ↻
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              className="safety-back-link"
+              onClick={() => setView("home")}
+              style={{ minHeight: "44px", padding: "0 1.5rem", fontSize: "0.92rem" }}
+            >
+              Back to Scam Safety Home
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -1351,8 +1581,9 @@ export function ScamHomePage() {
   // ══════════════════════════════════════════════════════════════════
   if (view === "results") {
     const pct = roundTotal === 0 ? 0 : Math.round((roundCorrect / roundTotal) * 100);
-    return (
-      <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
+    return renderShell(
+      <div className="safety-inner-container">
+        <div className="safety-main-card">
         <p className="muted" style={{ marginBottom: "0.5rem" }}>Stay safe · Scam Alley</p>
         <h1 style={{ fontSize: "2rem", marginBottom: "1rem" }}>Practice Round Complete!</h1>
 
@@ -1503,6 +1734,7 @@ export function ScamHomePage() {
           </Button>
         </div>
       </div>
+    </div>
     );
   }
 
@@ -1512,8 +1744,9 @@ export function ScamHomePage() {
   if (view === "drill") {
     const feedback = drillAction !== null ? getDrillFeedback(drillAction) : null;
 
-    return (
-      <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
+    return renderShell(
+      <div className="safety-inner-container">
+        <div className="safety-main-card">
         <p className="muted">Stay safe · Scam Alley</p>
         <h1>Email Safety Challenge</h1>
 
@@ -1682,14 +1915,16 @@ export function ScamHomePage() {
           </Button>
         </div>
       </div>
+    </div>
     );
   }
 
   // ══════════════════════════════════════════════════════════════════
   //  RENDER — LEGACY PRACTICE SCREEN
   // ══════════════════════════════════════════════════════════════════
-  return (
-    <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
+  return renderShell(
+    <div className="safety-inner-container">
+      <div className="safety-main-card">
       <p className="muted">Stay safe · Scam Alley</p>
       <h1>Scam safety practice</h1>
 
@@ -1875,5 +2110,6 @@ export function ScamHomePage() {
         </div>
       </Card>
     </div>
-  );
+  </div>
+);
 }
