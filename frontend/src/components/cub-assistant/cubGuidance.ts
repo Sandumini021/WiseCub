@@ -28,7 +28,7 @@ export const PAGE_GREETINGS: Record<string, string> = {
   "/progress": "Progress will show habits, not who made more pretend money. Want the market?",
   "/profile": "Avatar picking will live here soon. I can take you back to the market.",
   "/login": "No password. Type a name if you like, then Get started. I will meet you on the dashboard.",
-  "/signup": "This is practice signup. Cub does not keep real passwords. Fill the form, pick an avatar, then go to the playground.",
+  "/signup": "First pick Student, Teacher, or Parent. Students pick a username and an avatar. Passwords are not stored in this demo.",
 };
 
 export function greetingFor(path: string): string {

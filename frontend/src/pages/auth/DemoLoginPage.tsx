@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CubMascot } from "../../components/cub-assistant/CubMascot";
-import { loadAccountByEmail } from "../../services/apiClient";
+import { loadAccountByEmail, loadAccountByUsername } from "../../services/apiClient";
 import { setChildId, writeDemoChild } from "./demoSession";
+import { homePathForRole, isAccountRole, normalizeUsername } from "./roles";
 import "../../styles/login-card.css";
 
 function nameFromEmail(email: string) {
@@ -12,47 +13,62 @@ function nameFromEmail(email: string) {
 
 export function DemoLoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [note, setNote] = useState<string | null>(null);
 
   function finishLogin(name: string, extras?: Parameters<typeof writeDemoChild>[1]) {
-    writeDemoChild(name, extras);
+    const saved = writeDemoChild(name, extras);
     if (remember) {
       window.localStorage.setItem("wisecub.rememberMe", "1");
     }
-    navigate("/home");
+    navigate(homePathForRole(saved.role));
   }
 
   async function enterDemo(label?: string) {
-    const trimmed = email.trim().toLowerCase();
-    if (trimmed.includes("@")) {
-      try {
-        const account = await loadAccountByEmail(trimmed);
+    const raw = identifier.trim();
+    const asEmail = raw.includes("@") ? raw.toLowerCase() : "";
+    const asUser = asEmail ? "" : normalizeUsername(raw);
+    try {
+      const account = asEmail
+        ? await loadAccountByEmail(asEmail)
+        : asUser
+          ? await loadAccountByUsername(asUser)
+          : null;
+      if (account) {
         if (account.child_id) {
           setChildId(account.child_id);
         }
-        finishLogin(account.name || label || nameFromEmail(email), {
+        finishLogin(account.name || label || nameFromEmail(raw), {
           email: account.email,
+          username: account.username,
+          role: isAccountRole(account.role) ? account.role : "student",
           age: account.age,
           gender: account.gender,
           avatarId: account.avatar_id,
+          language: account.language,
+          classCode: account.class_code,
+          institution: account.institution,
           enteredAt: account.entered_at,
         });
         return;
-      } catch {
-        // Practice login still works if Mongo is down or the email is new.
       }
+    } catch {
+      // Practice login still works if Mongo is down or the name is new.
     }
-    finishLogin(label ?? nameFromEmail(email), trimmed ? { email: trimmed } : undefined);
+    finishLogin(label ?? (asEmail ? nameFromEmail(asEmail) : raw || "Demo child"), {
+      email: asEmail || undefined,
+      username: asUser || undefined,
+      role: "student",
+    });
   }
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
-    if (!email.trim() || !email.includes("@")) {
-      setNote("Enter your practice email to continue.");
+    if (!identifier.trim()) {
+      setNote("Enter your username (students) or email (teachers and guardians).");
       return;
     }
     void enterDemo();
@@ -79,17 +95,16 @@ export function DemoLoginPage() {
 
         <form className="login-fields" onSubmit={onSubmit}>
           <label className="login-field">
-            <span className="visually-hidden">Email address</span>
+            <span className="visually-hidden">Username or email</span>
             <span className="login-ico" aria-hidden="true">
               ✉
             </span>
             <input
-              type="email"
-              name="email"
+              name="username"
               autoComplete="username"
-              placeholder="Email address"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              placeholder="Username or email"
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
             />
           </label>
 
@@ -129,7 +144,7 @@ export function DemoLoginPage() {
               className="login-text-btn"
               type="button"
               onClick={() =>
-                setNote("This demo has no real passwords. Tap Login to continue as a practice child.")
+                setNote("This demo has no real passwords. Tap Login to continue.")
               }
             >
               Forgot password?
@@ -171,7 +186,7 @@ export function DemoLoginPage() {
           </Link>
         </p>
         {note ? <p className="login-note">{note}</p> : null}
-        <p className="login-note">Practice login only. No real accounts, banks, or cards.</p>
+        <p className="login-note">Demo login only. Passwords are not checked yet. No real accounts, banks, or cards.</p>
       </main>
     </div>
   );

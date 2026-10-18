@@ -1,10 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { SiteTopBar } from "../../components/layout/SiteTopBar";
 import { readLesson1Complete } from "../../modules/stock-market/data/demoMarket";
 import { readBook } from "../../modules/stock-market/data/demoPortfolio";
 import { buildQuotes } from "../../modules/stock-market/data/syntheticPrices";
 import { ChildAvatar } from "../auth/ChildAvatar";
 import { useDemoChild } from "../auth/demoSession";
+import { homePathForRole } from "../auth/roles";
 import "../../styles/dashboard-long.css";
 
 const WORLDS = [
@@ -57,6 +58,9 @@ function rupees(value: number) {
 
 export function DashboardPage() {
   const child = useDemoChild();
+  if (child?.role === "teacher" || child?.role === "guardian") {
+    return <Navigate to={homePathForRole(child.role)} replace />;
+  }
   const name = firstName(child?.name);
   const book = readBook();
   const quotes = buildQuotes().slice(0, 3);
@@ -113,6 +117,14 @@ export function DashboardPage() {
             <img className="dash-hero-cub" src="/images/dash/cub-hero.png" alt="Cub waving" />
           )}
         </div>
+      </section>
+
+      <section className="dash-block">
+        <h2>Assigned quizzes</h2>
+        <p className="muted">
+          Teachers will assign quizzes here. None yet in this demo increment. Scores will be counted
+          on the server later — you will not see the correct answers before you submit.
+        </p>
       </section>
 
       <section className="dash-block">

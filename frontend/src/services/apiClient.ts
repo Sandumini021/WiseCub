@@ -51,9 +51,14 @@ export type RemoteAccount = {
   child_id: string;
   name: string;
   email: string;
+  username?: string;
+  role?: string;
   age: string;
   gender: string;
   avatar_id: string;
+  language?: string;
+  class_code?: string;
+  institution?: string;
   entered_at?: string;
 };
 
@@ -61,23 +66,43 @@ export function loadAccountByEmail(email: string) {
   return apiGet<RemoteAccount>(`/api/accounts/search?email=${encodeURIComponent(email)}`);
 }
 
+export function loadAccountByUsername(username: string) {
+  return apiGet<RemoteAccount>(`/api/accounts/search?username=${encodeURIComponent(username)}`);
+}
+
+export function checkUsername(username: string) {
+  return apiGet<{ taken: boolean; valid: boolean; suggestions: string[] }>(
+    `/api/accounts/username-check?username=${encodeURIComponent(username)}`,
+  );
+}
+
 export function saveAccountRemote(
   childId: string,
   account: {
     name: string;
-    email: string;
-    age: string;
-    gender: string;
-    avatarId: string;
+    email?: string;
+    username?: string;
+    role?: string;
+    age?: string;
+    gender?: string;
+    avatarId?: string;
+    language?: string;
+    classCode?: string;
+    institution?: string;
     enteredAt: string;
   },
 ) {
   return apiPut(`/api/accounts/${childId}`, {
     name: account.name,
-    email: account.email,
-    age: account.age,
-    gender: account.gender,
-    avatar_id: account.avatarId,
+    email: account.email ?? "",
+    username: account.username ?? "",
+    role: account.role ?? "student",
+    age: account.age ?? "",
+    gender: account.gender ?? "",
+    avatar_id: account.avatarId ?? "",
+    language: account.language ?? "en",
+    class_code: account.classCode ?? "",
+    institution: account.institution ?? "",
     entered_at: account.enteredAt,
   });
 }
