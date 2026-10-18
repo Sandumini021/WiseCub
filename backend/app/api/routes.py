@@ -1,11 +1,13 @@
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
 from app.database.mongo import get_db, ping_db
+from app.modules.accounts.router import current_account
+from app.modules.accounts.security import public_account
 
 router = APIRouter()
 
@@ -22,9 +24,6 @@ ALLOWED_MODULES = {
 class ChildIn(BaseModel):
     name: str = Field(min_length=1, max_length=80)
     entered_at: str | None = None
-
-
-ALLOWED_ROLES = {"student", "teacher", "guardian"}
 
 
 class AccountIn(BaseModel):
@@ -94,68 +93,38 @@ async def username_check(username: str) -> dict[str, Any]:
 
 
 @router.put("/api/accounts/{child_id}")
-async def save_account(child_id: str, body: AccountIn) -> dict[str, Any]:
+async def save_account(request: Request, child_id: str, body: AccountIn) -> dict[str, Any]:
     db = require_db()
-    role = body.role.strip().lower() or "student"
-    if role not in ALLOWED_ROLES:
-        raise HTTPException(status_code=400, detail="Unknown role.")
-    username = body.username.strip().lower()
-    if username:
-        clash = await db.accounts.find_one(
-            {"username": username, "child_id": {"$ne": child_id}},
-            {"_id": 1},
-        )
-        if clash:
-            raise HTTPException(
-                status_code=409,
-                detail={
-                    "message": "That username is already in use.",
-                    "suggestions": _username_suggestions(username),
-                },
-            )
-    doc = {
-        "child_id": child_id,
+    account = await current_account(request)
+    if account["child_id"] != child_id:
+        raise HTTPException(status_code=403, detail="You can only update your own account.")
+    role = account.get("role") or "student"
+    updates = {
         "name": body.name.strip(),
-        "email": body.email.strip().lower(),
-        "username": username,
-        "role": role,
-        "age": body.age.strip(),
+        "age": body.age.strip() if role == "student" else account.get("age", ""),
         "gender": body.gender.strip(),
-        "avatar_id": body.avatar_id.strip(),
+        "avatar_id": body.avatar_id.strip() if role == "student" else account.get("avatar_id", ""),
         "language": body.language.strip() or "en",
-        "class_code": body.class_code.strip(),
-        "institution": body.institution.strip(),
-        "demo": True,
-        "entered_at": body.entered_at or datetime.now(timezone.utc).isoformat(),
+        "class_code": body.class_code.strip() if role == "student" else account.get("class_code", ""),
+        "institution": body.institution.strip() if role == "teacher" else account.get("institution", ""),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
-    await db.accounts.update_one({"child_id": child_id}, {"$set": doc}, upsert=True)
-    return doc
+    await db.accounts.update_one({"child_id": child_id}, {"$set": updates})
+    fresh = await db.accounts.find_one({"child_id": child_id})
+    return public_account(fresh) or {}
 
 
 @router.get("/api/accounts/search")
-async def search_account(email: str = "", username: str = "") -> dict[str, Any]:
-    db = require_db()
-    query: dict[str, Any] = {}
-    if username.strip():
-        query["username"] = username.strip().lower()
-    elif email.strip():
-        query["email"] = email.strip().lower()
-    else:
-        raise HTTPException(status_code=400, detail="Provide username or email.")
-    doc = await db.accounts.find_one(query, {"_id": 0})
-    if not doc:
-        raise HTTPException(status_code=404, detail="Account not found.")
-    return doc
+async def search_account() -> dict[str, Any]:
+    raise HTTPException(status_code=401, detail="Use /api/login instead of searching accounts.")
 
 
 @router.get("/api/accounts/{child_id}")
-async def read_account(child_id: str) -> dict[str, Any]:
-    db = require_db()
-    doc = await db.accounts.find_one({"child_id": child_id}, {"_id": 0})
-    if not doc:
-        raise HTTPException(status_code=404, detail="Account not found.")
-    return doc
+async def read_account(request: Request, child_id: str) -> dict[str, Any]:
+    account = await current_account(request)
+    if account["child_id"] != child_id:
+        raise HTTPException(status_code=403, detail="You can only open your own account.")
+    return account
 
 
 @router.get("/api/children/{child_id}")

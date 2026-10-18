@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:5173"
     mongodb_uri: str = "mongodb://localhost:27017"
     mongodb_db: str = "wisecub"
+    jwt_secret: str = "dev-only-change-me-use-a-long-env-secret"
 
     @property
     def cors_origins(self) -> list[str]:

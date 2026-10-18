@@ -57,7 +57,7 @@ function rupees(value: number) {
 }
 
 export function DashboardPage() {
-  const child = useDemoChild();
+  const { child } = useDemoChild();
   if (child?.role === "teacher" || child?.role === "guardian") {
     return <Navigate to={homePathForRole(child.role)} replace />;
   }

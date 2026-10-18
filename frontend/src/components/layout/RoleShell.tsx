@@ -16,7 +16,7 @@ type RoleShellProps = {
 };
 
 export function RoleShell({ title, banner, links, children }: RoleShellProps) {
-  const session = useDemoChild();
+  const { child: session } = useDemoChild();
   const navigate = useNavigate();
   const name = session?.name?.trim() || "Guest";
   const home = homePathForRole(session?.role);
