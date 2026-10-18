@@ -4,13 +4,15 @@ AI-Powered Multilingual Financial Literacy and Investment Education System for C
 
 Project ID: **J26-IT-418**. Virtual money and demo data only in this increment. No real banks, trades, or trained AI models.
 
+**Other members:** start with [`docs/team-guide.md`](docs/team-guide.md) — what is already built, your folder, and how to use your feature branch.
+
 ## What this increment includes
 
 - Landing page at `/`
 - After **Enter as demo child**, Market Home at `/market`
 - Route stubs for Choices, Missions, and Scam Safety
 - Shared layout, buttons, cards, and a static Cub placeholder (not inside a module folder)
-- FastAPI `/health` — MongoDB is configured in `.env.example` but not connected yet
+- FastAPI `/health` — MongoDB is connected when `mongod` is running (`database: connected`)
 
 ## Run the frontend
 
@@ -41,8 +43,10 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-- Health: http://localhost:8000/health
+- Health: http://localhost:8000/health (`database` is `connected` or `down`)
 - API docs: http://localhost:8000/docs
+
+Start MongoDB on `mongodb://localhost:27017` (database name `wisecub`). The API still boots if Mongo is off; login and trades stay in the browser until Mongo is up.
 
 Copy `.env.example` to `.env` for local overrides. Never commit `.env`.
 
