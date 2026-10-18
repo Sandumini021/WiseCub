@@ -33,8 +33,8 @@ export function AppRoutes() {
       <Route path="/welcome" element={<SplashPage />} />
       <Route path="/login" element={<DemoLoginPage />} />
       <Route path="/signup" element={<CreateAccountPage />} />
+      <Route path="/home" element={<DashboardPage />} />
       <Route element={<AppLayout />}>
-        <Route path="/home" element={<DashboardPage />} />
         <Route path="/market" element={<MarketHomePage />} />
         <Route path="/market/lessons/1" element={<ShareLessonPage />} />
         <Route path="/market/terminal" element={<MarketTerminalPage />} />
