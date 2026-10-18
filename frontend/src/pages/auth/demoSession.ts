@@ -1,7 +1,13 @@
+import { useEffect, useState } from "react";
 import { saveAccountRemote, saveChildRemote, saveModuleState } from "../../services/apiClient";
 
 const KEY = "wisecub.demoChild";
 const ID_KEY = "wisecub.childId";
+const SESSION_EVENT = "wisecub-session";
+
+function notifySession() {
+  window.dispatchEvent(new Event(SESSION_EVENT));
+}
 
 export type DemoChild = {
   name: string;
@@ -51,6 +57,7 @@ export function writeDemoChild(name: string): DemoChild {
     enteredAt: new Date().toISOString(),
   };
   window.localStorage.setItem(KEY, JSON.stringify(next));
+  notifySession();
   void saveChildRemote(childId(), next.name, next.enteredAt).catch(() => {
     // Keep the demo working if Mongo is not running yet.
   });
@@ -67,6 +74,7 @@ export function writeSignupProfile(profile: SignupProfile): DemoChild {
     avatarId: profile.avatarId,
   };
   window.localStorage.setItem(KEY, JSON.stringify(next));
+  notifySession();
   const id = childId();
   void saveChildRemote(id, next.name, next.enteredAt).catch(() => {});
   void saveAccountRemote(id, {
@@ -85,4 +93,18 @@ export function writeSignupProfile(profile: SignupProfile): DemoChild {
     avatarId: next.avatarId,
   }).catch(() => {});
   return next;
+}
+
+export function useDemoChild() {
+  const [child, setChild] = useState<DemoChild | null>(() => readDemoChild());
+  useEffect(() => {
+    const refresh = () => setChild(readDemoChild());
+    window.addEventListener("storage", refresh);
+    window.addEventListener(SESSION_EVENT, refresh);
+    return () => {
+      window.removeEventListener("storage", refresh);
+      window.removeEventListener(SESSION_EVENT, refresh);
+    };
+  }, []);
+  return child;
 }

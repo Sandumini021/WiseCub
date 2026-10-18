@@ -107,7 +107,89 @@
 }
 
 .home-dash h1 {
-  max-width: 28rem;
+  max-width: none;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+}
+
+.dash-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem 1.3rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(120deg, #fff7d6, #eef4ff);
+  border: 1.5px solid #1b2744;
+  border-radius: 20px;
+}
+
+.dash-lead {
+  max-width: 36rem;
+}
+
+.dash-login-hint a {
+  font-weight: 800;
+}
+
+.dash-hero-cub {
+  flex-shrink: 0;
+}
+
+.dash-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin: 0 0 1rem;
+}
+
+.dash-tab {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 1rem;
+  border-radius: 999px;
+  border: 1.5px solid #1b2744;
+  background: #fff;
+  color: #1b2744;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.dash-tab.tone-gold {
+  background: #fff3c4;
+}
+
+.dash-tab.tone-teal {
+  background: #d7f3ee;
+}
+
+.dash-tab.tone-green {
+  background: #e3f6d8;
+}
+
+.dash-tab.tone-coral {
+  background: #ffe4d6;
+}
+
+.dash-continue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 1rem 1.1rem;
+  margin: 0.2rem 0 1rem;
+  background: #fff;
+  border: 1.5px solid #1b2744;
+  border-radius: 16px;
+}
+
+.dash-continue h2 {
+  margin: 0.15rem 0 0.2rem;
+}
+
+.dash-continue p {
+  margin: 0;
 }
 
 .world-map {
@@ -122,9 +204,45 @@
   margin: 1rem 0;
 }
 
+.world-map.is-long {
+  grid-template-columns: 1fr 1fr;
+}
+
+.world-card.tone-gold {
+  background: #fff8dc;
+}
+
+.world-card.tone-teal {
+  background: #e7fbf6;
+}
+
+.world-card.tone-green {
+  background: #eef9e4;
+}
+
+.world-card.tone-coral {
+  background: #ffece3;
+}
+
+.world-kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #5c6b63;
+}
+
+.world-cta {
+  margin-top: auto;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #1b2744;
+}
+
 .world-card {
-  min-height: 8.5rem;
-  padding: 1rem 3.4rem 1rem 1rem;
+  min-height: 11rem;
+  padding: 1.05rem 1.1rem;
   border: 1.5px solid #1b2744;
   border-radius: 12px;
   background: #fff;
@@ -135,13 +253,8 @@
   gap: 0.35rem;
 }
 
-.world-card:nth-child(2),
-.world-card:nth-child(4) {
-  padding: 1rem 1rem 1rem 3.4rem;
-}
-
 .world-card.is-ready {
-  background: #fffbe8;
+  box-shadow: 0 8px 0 rgba(27, 39, 68, 0.08);
 }
 
 .world-card p {
@@ -206,10 +319,12 @@
 }
 
 @media (max-width: 700px) {
-  .world-map {
+  .world-map,
+  .world-map.is-long {
     grid-template-columns: 1fr;
   }
 
+  .dash-hero-cub,
   .world-cub {
     display: none;
   }
