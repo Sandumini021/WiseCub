@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { saveAccountRemote, saveChildRemote, saveModuleState } from "../../services/apiClient";
+import {
+  loadAccountByEmail,
+  saveAccountRemote,
+  saveChildRemote,
+  saveModuleState,
+} from "../../services/apiClient";
 
 const KEY = "wisecub.demoChild";
 const ID_KEY = "wisecub.childId";
@@ -51,10 +56,19 @@ export function readDemoChild(): DemoChild | null {
   }
 }
 
-export function writeDemoChild(name: string): DemoChild {
+export function setChildId(id: string) {
+  window.localStorage.setItem(ID_KEY, id);
+}
+
+export function writeDemoChild(name: string, extras?: Partial<DemoChild>): DemoChild {
+  const prev = readDemoChild();
   const next: DemoChild = {
-    name: name.trim() || "Demo child",
-    enteredAt: new Date().toISOString(),
+    name: name.trim() || prev?.name || "Demo child",
+    enteredAt: extras?.enteredAt ?? new Date().toISOString(),
+    email: extras?.email ?? prev?.email,
+    age: extras?.age ?? prev?.age,
+    gender: extras?.gender ?? prev?.gender,
+    avatarId: extras?.avatarId ?? prev?.avatarId,
   };
   window.localStorage.setItem(KEY, JSON.stringify(next));
   notifySession();
@@ -82,7 +96,7 @@ export function writeSignupProfile(profile: SignupProfile): DemoChild {
     email: next.email ?? "",
     age: next.age ?? "",
     gender: next.gender ?? "",
-    avatarId: next.avatarId ?? "cub-gold",
+    avatarId: next.avatarId,
     enteredAt: next.enteredAt,
   }).catch(() => {});
   void saveModuleState(id, "child", {
@@ -95,6 +109,12 @@ export function writeSignupProfile(profile: SignupProfile): DemoChild {
   return next;
 }
 
+export function clearDemoChild() {
+  window.localStorage.removeItem(KEY);
+  window.localStorage.setItem(ID_KEY, window.crypto.randomUUID());
+  notifySession();
+}
+
 export function useDemoChild() {
   const [child, setChild] = useState<DemoChild | null>(() => readDemoChild());
   useEffect(() => {
@@ -105,6 +125,33 @@ export function useDemoChild() {
       window.removeEventListener("storage", refresh);
       window.removeEventListener(SESSION_EVENT, refresh);
     };
+  }, []);
+  useEffect(() => {
+    const current = readDemoChild();
+    if (!current?.email) {
+      return;
+    }
+    void loadAccountByEmail(current.email)
+      .then((account) => {
+        const latest = readDemoChild();
+        if (!latest) {
+          return;
+        }
+        if (account.child_id) {
+          setChildId(account.child_id);
+        }
+        if (account.avatar_id && account.avatar_id !== latest.avatarId) {
+          writeDemoChild(account.name || latest.name, {
+            email: account.email,
+            age: account.age,
+            gender: account.gender,
+            avatarId: account.avatar_id,
+          });
+        }
+      })
+      .catch(() => {
+        // Avatar stays local if Mongo is down.
+      });
   }, []);
   return child;
 }

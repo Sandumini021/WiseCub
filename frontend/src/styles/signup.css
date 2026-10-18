@@ -389,11 +389,26 @@
   border: 1.5px solid #e6ebf3;
   border-radius: 16px;
   background: #fff;
-  padding: 0.7rem 0.4rem;
+  padding: 0.55rem 0.4rem 0.65rem;
   cursor: pointer;
   display: grid;
   place-items: center;
-  gap: 0.3rem;
+  gap: 0.25rem;
+}
+
+.signup-avatar img,
+.signup-picked {
+  width: 92px;
+  height: 104px;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.signup-picked {
+  width: 140px;
+  height: 158px;
+  display: block;
+  margin: 0.4rem auto 1rem;
 }
 
 .signup-avatar span {

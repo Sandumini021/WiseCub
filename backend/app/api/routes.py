@@ -29,7 +29,7 @@ class AccountIn(BaseModel):
     email: str = Field(min_length=3, max_length=120)
     age: str = Field(min_length=1, max_length=8)
     gender: str = Field(min_length=1, max_length=24)
-    avatar_id: str = Field(default="cub-gold", max_length=40)
+    avatar_id: str = Field(default="kid-sky", max_length=40)
     entered_at: str | None = None
 
 
@@ -77,11 +77,20 @@ async def save_account(child_id: str, body: AccountIn) -> dict[str, Any]:
         "email": body.email.strip().lower(),
         "age": body.age.strip(),
         "gender": body.gender.strip(),
-        "avatar_id": body.avatar_id.strip() or "cub-gold",
+        "avatar_id": body.avatar_id.strip() or "kid-sky",
         "entered_at": body.entered_at or datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.accounts.update_one({"child_id": child_id}, {"$set": doc}, upsert=True)
+    return doc
+
+
+@router.get("/api/accounts/search")
+async def search_account(email: str) -> dict[str, Any]:
+    db = require_db()
+    doc = await db.accounts.find_one({"email": email.strip().lower()}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Account not found.")
     return doc
 
 

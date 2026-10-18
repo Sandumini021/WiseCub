@@ -1,18 +1,12 @@
 import { useState, type CSSProperties, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CubMascot } from "../../components/cub-assistant/CubMascot";
+import { ChildAvatar } from "./ChildAvatar";
+import { PRACTICE_AVATARS } from "./avatars";
 import { writeSignupProfile } from "./demoSession";
 import "../../styles/signup.css";
 
 const AGES = ["12", "13", "14", "15", "16"];
-const AVATARS = [
-  { id: "cub-gold", label: "Gold Cub", tone: "#f5c400" },
-  { id: "cub-sky", label: "Sky Cub", tone: "#7eb6ff" },
-  { id: "cub-leaf", label: "Leaf Cub", tone: "#7bc67e" },
-  { id: "cub-berry", label: "Berry Cub", tone: "#f08ab0" },
-  { id: "cub-navy", label: "Navy Cub", tone: "#1b3a8a" },
-  { id: "cub-sand", label: "Sand Cub", tone: "#e0a05a" },
-] as const;
 
 type Step = 1 | 2 | 3;
 
@@ -29,7 +23,7 @@ export function CreateAccountPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [terms, setTerms] = useState(false);
   const [student, setStudent] = useState(true);
-  const [avatarId, setAvatarId] = useState("cub-gold");
+  const [avatarId, setAvatarId] = useState<(typeof PRACTICE_AVATARS)[number]["id"]>("kid-sky");
   const [error, setError] = useState<string | null>(null);
 
   function onDetails(event: FormEvent) {
@@ -270,9 +264,9 @@ export function CreateAccountPage() {
           {step === 2 ? (
             <div className="signup-form">
               <h2>Choose Avatar</h2>
-              <p className="signup-sub">Pick a Cub look for your practice profile</p>
+              <p className="signup-sub">Pick a practice look for your profile</p>
               <div className="signup-avatars">
-                {AVATARS.map((avatar) => (
+                {PRACTICE_AVATARS.map((avatar) => (
                   <button
                     key={avatar.id}
                     type="button"
@@ -280,7 +274,7 @@ export function CreateAccountPage() {
                     style={{ "--tone": avatar.tone } as CSSProperties}
                     onClick={() => setAvatarId(avatar.id)}
                   >
-                    <CubMascot size={88} />
+                    <img src={avatar.src} alt="" />
                     <span>{avatar.label}</span>
                   </button>
                 ))}
@@ -303,7 +297,7 @@ export function CreateAccountPage() {
                 Welcome, {name.trim() || "friend"}. This is a practice account. No real money, banks, or
                 passwords are stored.
               </p>
-              <CubMascot size={120} />
+              <ChildAvatar className="signup-picked" avatarId={avatarId} name={name} />
               <button className="signup-next" type="button" onClick={() => navigate("/home")}>
                 Go to playground
               </button>

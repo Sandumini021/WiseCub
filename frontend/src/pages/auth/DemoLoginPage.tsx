@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CubMascot } from "../../components/cub-assistant/CubMascot";
-import { writeDemoChild } from "./demoSession";
+import { loadAccountByEmail } from "../../services/apiClient";
+import { setChildId, writeDemoChild } from "./demoSession";
 import "../../styles/login-card.css";
 
 function nameFromEmail(email: string) {
@@ -17,24 +18,50 @@ export function DemoLoginPage() {
   const [remember, setRemember] = useState(false);
   const [note, setNote] = useState<string | null>(null);
 
-  function enterDemo(label?: string) {
-    const name = label ?? nameFromEmail(email);
-    writeDemoChild(name);
+  function finishLogin(name: string, extras?: Parameters<typeof writeDemoChild>[1]) {
+    writeDemoChild(name, extras);
     if (remember) {
       window.localStorage.setItem("wisecub.rememberMe", "1");
     }
     navigate("/home");
   }
 
+  async function enterDemo(label?: string) {
+    const trimmed = email.trim().toLowerCase();
+    if (trimmed.includes("@")) {
+      try {
+        const account = await loadAccountByEmail(trimmed);
+        if (account.child_id) {
+          setChildId(account.child_id);
+        }
+        finishLogin(account.name || label || nameFromEmail(email), {
+          email: account.email,
+          age: account.age,
+          gender: account.gender,
+          avatarId: account.avatar_id,
+          enteredAt: account.entered_at,
+        });
+        return;
+      } catch {
+        // Practice login still works if Mongo is down or the email is new.
+      }
+    }
+    finishLogin(label ?? nameFromEmail(email), trimmed ? { email: trimmed } : undefined);
+  }
+
   function onSubmit(event: FormEvent) {
     event.preventDefault();
-    enterDemo();
+    if (!email.trim() || !email.includes("@")) {
+      setNote("Enter your practice email to continue.");
+      return;
+    }
+    void enterDemo();
   }
 
   return (
     <div className="login-screen">
-      <Link className="login-back" to="/home">
-        ← Back to Home
+      <Link className="login-back" to="/">
+        ← Back
       </Link>
 
       <main id="main" className="login-card">

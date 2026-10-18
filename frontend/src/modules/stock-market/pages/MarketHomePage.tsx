@@ -7,7 +7,9 @@ import {
   DEMO_COMPANIES,
   LESSONS,
   PRACTICE_CASH_LKR,
+  isLessonUnlocked,
   readLesson1Complete,
+  readLessonComplete,
 } from "../data/demoMarket";
 import { readBook } from "../data/demoPortfolio";
 import { buildQuotes, sliceHistory, type Quote } from "../data/syntheticPrices";
@@ -71,12 +73,24 @@ function OverviewChart({ points }: { points: number[] }) {
 
 export function MarketHomePage() {
   const quotes = useMemo(() => buildQuotes(), []);
-  const [lesson1Done, setLesson1Done] = useState(false);
+  const [lesson1Done, setLesson1Done] = useState(() => readLesson1Complete());
+  const [finished, setFinished] = useState<Record<number, boolean>>(() => ({
+    1: readLessonComplete(1),
+    2: readLessonComplete(2),
+    3: readLessonComplete(3),
+    4: readLessonComplete(4),
+  }));
   const [range, setRange] = useState<"1D" | "1W" | "1M" | "1Y">("1W");
   const book = readBook();
 
   useEffect(() => {
     setLesson1Done(readLesson1Complete());
+    setFinished({
+      1: readLessonComplete(1),
+      2: readLessonComplete(2),
+      3: readLessonComplete(3),
+      4: readLessonComplete(4),
+    });
   }, []);
 
   const prices = Object.fromEntries(quotes.map((item) => [item.ticker, item.price]));
@@ -166,11 +180,12 @@ export function MarketHomePage() {
           <section className="mkt-lessons" aria-labelledby="lessons-title">
             <div className="mkt-lessons-head">
               <h2 id="lessons-title">Four Lessons — Unlock the Market</h2>
-              <p>Complete the first lesson to access the market terminal.</p>
+              <p>Complete each lesson to unlock the next. Lesson 1 opens the market terminal.</p>
             </div>
             <ol>
               {LESSONS.map((lesson) => {
-                const open = lesson.status === "open";
+                const open = isLessonUnlocked(lesson.n);
+                const complete = Boolean(finished[lesson.n]);
                 return (
                   <li key={lesson.n} className={open ? "is-open" : "is-locked"}>
                     <span className={`mkt-lesson-ico ico-${lesson.icon}`} aria-hidden="true">
@@ -179,7 +194,9 @@ export function MarketHomePage() {
                     <strong>{lesson.title}</strong>
                     <p>{lesson.blurb}</p>
                     {open ? (
-                      <Link to="/market/lessons/1">{lesson1Done ? "Review Lesson" : "Start Lesson"}</Link>
+                      <Link to={`/market/lessons/${lesson.n}`}>
+                        {complete ? "Review Lesson" : "Start Lesson"}
+                      </Link>
                     ) : (
                       <span className="mkt-lock" aria-label="Locked">
                         Locked
