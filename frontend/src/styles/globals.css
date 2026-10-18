@@ -295,7 +295,7 @@ button {
 .app-frame {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 232px 1fr;
+  grid-template-columns: 1fr;
   background: #e8eef8;
 }
 
@@ -377,6 +377,13 @@ button {
   padding: 0.9rem 1.4rem 0.4rem;
 }
 
+.topbar-home {
+  font-weight: 800;
+  text-decoration: none;
+  color: #163a8a;
+  white-space: nowrap;
+}
+
 .crumb {
   margin: 0;
   color: #64748b;
@@ -396,6 +403,29 @@ button {
   padding: 0.35rem 0.75rem;
   font-size: 0.85rem;
   font-weight: 700;
+}
+
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.user-chip img,
+.user-chip .avatar-fallback {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center 12%;
+}
+
+.profile-face {
+  width: 160px;
+  height: 180px;
+  object-fit: contain;
+  display: block;
+  margin: 0.75rem 0 1rem;
 }
 
 .menu-btn {

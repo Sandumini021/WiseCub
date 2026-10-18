@@ -60,6 +60,14 @@ export function CubChatPanel() {
       return;
     }
     lastPath.current = location.pathname;
+    if (
+      location.pathname === "/" ||
+      location.pathname === "/welcome" ||
+      location.pathname === "/login" ||
+      location.pathname === "/signup"
+    ) {
+      return;
+    }
     const hello = greetingFor(location.pathname);
     setLines((current) => [...current, { id: `g-${++lineId}`, from: "cub", text: hello }]);
     if (voiceOnRef.current) {
@@ -131,6 +139,15 @@ export function CubChatPanel() {
   }
 
   const chips = suggestionsFor(location.pathname);
+
+  if (
+    location.pathname === "/" ||
+    location.pathname === "/welcome" ||
+    location.pathname === "/login" ||
+    location.pathname === "/signup"
+  ) {
+    return null;
+  }
 
   return (
     <div className={`cub-chat${open ? " is-open" : ""}`}>

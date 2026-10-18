@@ -1,7 +1,7 @@
 # WiseCub team guide (what is done, how you continue)
 
 Project: **J26-IT-418** — WiseCub  
-Stack: React + TypeScript + Vite, FastAPI, MongoDB later  
+Stack: React + TypeScript + Vite, FastAPI, MongoDB  
 English first. Demo child only. Virtual money only. No trained AI models yet.
 
 Read this before you create files on your own branch.
@@ -88,8 +88,8 @@ These are **shared**. All four modules use them.
 | Cub chat (text + Mic + suggested chips + browser voice) | `frontend/src/components/cub-assistant/` | Working, **rule-based**, not a trained model |
 | Module stubs | `/choices`, `/missions`, `/safety` | Placeholder pages only |
 | Home, Progress, Profile routes | `/home`, `/progress`, `/profile` | Thin stubs |
-| FastAPI health | `backend/app/main.py` | Working |
-| MongoDB | `.env.example` only | **Not connected yet** |
+| FastAPI health | `backend/app/main.py` | Working — `/health` reports `database: connected` or `down` |
+| MongoDB | `backend/app/database/` | Shared. Demo child + module JSON. Fallback to localStorage if Mongo is off |
 | Real login | — | **Not required for PP1 increments 1–2** |
 
 Cub sits on **every page**. Other members must **not** build a second chatbot inside their module. Add new Cub replies in `cubGuidance.ts` if you need extra phrases.
@@ -150,6 +150,7 @@ English UI first. Sinhala later. Web first, not a mobile app yet.
 
 - Virtual money only. No real banks, trades, or payments.
 - Shared wallet will be **one** service later (research spec: Rs 500,000). The stock dashboard currently **shows** a practice Rs 100,000 — do not invent a second real balance in your module.
+- Save your module’s demo JSON with `saveModuleState(childId(), "choices" | "missions" | "safety" | "progress", data)` in `frontend/src/services/apiClient.ts`. Allowed module names are `child`, `market`, `choices`, `missions`, `safety`, `progress`.
 - Cub is **rule-based** guidance. Never call it a trained AI model in the UI or the report unless a real model is integrated and evaluated.
 - Scam drills stay **inside WiseCub**. No sending real email/SMS/calls. No real phishing sites.
 - Demo child only for early PP1. No real children’s data.
