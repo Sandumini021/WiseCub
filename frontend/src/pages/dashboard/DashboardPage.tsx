@@ -227,10 +227,10 @@ export function DashboardPage() {
       <section className="dash-buddy-band">
         <div>
           <p className="dash-kicker">Your AI buddy</p>
-          <h2>Ask in English first. Sinhala and Tamil come later.</h2>
+          <h2>Ask Cub in English or Sinhala.</h2>
           <p>
-            Chat with Cub on any page. Simple explanations, tips, and guidance — rule-based, not a
-            trained model. Pretend money only.
+            Tap Ask Cub at the bottom-right on any page after login. Simple explanations and
+            navigation — rule-based, not a trained model. Pretend money only.
           </p>
           <p className="dash-langs">
             <span>සිංහල</span>

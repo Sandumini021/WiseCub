@@ -16,6 +16,7 @@ export function SiteTopBar() {
   const location = useLocation();
   const navigate = useNavigate();
   const onMarket = location.pathname.startsWith("/market");
+  const onSafety = location.pathname.startsWith("/safety");
   const displayName = child?.name?.trim() || "";
   const home = homePathForRole(child?.role);
 
@@ -40,11 +41,18 @@ export function SiteTopBar() {
               className={({ isActive }) => {
                 const matchesHome =
                   "match" in tab && tab.match?.some((path) => location.pathname === path);
-                const on = tab.to === "/market" ? onMarket : isActive || Boolean(matchesHome);
+                const on =
+                  tab.to === "/market"
+                    ? onMarket
+                    : tab.to === "/safety"
+                    ? onSafety
+                    : isActive || Boolean(matchesHome);
                 if (!on) {
                   return undefined;
                 }
-                return tab.to === "/market" ? "is-on is-gold" : "is-on";
+                return tab.to === "/market" || tab.to === "/safety"
+                  ? "is-on is-gold"
+                  : "is-on";
               }}
             >
               <span aria-hidden="true">{tab.icon}</span>
