@@ -385,6 +385,11 @@ async def submit_decision(
             status_code=400,
             detail="level_id and level_number do not match a known level.",
         )
+    if body.interaction_type != level.interaction_type:
+        raise HTTPException(
+            status_code=400,
+            detail="interaction_type does not match the requested level.",
+        )
 
     # ── Level lock enforcement ───────────────────────────────────────────────
     progress = await _get_or_create_progress(db, child_id, body.mission_id)

@@ -851,3 +851,91 @@ def test_15_level_2_underfunded_reserve_fails_and_level_3_remains_locked(monkeyp
         cookies=_session_cookie(token),
     )
     assert l3_start.status_code == 403
+
+
+def test_16_level_rejects_mismatched_interaction_type(monkeypatch):
+    fake_db, token = _make_db_and_student()
+    client = _get_client(fake_db, monkeypatch)
+    client.post(f"/api/gamified/missions/{MISSION_ID}/start", cookies=_session_cookie(token))
+
+    level_one_response = client.post(
+        "/api/gamified/decisions/submit",
+        json={
+            "mission_id": MISSION_ID,
+            "level_id": LEVEL_1_ID,
+            "level_number": 1,
+            "session_id": "sess_l1_unlock",
+            "interaction_type": "needs_wants",
+            "selected_option_ids": PASSING_OPTION_IDS,
+        },
+        cookies=_session_cookie(token),
+    )
+    assert level_one_response.status_code == 200
+    assert level_one_response.json()["passed"] is True
+
+    response = client.post(
+        "/api/gamified/decisions/submit",
+        json={
+            "mission_id": MISSION_ID,
+            "level_id": "level_puppy_2",
+            "level_number": 2,
+            "session_id": "sess_l2_wrong_interaction",
+            "interaction_type": "needs_wants",
+            "selected_option_ids": [],
+            "allocations": {},
+        },
+        cookies=_session_cookie(token),
+    )
+
+    assert response.status_code == 400
+    assert "interaction_type" in response.json()["detail"]
+
+
+@pytest.mark.parametrize(
+    "periods",
+    [
+        [1, 1, 1],
+        [1, 2],
+        [1, 2, 4],
+    ],
+    ids=["duplicate", "missing", "unknown"],
+)
+def test_multi_period_savings_requires_each_configured_period_once(periods):
+    from app.modules.gamified_learning.catalog import get_level
+    from app.modules.gamified_learning.engine import simulate_multi_period_savings
+
+    level = get_level(MISSION_ID, 3)
+    assert level is not None
+    decisions = [
+        {
+            "period": period,
+            "saved_amount_lkr": 4000,
+            "resisted_temptation": True,
+        }
+        for period in periods
+    ]
+
+    with pytest.raises(ValueError, match="each configured period exactly once"):
+        simulate_multi_period_savings(level, decisions)
+
+
+def test_multi_period_savings_accepts_complete_period_schedule():
+    from app.modules.gamified_learning.catalog import get_level
+    from app.modules.gamified_learning.engine import simulate_multi_period_savings
+
+    level = get_level(MISSION_ID, 3)
+    assert level is not None
+    decisions = [
+        {
+            "period": period,
+            "saved_amount_lkr": 4000,
+            "resisted_temptation": True,
+        }
+        for period in (1, 2, 3)
+    ]
+
+    financial_state, outcome = simulate_multi_period_savings(level, decisions)
+
+    assert financial_state.emergency_reserve_lkr == 12000
+    assert outcome.essential_needs_covered is True
+    assert outcome.is_feasible is True

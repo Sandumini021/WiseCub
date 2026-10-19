@@ -303,6 +303,13 @@ def simulate_multi_period_savings(
         raise ValueError("Level definition missing multi_period_config")
 
     period_map = {p["period"]: p for p in config["periods"]}
+    submitted_periods = [int(wd.get("period", 0)) for wd in weekly_decisions]
+    if (
+        len(submitted_periods) != len(period_map)
+        or set(submitted_periods) != set(period_map)
+    ):
+        raise ValueError("Weekly decisions must include each configured period exactly once.")
+
     goal_lkr: int = config["target_goal_lkr"]
 
     total_saved = 0
