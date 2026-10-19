@@ -275,3 +275,155 @@ export function resetScamProgress(): ScamProgress {
   persistScamProgress(empty);
   return empty;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  BACKEND SYNC HELPERS
+//
+//  These functions connect the local localStorage-based progress to the
+//  WiseCub backend (PUT/GET /api/state/{child_id}/safety).
+//
+//  Design principles:
+//  - localStorage is always kept as the local cache and fallback.
+//  - Backend sync is fire-and-forget (non-blocking). A failed request never
+//    clears or replaces valid local progress.
+//  - Merge is additive: the best score for each category is always kept,
+//    and completed categories are never removed once earned.
+//  - Progress is only written to the backend for the child who owns it.
+//    The caller (ScamHomePage) passes the child_id obtained from the live
+//    session (demoSession.childId()), so cross-child contamination cannot
+//    occur here.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Merges two ScamProgress objects so that:
+ * - completedCategories is the union of both sets, in CATEGORY_ORDER.
+ * - categoryScores keeps the higher score for each category.
+ * - lastUpdated reflects the most recent of the two timestamps.
+ *
+ * This is a pure function with no side effects — safe to unit-test.
+ */
+export function mergeProgress(a: ScamProgress, b: ScamProgress): ScamProgress {
+  const completedSet = new Set<CategoryId>([
+    ...a.completedCategories,
+    ...b.completedCategories,
+  ]);
+
+  const mergedScores: Partial<Record<CategoryId, number>> = {};
+  for (const cat of CATEGORY_ORDER) {
+    const scoreA = a.categoryScores[cat];
+    const scoreB = b.categoryScores[cat];
+    if (scoreA !== undefined && scoreB !== undefined) {
+      mergedScores[cat] = Math.max(scoreA, scoreB);
+    } else if (scoreA !== undefined) {
+      mergedScores[cat] = scoreA;
+    } else if (scoreB !== undefined) {
+      mergedScores[cat] = scoreB;
+    }
+    // If a score meets the passing threshold, ensure the category is marked completed
+    const best = mergedScores[cat];
+    if (best !== undefined && isCategoryPassing(best)) {
+      completedSet.add(cat);
+    }
+  }
+
+  const completedCategories = CATEGORY_ORDER.filter((id) => completedSet.has(id));
+
+  // Keep whichever lastUpdated is more recent
+  const tsA = new Date(a.lastUpdated).getTime();
+  const tsB = new Date(b.lastUpdated).getTime();
+  const lastUpdated = new Date(Math.max(tsA, tsB)).toISOString();
+
+  return { completedCategories, categoryScores: mergedScores, lastUpdated };
+}
+
+/**
+ * Loads Scam Safety progress from the backend for the given child,
+ * merges it with local localStorage progress (keeping best scores),
+ * persists the merged result locally, and returns it.
+ *
+ * Safe fallback: if the backend is unreachable or the child has no saved
+ * state yet (HTTP 404), the local progress is returned unchanged.
+ * This function never clears or replaces local progress with empty data.
+ *
+ * @param childId   - The authenticated child's UUID (from demoSession.childId()).
+ * @param loadState - The loadModuleState helper from apiClient.
+ * @returns         The merged ScamProgress, or local-only progress on any error.
+ */
+export async function syncProgressFromBackend(
+  childId: string,
+  loadState: (
+    childId: string,
+    module: string,
+  ) => Promise<{ child_id: string; module: string; data: unknown }>,
+): Promise<ScamProgress> {
+  const local = loadScamProgress();
+
+  if (!childId) {
+    return local;
+  }
+
+  try {
+    const response = await loadState(childId, "safety");
+    const remote = response.data;
+
+    // Validate that the remote payload looks like a ScamProgress object
+    if (
+      remote &&
+      typeof remote === "object" &&
+      Array.isArray((remote as ScamProgress).completedCategories)
+    ) {
+      const remoteProgress: ScamProgress = {
+        completedCategories: (
+          (remote as ScamProgress).completedCategories ?? []
+        ).filter(isValidCategoryId),
+        categoryScores: {},
+        lastUpdated:
+          (remote as ScamProgress).lastUpdated ?? new Date().toISOString(),
+      };
+
+      // Validate and copy remote scores
+      const remoteScores = (remote as ScamProgress).categoryScores ?? {};
+      if (remoteScores && typeof remoteScores === "object") {
+        for (const [key, val] of Object.entries(remoteScores)) {
+          if (isValidCategoryId(key) && typeof val === "number") {
+            remoteProgress.categoryScores[key] = val;
+          }
+        }
+      }
+
+      const merged = mergeProgress(local, remoteProgress);
+      persistScamProgress(merged);
+      return merged;
+    }
+  } catch {
+    // 404 (no saved state yet) or network error — return local progress unchanged
+  }
+
+  return local;
+}
+
+/**
+ * Saves the given ScamProgress to the backend for the given child.
+ * Fire-and-forget: errors are silently swallowed so the UI is never blocked.
+ *
+ * @param childId   - The authenticated child's UUID.
+ * @param progress  - The current ScamProgress to persist.
+ * @param saveState - The saveModuleState helper from apiClient.
+ */
+export function syncProgressToBackend(
+  childId: string,
+  progress: ScamProgress,
+  saveState: (childId: string, module: string, data: unknown) => Promise<unknown>,
+): void {
+  if (!childId) {
+    return;
+  }
+  void saveState(childId, "safety", {
+    completedCategories: progress.completedCategories,
+    categoryScores: progress.categoryScores,
+    lastUpdated: progress.lastUpdated,
+  }).catch(() => {
+    // Non-blocking: backend errors do not affect local progress or the UI
+  });
+}
+

@@ -16,6 +16,8 @@ import {
   isCategoryPassing,
   loadScamProgress,
   saveCategoryProgress,
+  syncProgressFromBackend,
+  syncProgressToBackend,
   type CategoryId,
 } from "../services/scamProgress";
 import {
@@ -25,6 +27,8 @@ import {
   type CategoryScenario,
   type Concept,
 } from "../data/smsScenarios";
+import { childId as getChildId } from "../../../pages/auth/demoSession";
+import { loadModuleState, saveModuleState } from "../../../services/apiClient";
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  TYPES
@@ -372,6 +376,18 @@ export function ScamHomePage() {
   );
   const [activeCategory, setActiveCategory] = useState<CategoryId | null>(null);
 
+  // ── Backend sync: load merged progress on mount ───────────────────
+  useEffect(() => {
+    const id = getChildId();
+    if (!id) return;
+    void syncProgressFromBackend(id, loadModuleState).then((merged) => {
+      setCompletedCategories(merged.completedCategories);
+      setCategoryScores(merged.categoryScores);
+    });
+    // Only runs once on mount — intentional
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── Phishing category lesson state ────────────────────────────────
   const [lessonSectionIndex, setLessonSectionIndex] = useState(0);
 
@@ -538,6 +554,8 @@ export function ScamHomePage() {
       const updated = saveCategoryProgress(activeCategory, pct);
       setCompletedCategories(updated.completedCategories);
       setCategoryScores(updated.categoryScores);
+      // Persist to backend — fire-and-forget, never blocks UI
+      syncProgressToBackend(getChildId(), updated, saveModuleState);
     }
     setView("cat-results");
   }, [activeCategory, phishingCorrect, phishingTotal]);
@@ -590,6 +608,8 @@ export function ScamHomePage() {
         const updated = saveCategoryProgress(activeCategory, pct);
         setCompletedCategories(updated.completedCategories);
         setCategoryScores(updated.categoryScores);
+        // Persist to backend — fire-and-forget, never blocks UI
+        syncProgressToBackend(getChildId(), updated, saveModuleState);
       }
     }
   }, [view, activeCategory, phishingCorrect, phishingTotal, completedCategories]);

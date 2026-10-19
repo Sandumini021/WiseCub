@@ -8,8 +8,12 @@ import {
   getNextCategory,
   loadScamProgress,
   saveCategoryProgress,
+  mergeProgress,
+  syncProgressFromBackend,
+  syncProgressToBackend,
   SCAM_SCORES_STORAGE_KEY,
   type CategoryId,
+  type ScamProgress,
 } from "../modules/scam-safety/services/scamProgress.ts";
 
 // Mock localStorage for Node test runner
@@ -461,5 +465,134 @@ describe("WiseCub Scam Safety - Deceptive Financial Offers Level (financial)", (
     assert.ok(cats.every((c) => finalState.completedCategories.includes(c)));
   });
 });
+
+describe("WiseCub Scam Safety - Backend State Persistence & Merge Logic", () => {
+  beforeEach(() => {
+    mockStorage.clear();
+  });
+
+  it("mergeProgress: combines completedCategories as a union in correct order", () => {
+    const local: ScamProgress = {
+      completedCategories: ["phishing", "sms"],
+      categoryScores: { phishing: 80, sms: 85 },
+      lastUpdated: "2026-10-01T10:00:00.000Z",
+    };
+    const remote: ScamProgress = {
+      completedCategories: ["sms", "qr"],
+      categoryScores: { sms: 90, qr: 85 },
+      lastUpdated: "2026-10-02T10:00:00.000Z",
+    };
+
+    const merged = mergeProgress(local, remote);
+    assert.deepEqual(merged.completedCategories, ["phishing", "sms", "qr"]);
+    assert.equal(merged.categoryScores.phishing, 80);
+    assert.equal(merged.categoryScores.sms, 90, "Keeps the higher score for sms");
+    assert.equal(merged.categoryScores.qr, 85);
+    assert.equal(merged.lastUpdated, "2026-10-02T10:00:00.000Z");
+  });
+
+  it("mergeProgress: never removes previously earned completed categories", () => {
+    const local: ScamProgress = {
+      completedCategories: ["phishing", "sms", "qr"],
+      categoryScores: { phishing: 100, sms: 80, qr: 85 },
+      lastUpdated: "2026-10-02T10:00:00.000Z",
+    };
+    const emptyRemote: ScamProgress = {
+      completedCategories: [],
+      categoryScores: {},
+      lastUpdated: "2026-10-01T10:00:00.000Z",
+    };
+
+    const merged = mergeProgress(local, emptyRemote);
+    assert.deepEqual(merged.completedCategories, ["phishing", "sms", "qr"]);
+    assert.equal(merged.categoryScores.phishing, 100);
+  });
+
+  it("syncProgressFromBackend: merges remote state into localStorage and returns merged state", async () => {
+    saveCategoryProgress("phishing", 80);
+
+    const mockLoadState = async (childId: string, module: string) => {
+      assert.equal(childId, "child-123");
+      assert.equal(module, "safety");
+      return {
+        child_id: "child-123",
+        module: "safety",
+        data: {
+          completedCategories: ["phishing", "sms"],
+          categoryScores: { phishing: 100, sms: 85 },
+          lastUpdated: new Date().toISOString(),
+        },
+      };
+    };
+
+    const res = await syncProgressFromBackend("child-123", mockLoadState);
+    assert.deepEqual(res.completedCategories, ["phishing", "sms"]);
+    assert.equal(res.categoryScores.phishing, 100);
+    assert.equal(res.categoryScores.sms, 85);
+
+    // Verify localStorage was updated
+    const local = loadScamProgress();
+    assert.deepEqual(local.completedCategories, ["phishing", "sms"]);
+    assert.equal(local.categoryScores.phishing, 100);
+  });
+
+  it("syncProgressFromBackend: safely falls back to local progress if backend returns error or 404", async () => {
+    saveCategoryProgress("phishing", 85);
+
+    const mockFailingLoad = async () => {
+      throw new Error("HTTP 404 Not Found");
+    };
+
+    const res = await syncProgressFromBackend("child-123", mockFailingLoad);
+    assert.deepEqual(res.completedCategories, ["phishing"]);
+    assert.equal(res.categoryScores.phishing, 85);
+  });
+
+  it("syncProgressToBackend: calls saveModuleState with safety module and correct payload", () => {
+    let calledChildId = "";
+    let calledModule = "";
+    let calledData: unknown = null;
+
+    const mockSaveState = async (childId: string, module: string, data: unknown) => {
+      calledChildId = childId;
+      calledModule = module;
+      calledData = data;
+      return { ok: true };
+    };
+
+    const progress: ScamProgress = {
+      completedCategories: ["phishing"],
+      categoryScores: { phishing: 80 },
+      lastUpdated: new Date().toISOString(),
+    };
+
+    syncProgressToBackend("child-456", progress, mockSaveState);
+
+    assert.equal(calledChildId, "child-456");
+    assert.equal(calledModule, "safety");
+    assert.deepEqual(calledData, {
+      completedCategories: ["phishing"],
+      categoryScores: { phishing: 80 },
+      lastUpdated: progress.lastUpdated,
+    });
+  });
+
+  it("syncProgressToBackend: silently swallows errors so UI is never blocked", () => {
+    const mockFailingSave = async () => {
+      throw new Error("Network failure");
+    };
+
+    const progress: ScamProgress = {
+      completedCategories: ["phishing"],
+      categoryScores: { phishing: 80 },
+      lastUpdated: new Date().toISOString(),
+    };
+
+    assert.doesNotThrow(() => {
+      syncProgressToBackend("child-456", progress, mockFailingSave);
+    });
+  });
+});
+
 
 
