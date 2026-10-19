@@ -6,6 +6,7 @@ from app.core.config import settings
 from app.database.mongo import lifespan
 from app.modules.accounts.router import router as accounts_router
 from app.modules.gamified_learning.router import router as gamified_router
+from app.modules.cub_intent.router import router as cub_intent_router
 from app.modules.stock_market.router import router as market_behaviour_router
 
 app = FastAPI(
@@ -27,3 +28,4 @@ app.include_router(router)
 app.include_router(accounts_router)
 app.include_router(market_behaviour_router)
 app.include_router(gamified_router)
+app.include_router(cub_intent_router)

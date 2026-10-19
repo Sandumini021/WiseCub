@@ -8,9 +8,11 @@ import {
   type RemoteAccount,
 } from "../../services/apiClient";
 import { type AccountRole, isAccountRole } from "./roles";
+import type { CubLang } from "../../components/cub-assistant/cubAssistantTypes";
 
 const KEY = "wisecub.demoChild";
 const ID_KEY = "wisecub.childId";
+const LANG_KEY = "wisecub.language";
 const SESSION_EVENT = "wisecub-session";
 
 function notifySession() {
@@ -144,6 +146,25 @@ export async function writeSignupProfile(profile: SignupProfile): Promise<DemoCh
     language: next.language,
   }).catch(() => {});
   return next;
+}
+
+export function readCubLanguage(): CubLang {
+  const stored = window.localStorage.getItem(LANG_KEY);
+  if (stored === "si" || stored === "en") {
+    return stored;
+  }
+  const child = readDemoChild();
+  return child?.language === "si" ? "si" : "en";
+}
+
+export function writeCubLanguage(lang: CubLang) {
+  window.localStorage.setItem(LANG_KEY, lang);
+  const current = readDemoChild();
+  if (current) {
+    writeDemoChild(current.name, { language: lang });
+    void patchMe({ language: lang }).catch(() => {});
+  }
+  notifySession();
 }
 
 export function persistAvatar(avatarId: string) {

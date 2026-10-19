@@ -49,6 +49,7 @@ export function AppRoutes() {
       <Route path="/guardian/quizzes" element={<GuardianStubPage title="Quiz results" />} />
       <Route path="/guardian/tips" element={<GuardianStubPage title="Recommendations" />} />
       <Route path="/market" element={<MarketHomePage />} />
+      <Route path="/safety" element={<ScamHomePage />} />
       <Route element={<AppLayout />}>
         <Route path="/market/lessons/:n" element={<MarketLessonPage />} />
         <Route path="/market/terminal" element={<MarketTerminalPage />} />
@@ -56,7 +57,6 @@ export function AppRoutes() {
         <Route path="/market/portfolio" element={<PortfolioPage />} />
         <Route path="/choices" element={<LevelsPage />} />
         <Route path="/missions" element={<MissionBoardPage />} />
-        <Route path="/safety" element={<ScamHomePage />} />
         <Route path="/progress" element={<ProgressPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
