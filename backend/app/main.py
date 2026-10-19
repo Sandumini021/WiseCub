@@ -5,12 +5,13 @@ from app.api.routes import router
 from app.core.config import settings
 from app.database.mongo import lifespan
 from app.modules.accounts.router import router as accounts_router
+from app.modules.gamified_learning.router import router as gamified_router
 from app.modules.stock_market.router import router as market_behaviour_router
 
 app = FastAPI(
     title="WiseCub API",
     description="Shared backend for WiseCub. MongoDB holds practice accounts, child ids, and module state.",
-    version="0.2.0",
+    version="0.3.0",
     lifespan=lifespan,
 )
 
@@ -25,3 +26,4 @@ app.add_middleware(
 app.include_router(router)
 app.include_router(accounts_router)
 app.include_router(market_behaviour_router)
+app.include_router(gamified_router)
