@@ -100,7 +100,9 @@ export function replyFromPrediction(
         en: "That page is for a different role. I can take you to your own dashboard.",
         si: "ඒ පිටුව වෙනත් භූමිකාවකට. මම ඔයාගේම dashboard එකට ගෙනියන්නම්.",
       }),
-      path: canOpenRoute(role, prediction.suggested_route ?? "") ? prediction.suggested_route : safeHome(role),
+      path: canOpenRoute(role, prediction.suggested_route ?? "")
+        ? (prediction.suggested_route ?? undefined)
+        : safeHome(role),
     };
   }
 
