@@ -641,3 +641,213 @@ def test_12_existing_wisecub_unaffected(monkeypatch):
     puppy = next((m for m in missions if m["id"] == MISSION_ID), None)
     assert puppy is not None
     assert puppy["title"] == "Rescue the Injured Puppy"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Automated Feasibility Test: Check every mission level in catalog
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_13_catalog_feasibility_across_all_levels():
+    """Verify that every level in the catalog has mathematically possible pass requirements."""
+    from app.modules.gamified_learning.catalog import MISSION_CATALOG
+
+    for mission_id, mission in MISSION_CATALOG.items():
+        for level in mission.levels:
+            # 1. Option-based levels
+            if level.options:
+                must_include = set(level.pass_criteria.must_include_option_ids)
+                if must_include:
+                    req_opts = [o for o in level.options if o.id in must_include]
+                else:
+                    req_opts = [o for o in level.options if o.is_essential]
+
+                min_essential_cost = sum(o.cost_lkr for o in req_opts)
+                min_reserve = level.pass_criteria.min_reserve_preserved_lkr or 0
+                available = level.starting_budget_lkr + level.existing_reserve_lkr
+
+                assert min_essential_cost + min_reserve <= available, (
+                    f"Infeasible option level in {mission_id} L{level.level_number}: "
+                    f"min essential ({min_essential_cost}) + min reserve ({min_reserve}) "
+                    f"= {min_essential_cost + min_reserve} > available ({available})"
+                )
+
+            # 2. Allocation-based levels
+            if level.allocation_categories:
+                non_reserve_min = sum(
+                    c.min_recommended_lkr
+                    for c in level.allocation_categories
+                    if c.is_essential and c.category not in ("emergency_reserve", "emergency_savings", "savings", "savings_goal")
+                )
+                reserve_min = sum(
+                    c.min_recommended_lkr
+                    for c in level.allocation_categories
+                    if c.category in ("emergency_reserve", "emergency_savings", "savings", "savings_goal")
+                )
+                min_reserve_req = level.pass_criteria.min_reserve_preserved_lkr or 0
+                effective_reserve_needed = max(reserve_min, min_reserve_req)
+                total_needed = non_reserve_min + effective_reserve_needed
+                available = level.starting_budget_lkr + level.existing_reserve_lkr
+
+                assert total_needed <= available, (
+                    f"Infeasible allocation level in {mission_id} L{level.level_number}: "
+                    f"non-reserve essentials ({non_reserve_min}) + reserve ({effective_reserve_needed}) "
+                    f"= {total_needed} > available ({available})"
+                )
+
+            # 3. Multi-period saving levels
+            if level.multi_period_config:
+                periods = level.multi_period_config.get("periods", [])
+                total_allowance = sum(p["allowance_lkr"] for p in periods)
+                total_mandatory = sum(p["mandatory_cost_lkr"] for p in periods)
+                max_savings = total_allowance - total_mandatory
+                target_goal = level.multi_period_config.get("target_goal_lkr", 0)
+                min_reserve = level.pass_criteria.min_reserve_preserved_lkr or 0
+
+                assert target_goal <= max_savings, (
+                    f"Infeasible savings goal in {mission_id} L{level.level_number}: "
+                    f"target ({target_goal}) > max possible savings ({max_savings})"
+                )
+                assert min_reserve <= max_savings, (
+                    f"Infeasible reserve requirement in {mission_id} L{level.level_number}: "
+                    f"min reserve ({min_reserve}) > max possible savings ({max_savings})"
+                )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Test 14 & 15: Level 2 Plan the Care Budget validation & unlocking Level 3
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_14_level_2_valid_allocation_satisfies_mastery_and_unlocks_level_3(monkeypatch):
+    """Verify that a financially sound allocation in Level 2 satisfies all gates within Rs. 15,000 and unlocks Level 3."""
+    fake_db, token = _make_db_and_student()
+    client = _get_client(fake_db, monkeypatch)
+    client.post(f"/api/gamified/missions/{MISSION_ID}/start", cookies=_session_cookie(token))
+
+    # Pass level 1 first
+    client.post(
+        "/api/gamified/decisions/submit",
+        json={
+            "mission_id": MISSION_ID,
+            "level_id": LEVEL_1_ID,
+            "level_number": 1,
+            "session_id": "sess_l1_pass",
+            "interaction_type": "needs_wants",
+            "selected_option_ids": PASSING_OPTION_IDS,
+            "allocations": {},
+            "selected_rationale_id": None,
+            "weekly_decisions": [],
+        },
+        cookies=_session_cookie(token),
+    )
+
+    # Start Level 2
+    l2_start = client.post(
+        "/api/gamified/levels/start",
+        json={"mission_id": MISSION_ID, "level_number": 2},
+        cookies=_session_cookie(token),
+    )
+    assert l2_start.status_code == 200
+
+    # Submit valid Level 2 allocation:
+    # Vet 6000 + Med 3500 + Transport 2000 + Emergency Cushion 3500 = 15,000 (Within 15,000 budget!)
+    # Emergency cushion 3,500 >= min reserve 2,500!
+    l2_resp = client.post(
+        "/api/gamified/decisions/submit",
+        json={
+            "mission_id": MISSION_ID,
+            "level_id": "level_puppy_2",
+            "level_number": 2,
+            "session_id": "sess_l2_valid",
+            "interaction_type": "budget_allocator",
+            "selected_option_ids": [],
+            "allocations": {
+                "cat_vet_check": 6000,
+                "cat_medicine_dress": 3500,
+                "cat_transport": 2000,
+                "cat_emergency_reserve": 3500,
+                "cat_deluxe_grooming": 0,
+            },
+            "selected_rationale_id": None,
+            "weekly_decisions": [],
+        },
+        cookies=_session_cookie(token),
+    )
+    assert l2_resp.status_code == 200, l2_resp.text
+    body = l2_resp.json()
+    assert body["passed"] is True, f"Failed with reasons: {body['failure_reasons']}"
+    assert body["next_level_unlocked"] is True
+    assert body["decision_outcome"]["reserve_preserved_lkr"] == 3500
+    assert body["dimension_scores"]["budgeting_skill"] >= 75
+    assert body["overall_score"] >= 75
+    assert body["character_state"]["physical_condition"] == "WEAK_STABILIZED"
+    assert body["character_state"]["emotional_state"] == "HOPEFUL"
+
+    # Verify Level 3 is now unlocked and can be started
+    l3_start = client.post(
+        "/api/gamified/levels/start",
+        json={"mission_id": MISSION_ID, "level_number": 3},
+        cookies=_session_cookie(token),
+    )
+    assert l3_start.status_code == 200
+    assert l3_start.json()["level_id"] == "level_puppy_3"
+
+
+def test_15_level_2_underfunded_reserve_fails_and_level_3_remains_locked(monkeypatch):
+    """Verify that underfunding the emergency reserve fails Level 2 and keeps Level 3 locked."""
+    fake_db, token = _make_db_and_student()
+    client = _get_client(fake_db, monkeypatch)
+    client.post(f"/api/gamified/missions/{MISSION_ID}/start", cookies=_session_cookie(token))
+
+    # Pass level 1
+    client.post(
+        "/api/gamified/decisions/submit",
+        json={
+            "mission_id": MISSION_ID,
+            "level_id": LEVEL_1_ID,
+            "level_number": 1,
+            "session_id": "sess_l1_pass2",
+            "interaction_type": "needs_wants",
+            "selected_option_ids": PASSING_OPTION_IDS,
+            "allocations": {},
+            "selected_rationale_id": None,
+            "weekly_decisions": [],
+        },
+        cookies=_session_cookie(token),
+    )
+
+    # Level 2 submission with underfunded emergency cushion:
+    # Emergency cushion Rs. 1,000 < min Rs. 2,500, spent Rs. 2,500 on luxury grooming!
+    l2_resp = client.post(
+        "/api/gamified/decisions/submit",
+        json={
+            "mission_id": MISSION_ID,
+            "level_id": "level_puppy_2",
+            "level_number": 2,
+            "session_id": "sess_l2_fail_reserve",
+            "interaction_type": "budget_allocator",
+            "selected_option_ids": [],
+            "allocations": {
+                "cat_vet_check": 6000,
+                "cat_medicine_dress": 3500,
+                "cat_transport": 2000,
+                "cat_emergency_reserve": 1000,
+                "cat_deluxe_grooming": 2500,
+            },
+            "selected_rationale_id": None,
+            "weekly_decisions": [],
+        },
+        cookies=_session_cookie(token),
+    )
+    assert l2_resp.status_code == 200
+    body = l2_resp.json()
+    assert body["passed"] is False
+    assert body["next_level_unlocked"] is False
+    assert len(body["failure_reasons"]) > 0
+
+    # Level 3 must remain locked (HTTP 403)
+    l3_start = client.post(
+        "/api/gamified/levels/start",
+        json={"mission_id": MISSION_ID, "level_number": 3},
+        cookies=_session_cookie(token),
+    )
+    assert l3_start.status_code == 403

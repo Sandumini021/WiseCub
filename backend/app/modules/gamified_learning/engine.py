@@ -245,7 +245,14 @@ def simulate_category_allocations(
     deficit = max(0, -remaining)
     ess_covered = len(missed_ess) == 0
 
-    reserve_alloc = clean.get("emergency_reserve", 0) + clean.get("emergency_savings", 0) + clean.get("long_term_savings", 0)
+    reserve_alloc = sum(
+        clean[cat.id]
+        for cat in cats
+        if cat.category in ("emergency_reserve", "emergency_savings", "savings", "savings_goal")
+        or "reserve" in cat.id.lower()
+        or "saving" in cat.id.lower()
+        or cat.id in ("emergency_reserve", "cat_emergency_reserve", "cat_rec_reserve", "cap_permanent_reserve")
+    )
     total_reserve = reserve_alloc + existing_reserve_lkr + max(0, remaining)
 
     if not feasible:
@@ -397,9 +404,10 @@ def evaluate_competencies(
 
     # 3. Saving Behavior
     saving = 70
-    if reserve_ratio >= 0.2:
+    min_reserve_req = level.pass_criteria.min_reserve_preserved_lkr or 0
+    if reserve_ratio >= 0.2 or (min_reserve_req > 0 and fs.emergency_reserve_lkr >= min_reserve_req):
         saving += 25
-    elif reserve_ratio >= 0.1:
+    elif reserve_ratio >= 0.1 or (min_reserve_req > 0 and fs.emergency_reserve_lkr >= int(min_reserve_req * 0.6)):
         saving += 10
     else:
         saving -= 25
@@ -432,8 +440,10 @@ def evaluate_competencies(
     # Secondary metrics
     prioritization = 90 if (outcome.essential_needs_covered and disc_ratio <= 0.25) else (70 if outcome.essential_needs_covered else 35)
     emergency_prep = min(100, int(reserve_ratio * 300))
+    if min_reserve_req > 0 and fs.emergency_reserve_lkr >= min_reserve_req:
+        emergency_prep = max(emergency_prep, 85)
     consistency = 85 if outcome.is_feasible else 40
-    risk_awareness = 90 if reserve_ratio >= 0.15 else 50
+    risk_awareness = 90 if (reserve_ratio >= 0.15 or (min_reserve_req > 0 and fs.emergency_reserve_lkr >= min_reserve_req)) else 50
     tradeoff_reasoning = (
         (90 if investment >= 80 else 45) if selected_rationale_id
         else (85 if outcome.essential_needs_covered else 45)

@@ -86,15 +86,16 @@ export class CompetencyEvaluationEngine {
     let savingScore = 70;
     const savingStrengths: string[] = [];
     const savingGrowth: string[] = [];
+    const minReserveReq = level.passCriteria?.minReservePreservedLKR || 0;
 
-    if (reserveRatio >= 0.2) {
+    if (reserveRatio >= 0.2 || (minReserveReq > 0 && financialState.emergencyReserveLKR >= minReserveReq)) {
       savingScore += 25;
       savingStrengths.push(
         `Preserved a healthy reserve buffer (Rs. ${financialState.emergencyReserveLKR.toLocaleString()}, ~${Math.round(reserveRatio * 100)}% of budget).`
       );
-    } else if (reserveRatio >= 0.1) {
+    } else if (reserveRatio >= 0.1 || (minReserveReq > 0 && financialState.emergencyReserveLKR >= Math.round(minReserveReq * 0.6))) {
       savingScore += 10;
-      savingStrengths.push('Kept a small emergency safety margin.');
+      savingStrengths.push('Kept an adequate emergency safety margin.');
     } else {
       savingScore -= 25;
       savingGrowth.push(
@@ -148,9 +149,12 @@ export class CompetencyEvaluationEngine {
 
     // Secondary metrics
     const prioritization = outcome.essentialNeedsCovered ? (discretionaryRatio <= 0.25 ? 90 : 70) : 35;
-    const emergencyPreparedness = Math.min(100, Math.round(reserveRatio * 300));
+    let emergencyPreparedness = Math.min(100, Math.round(reserveRatio * 300));
+    if (minReserveReq > 0 && financialState.emergencyReserveLKR >= minReserveReq) {
+      emergencyPreparedness = Math.max(emergencyPreparedness, 85);
+    }
     const consistency = outcome.isFeasible ? 85 : 40;
-    const riskAwareness = reserveRatio >= 0.15 ? 90 : 50;
+    const riskAwareness = (reserveRatio >= 0.15 || (minReserveReq > 0 && financialState.emergencyReserveLKR >= minReserveReq)) ? 90 : 50;
     const tradeoffReasoning = selectedRationaleId ? (investmentScore >= 80 ? 90 : 45) : (outcome.essentialNeedsCovered ? 85 : 45);
 
     const detailedScores: Record<CoreCompetencyDimension, CompetencyDimensionScore> = {

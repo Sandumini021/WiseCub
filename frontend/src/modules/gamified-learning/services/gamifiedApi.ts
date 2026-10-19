@@ -16,12 +16,8 @@ import {
   ApiError,
 } from '../../../services/apiClient';
 
-import type { MissionProgress, UserLearningState } from '../types/progress.types';
+import type { MissionProgress } from '../types/progress.types';
 import type { CharacterState, CharacterTransition } from '../types/emotion.types';
-import type {
-  CoreCompetencyDimension,
-  SecondaryCompetencyMetric,
-} from '../types/competency.types';
 import type { DecisionOutcome } from '../types/financial.types';
 
 // ── API shape types (mirrors backend Pydantic models) ────────────────────────

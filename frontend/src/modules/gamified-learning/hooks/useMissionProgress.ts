@@ -34,7 +34,7 @@ import {
   submitOptionDecision,
 } from '../services/gamifiedApi';
 import type { MissionProgress } from '../types/progress.types';
-import type { CharacterState, CharacterTransition } from '../types/emotion.types';
+import type { CharacterTransition } from '../types/emotion.types';
 import type { DecisionOutcome } from '../types/financial.types';
 import type { LevelMasteryResult } from '../types/mission.types';
 
