@@ -102,6 +102,7 @@ export interface MissionDefinition {
 export interface LevelMasteryResult {
   levelId: string;
   levelNumber: number;
+  attemptNumber?: number;
   passed: boolean;
   overallScore: number;
   dimensionScores: Record<CoreCompetencyDimension, number>;

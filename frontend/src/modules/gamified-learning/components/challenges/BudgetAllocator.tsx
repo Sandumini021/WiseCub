@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LevelDefinition } from '../../types/mission.types';
 
 interface BudgetAllocatorProps {
@@ -15,14 +15,23 @@ export const BudgetAllocator: React.FC<BudgetAllocatorProps> = ({
   const categories = level.allocationCategories || [];
   const startingBudget = level.startingBudgetLKR;
 
-  // Initialize state with default amounts or 0
+  // Initialize state with 0 so the student actively allocates the budget
   const [allocations, setAllocations] = useState<Record<string, number>>(() => {
     const init: Record<string, number> = {};
     for (const cat of categories) {
-      init[cat.id] = cat.defaultAmountLKR || 0;
+      init[cat.id] = 0;
     }
     return init;
   });
+
+  // Reset allocations whenever the level changes
+  useEffect(() => {
+    const init: Record<string, number> = {};
+    for (const cat of categories) {
+      init[cat.id] = 0;
+    }
+    setAllocations(init);
+  }, [level.id]);
 
   const totalAllocated = Object.values(allocations).reduce((sum, val) => sum + val, 0);
   const remainingCash = startingBudget - totalAllocated;
@@ -54,7 +63,7 @@ export const BudgetAllocator: React.FC<BudgetAllocatorProps> = ({
       {/* Live Financial Ledger Bar */}
       <div className={`financial-ledger-banner ${isOverBudget ? 'ledger-over' : 'ledger-ok'}`}>
         <div className="ledger-stat">
-          <span className="stat-label">Total Monthly / Care Budget</span>
+          <span className="stat-label">Total Budget</span>
           <span className="stat-amount">Rs. {startingBudget.toLocaleString()}</span>
         </div>
         <div className="ledger-stat">
@@ -62,7 +71,7 @@ export const BudgetAllocator: React.FC<BudgetAllocatorProps> = ({
           <span className="stat-amount">Rs. {totalAllocated.toLocaleString()}</span>
         </div>
         <div className="ledger-stat">
-          <span className="stat-label">Unallocated Cash</span>
+          <span className="stat-label">Remaining Cash</span>
           <span className={`stat-amount ${isOverBudget ? 'amount-negative' : 'amount-positive'}`}>
             Rs. {remainingCash.toLocaleString()}
           </span>
@@ -71,9 +80,9 @@ export const BudgetAllocator: React.FC<BudgetAllocatorProps> = ({
 
       {isOverBudget && (
         <div className="ledger-warning-box">
-          ⚠️ <strong>Budget Deficit:</strong> You have planned Rs.{' '}
+          ⚠️ <strong>Over Budget:</strong> You have planned Rs.{' '}
           {Math.abs(remainingCash).toLocaleString()} more than your budget allows! Reduce some
-          categories before confirming.
+          categories to balance your funds.
         </div>
       )}
 
@@ -88,7 +97,7 @@ export const BudgetAllocator: React.FC<BudgetAllocatorProps> = ({
               <div className="allocation-card-header">
                 <div className="allocation-title-group">
                   <span className={`option-category-badge ${cat.isEssential ? 'badge-essential' : 'badge-discretionary'}`}>
-                    {cat.isEssential ? 'Essential Care' : 'Discretionary'}
+                    {cat.isEssential ? '⭐ Essential Care' : '🎈 Optional Want'}
                   </span>
                   <h4 className="allocation-title">{cat.name}</h4>
                 </div>
@@ -148,9 +157,9 @@ export const BudgetAllocator: React.FC<BudgetAllocatorProps> = ({
         <button
           type="submit"
           className="btn-confirm-decision"
-          disabled={disabled || isOverBudget}
+          disabled={disabled || isOverBudget || totalAllocated === 0}
         >
-          Submit Planned Budget & Evaluate Feasibility
+          {totalAllocated === 0 ? 'Allocate Budget to Continue' : 'Submit Planned Budget & Evaluate Feasibility'}
         </button>
       </div>
     </form>

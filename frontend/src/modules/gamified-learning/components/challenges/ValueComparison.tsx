@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LevelDefinition } from '../../types/mission.types';
 
 interface ValueComparisonProps {
@@ -14,6 +14,10 @@ export const ValueComparison: React.FC<ValueComparisonProps> = ({
 }) => {
   const options = level.options || [];
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedId(null);
+  }, [level.id]);
 
   const selectedOpt = options.find((o) => o.id === selectedId);
   const startingBudget = level.startingBudgetLKR;
@@ -32,7 +36,7 @@ export const ValueComparison: React.FC<ValueComparisonProps> = ({
       {/* Live Financial Ledger Bar */}
       <div className={`financial-ledger-banner ${isOverBudget ? 'ledger-over' : 'ledger-ok'}`}>
         <div className="ledger-stat">
-          <span className="stat-label">Available Care Fund</span>
+          <span className="stat-label">Available Fund</span>
           <span className="stat-amount">Rs. {startingBudget.toLocaleString()}</span>
         </div>
         <div className="ledger-stat">
@@ -40,7 +44,7 @@ export const ValueComparison: React.FC<ValueComparisonProps> = ({
           <span className="stat-amount">Rs. {cost.toLocaleString()}</span>
         </div>
         <div className="ledger-stat">
-          <span className="stat-label">Remaining Reserve</span>
+          <span className="stat-label">Remaining Savings</span>
           <span className={`stat-amount ${isOverBudget ? 'amount-negative' : 'amount-positive'}`}>
             Rs. {remaining.toLocaleString()}
           </span>
@@ -59,14 +63,14 @@ export const ValueComparison: React.FC<ValueComparisonProps> = ({
         {options.map((opt) => {
           const isSelected = selectedId === opt.id;
           let badgeClass = 'badge-certified';
-          let qualityTag = 'Certified & Standard';
+          let qualityTag = '✅ Certified & Safe';
 
           if (opt.qualityLevel === 'substandard') {
             badgeClass = 'badge-substandard';
-            qualityTag = '⚠️ Substandard & Unverified';
+            qualityTag = '⚠️ Cheap Trap (Unsafe)';
           } else if (opt.qualityLevel === 'luxury_excess') {
             badgeClass = 'badge-luxury';
-            qualityTag = '💎 Luxury Excess (Overpriced)';
+            qualityTag = '💎 Overpriced Luxury';
           }
 
           return (
