@@ -102,7 +102,7 @@ const CATEGORY_META: CategoryMeta[] = [
     icon: "📷",
     description: "Spot dangerous QR codes used to trick people.",
     unlockHint: "Complete Scam text messages to unlock this level.",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: "prize",
@@ -110,7 +110,7 @@ const CATEGORY_META: CategoryMeta[] = [
     icon: "🎁",
     description: "Learn why too-good-to-be-true prizes are often scams.",
     unlockHint: "Complete Fake QR-code offers to unlock this level.",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: "impersonation",
@@ -118,7 +118,7 @@ const CATEGORY_META: CategoryMeta[] = [
     icon: "🎭",
     description: "Identify when scammers pretend to be someone you trust.",
     unlockHint: "Complete Prize and giveaway scams to unlock this level.",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: "financial",
@@ -126,9 +126,10 @@ const CATEGORY_META: CategoryMeta[] = [
     icon: "💰",
     description: "Spot fake investment and financial offers.",
     unlockHint: "Complete Impersonation scams to unlock this level.",
-    comingSoon: true,
+    comingSoon: false,
   },
 ];
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  ADAPTIVE ENGINE (pure, no React dependency)
@@ -919,7 +920,8 @@ export function ScamHomePage() {
   //  RENDER — CATEGORY LESSON (Stage A)
   // ══════════════════════════════════════════════════════════════════
   if (view === "cat-learn") {
-    if (activeCategory !== "phishing" && activeCategory !== "sms") {
+    const catMeta = CATEGORY_META.find((c) => c.id === activeCategory);
+    if (catMeta?.comingSoon) {
       return renderShell(
         <div className="safety-inner-container">
           <div className="safety-main-card">
@@ -956,7 +958,6 @@ export function ScamHomePage() {
     }
 
     const sections = getLessonSectionsForCategory(activeCategory);
-    const catMeta = CATEGORY_META.find((c) => c.id === activeCategory);
     const section = sections[lessonSectionIndex] ?? sections[0];
     const isLastSection = lessonSectionIndex === sections.length - 1;
 
@@ -1138,11 +1139,19 @@ export function ScamHomePage() {
             />
           </div>
 
-        {/* Simulated scenario card (SMS or Email) */}
+        {/* Simulated scenario card tailored per category */}
         <Card
           title={
             activeCategory === "sms"
               ? "Inspect this text message carefully"
+              : activeCategory === "qr"
+              ? "Inspect this QR code offer carefully"
+              : activeCategory === "prize"
+              ? "Inspect this prize or giveaway announcement carefully"
+              : activeCategory === "impersonation"
+              ? "Inspect this direct message and profile carefully"
+              : activeCategory === "financial"
+              ? "Inspect this earning or financial offer carefully"
               : "Read this email carefully"
           }
         >
@@ -1194,6 +1203,314 @@ export function ScamHomePage() {
                 aria-label="Simulated text message body"
               >
                 <p style={{ margin: 0 }}>{pScenario.body}</p>
+              </div>
+            </div>
+          ) : activeCategory === "qr" ? (
+            <div
+              style={{
+                maxWidth: "480px",
+                margin: "0 auto 1.25rem",
+                background: "#ffffff",
+                borderRadius: "18px",
+                padding: "1.25rem",
+                border: "2px solid #cbd5e1",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+              }}
+            >
+              {pScenario.contextLocation && (
+                <div
+                  style={{
+                    display: "inline-block",
+                    background: "#fef3c7",
+                    color: "#92400e",
+                    padding: "0.25rem 0.65rem",
+                    borderRadius: "999px",
+                    fontSize: "0.78rem",
+                    fontWeight: "700",
+                    marginBottom: "0.85rem",
+                  }}
+                >
+                  📍 {pScenario.contextLocation}
+                </div>
+              )}
+              {pScenario.posterHeadline && (
+                <div
+                  style={{
+                    fontWeight: "800",
+                    fontSize: "1.05rem",
+                    color: "#0f172a",
+                    marginBottom: "0.85rem",
+                  }}
+                >
+                  {pScenario.posterHeadline}
+                </div>
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "1rem",
+                  alignItems: "center",
+                  background: "#f8fafc",
+                  borderRadius: "14px",
+                  padding: "0.85rem",
+                  border: "1px solid #e2e8f0",
+                  marginBottom: "0.85rem",
+                }}
+              >
+                <div
+                  style={{
+                    width: "80px",
+                    height: "80px",
+                    flexShrink: 0,
+                    background: "#0f172a",
+                    borderRadius: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#ffffff",
+                    fontSize: "2rem",
+                  }}
+                  aria-label="QR Code Symbol"
+                >
+                  📷
+                </div>
+                <div style={{ flex: 1, fontSize: "0.92rem", color: "#334155" }}>
+                  <p style={{ margin: 0, lineHeight: 1.5 }}>{pScenario.body}</p>
+                </div>
+              </div>
+              {pScenario.qrUrl && (
+                <div
+                  style={{
+                    background: "#eff6ff",
+                    border: "1.5px dashed #93c5fd",
+                    borderRadius: "10px",
+                    padding: "0.6rem 0.85rem",
+                    fontSize: "0.82rem",
+                    color: "#1e40af",
+                    wordBreak: "break-all",
+                  }}
+                >
+                  <strong>🔗 Camera URL Preview:</strong>{" "}
+                  <code>{pScenario.qrUrl}</code>
+                </div>
+              )}
+            </div>
+          ) : activeCategory === "prize" ? (
+            <div
+              style={{
+                maxWidth: "480px",
+                margin: "0 auto 1.25rem",
+                background: "linear-gradient(135deg, #fffbeb 0%, #ffffff 100%)",
+                borderRadius: "18px",
+                padding: "1.25rem",
+                border: "2px solid #fde68a",
+                boxShadow: "0 4px 14px rgba(245, 158, 11, 0.12)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                <span
+                  style={{
+                    background: "#fef3c7",
+                    color: "#b45309",
+                    padding: "0.25rem 0.75rem",
+                    borderRadius: "999px",
+                    fontSize: "0.8rem",
+                    fontWeight: "800",
+                  }}
+                >
+                  {pScenario.prizeTag ?? "🎉 Prize Announcement"}
+                </span>
+                {pScenario.sender && (
+                  <span style={{ fontSize: "0.8rem", color: "#64748b" }}>
+                    From: {pScenario.sender}
+                  </span>
+                )}
+              </div>
+              {pScenario.prizeHeading && (
+                <h3
+                  style={{
+                    fontSize: "1.1rem",
+                    fontWeight: "800",
+                    color: "#78350f",
+                    margin: "0 0 0.75rem",
+                  }}
+                >
+                  {pScenario.prizeHeading}
+                </h3>
+              )}
+              <div
+                style={{
+                  background: "#ffffff",
+                  borderRadius: "12px",
+                  padding: "0.95rem",
+                  border: "1px solid #fef3c7",
+                  lineHeight: "1.65",
+                  fontSize: "0.95rem",
+                  color: "#1e293b",
+                }}
+              >
+                {pScenario.body}
+              </div>
+            </div>
+          ) : activeCategory === "impersonation" ? (
+            <div
+              style={{
+                maxWidth: "460px",
+                margin: "0 auto 1.25rem",
+                background: "#ffffff",
+                borderRadius: "18px",
+                padding: "1rem",
+                border: "1.5px solid #cbd5e1",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  borderBottom: "1px solid #f1f5f9",
+                  paddingBottom: "0.6rem",
+                  marginBottom: "0.85rem",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                  <div
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "50%",
+                      background: "#e2e8f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "1.2rem",
+                    }}
+                  >
+                    {pScenario.avatarIcon ?? "👤"}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: "700", fontSize: "0.9rem", color: "#0f172a" }}>
+                      {pScenario.senderHandle ?? pScenario.sender ?? "Chat User"}
+                    </div>
+                    <div style={{ fontSize: "0.76rem", color: "#64748b" }}>
+                      {pScenario.platform ?? "Direct Message"}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  {pScenario.verifiedBadge ? (
+                    <span
+                      style={{
+                        background: "#dcfce7",
+                        color: "#166534",
+                        fontSize: "0.74rem",
+                        fontWeight: "700",
+                        padding: "0.2rem 0.5rem",
+                        borderRadius: "999px",
+                      }}
+                    >
+                      ✓ Verified
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        background: "#fef2f2",
+                        color: "#991b1b",
+                        fontSize: "0.74rem",
+                        fontWeight: "700",
+                        padding: "0.2rem 0.5rem",
+                        borderRadius: "999px",
+                      }}
+                    >
+                      ⚠️ Unverified
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#f1f5f9",
+                  borderRadius: "14px 14px 14px 4px",
+                  padding: "0.85rem 1rem",
+                  lineHeight: "1.6",
+                  fontSize: "0.95rem",
+                  color: "#0f172a",
+                }}
+              >
+                {pScenario.body}
+              </div>
+            </div>
+          ) : activeCategory === "financial" ? (
+            <div
+              style={{
+                maxWidth: "480px",
+                margin: "0 auto 1.25rem",
+                background: "linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)",
+                borderRadius: "18px",
+                padding: "1.25rem",
+                border: "2px solid #bbf7d0",
+                boxShadow: "0 4px 14px rgba(22, 163, 74, 0.08)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                <span
+                  style={{
+                    background: "#dcfce7",
+                    color: "#15803d",
+                    padding: "0.25rem 0.75rem",
+                    borderRadius: "999px",
+                    fontSize: "0.78rem",
+                    fontWeight: "800",
+                  }}
+                >
+                  💰 {pScenario.guaranteeBadge ?? "Financial Offer"}
+                </span>
+                {pScenario.sender && (
+                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>
+                    {pScenario.sender}
+                  </span>
+                )}
+              </div>
+              {pScenario.offerHeadline && (
+                <h3
+                  style={{
+                    fontSize: "1.1rem",
+                    fontWeight: "800",
+                    color: "#14532d",
+                    margin: "0 0 0.75rem",
+                  }}
+                >
+                  {pScenario.offerHeadline}
+                </h3>
+              )}
+              <div
+                style={{
+                  background: "#ffffff",
+                  borderRadius: "12px",
+                  padding: "0.95rem",
+                  border: "1px solid #bbf7d0",
+                  lineHeight: "1.65",
+                  fontSize: "0.95rem",
+                  color: "#1e293b",
+                }}
+              >
+                {pScenario.body}
               </div>
             </div>
           ) : (
@@ -1256,9 +1573,12 @@ export function ScamHomePage() {
           )}
 
           <p style={{ fontWeight: "600", marginBottom: "0.65rem" }}>
-            {activeCategory === "sms"
-              ? "Does this text message look suspicious or safe?"
-              : "Does this email look suspicious or safe?"}
+            {activeCategory === "sms" && "Does this text message look suspicious or safe?"}
+            {activeCategory === "qr" && "Does this QR code offer look suspicious or safe?"}
+            {activeCategory === "prize" && "Does this prize announcement look suspicious or safe?"}
+            {activeCategory === "impersonation" && "Does this sender and message look suspicious or safe?"}
+            {activeCategory === "financial" && "Does this earning or financial offer look suspicious or safe?"}
+            {(activeCategory === "phishing" || !activeCategory) && "Does this email look suspicious or safe?"}
           </p>
 
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
@@ -1306,9 +1626,18 @@ export function ScamHomePage() {
                     fontSize: "0.9rem",
                   }}
                 >
-                  {activeCategory === "sms"
-                    ? "This was a scam text message. In real life, clicking links or replying to messages like this could compromise your phone, accounts, or personal safety."
-                    : "This was a phishing email. In real life, clicking links like this could expose your personal information."}
+                  {activeCategory === "sms" &&
+                    "This was a scam text message. In real life, clicking links or replying to messages like this could compromise your phone, accounts, or personal safety."}
+                  {activeCategory === "qr" &&
+                    "This was a malicious or fake QR code offer. Scanning unverified QR codes or visiting suspicious preview links can lead to malware or stolen card details."}
+                  {activeCategory === "prize" &&
+                    "This was a prize or giveaway scam. Real prizes never demand fees, gift cards, or secret passwords to claim."}
+                  {activeCategory === "impersonation" &&
+                    "This was an impersonation scam. Scammers pretend to be friends, teachers, or administrators to steal accounts or emergency money."}
+                  {activeCategory === "financial" &&
+                    "This was a deceptive financial offer. Guaranteed rapid profits, money doublers, and upfront fee jobs are traps."}
+                  {(activeCategory === "phishing" || !activeCategory) &&
+                    "This was a phishing email. In real life, clicking links like this could expose your personal information."}
                 </p>
               )}
 
@@ -1323,9 +1652,18 @@ export function ScamHomePage() {
                     fontSize: "0.9rem",
                   }}
                 >
-                  {activeCategory === "sms"
-                    ? "This text message was actually safe. It is good to be alert, but reading the message calmly and checking what it asks for helps you tell the difference."
-                    : "This email was actually safe. It is good to be careful, but reading the email calmly can help you tell the difference."}
+                  {activeCategory === "sms" &&
+                    "This text message was actually safe. It is good to be alert, but reading the message calmly and checking what it asks for helps you tell the difference."}
+                  {activeCategory === "qr" &&
+                    "This QR code was actually safe and official. Checking that it is professionally printed, on a trusted domain, and asks for no credentials lets you know it is safe."}
+                  {activeCategory === "prize" &&
+                    "This award notification was actually legitimate and safe. It comes from a verified teacher or program you actually participated in."}
+                  {activeCategory === "impersonation" &&
+                    "This announcement was actually from a verified source. Official channels with verified badges and official school links can be trusted."}
+                  {activeCategory === "financial" &&
+                    "This financial opportunity was legitimate. Regulated institutions like national banks and official school programs are safe."}
+                  {(activeCategory === "phishing" || !activeCategory) &&
+                    "This email was actually safe. It is good to be careful, but reading the email calmly can help you tell the difference."}
                 </p>
               )}
 

@@ -261,3 +261,205 @@ describe("WiseCub Scam Safety - Scam Text Messages Level", () => {
   });
 });
 
+describe("WiseCub Scam Safety - Fake QR-code Offers Level (qr)", () => {
+  beforeEach(() => {
+    mockStorage.clear();
+  });
+
+  it("QR Level Content: Contains 7 lesson sections and 8 scenarios with correct answer distribution", async () => {
+    const { getLessonSectionsForCategory, getScenariosForCategory } = await import(
+      "../modules/scam-safety/data/smsScenarios.ts"
+    );
+
+    const sections = getLessonSectionsForCategory("qr");
+    assert.equal(sections.length, 7, "QR lesson must contain 7 sections");
+    const headings = sections.map((s) => s.heading);
+    assert.ok(headings.some((h) => h.includes("Quishing")), "Should cover Quishing");
+    assert.ok(headings.some((h) => h.includes("Sticker")), "Should cover sticker trick");
+    assert.ok(headings.some((h) => h.includes("Preview")), "Should cover checking preview link");
+
+    const scenarios = getScenariosForCategory("qr");
+    assert.equal(scenarios.length, 8, "Must contain 8 QR scenarios");
+    let suspiciousCount = 0;
+    let safeCount = 0;
+
+    for (const sc of scenarios) {
+      assert.ok(sc.id >= 301 && sc.id <= 308, `Invalid scenario ID: ${sc.id}`);
+      assert.ok(sc.body.length > 0, "Scenario must have body");
+      assert.ok(sc.warningSigns.length >= 2, "Must provide warning signs");
+      assert.ok(sc.explanation.length > 0, "Must provide explanation");
+      assert.ok(sc.tip.length > 0, "Must provide tip");
+
+      if (sc.correctAnswer === "Suspicious") suspiciousCount++;
+      if (sc.correctAnswer === "Looks Safe") safeCount++;
+    }
+
+    assert.equal(suspiciousCount, 5, "Must have 5 suspicious QR scenarios");
+    assert.equal(safeCount, 3, "Must have 3 safe QR scenarios");
+  });
+
+  it("QR Level Unlocking: Passing QR with >= 80% unlocks Prize scams (prize)", () => {
+    saveCategoryProgress("phishing", 80);
+    saveCategoryProgress("sms", 80);
+
+    // Score 70% on QR
+    const pFail = saveCategoryProgress("qr", 70);
+    assert.equal(getCategoryStatus("prize", pFail.completedCategories), "locked");
+
+    // Score 80% on QR
+    const pPass = saveCategoryProgress("qr", 80);
+    assert.equal(getCategoryStatus("qr", pPass.completedCategories), "completed");
+    assert.equal(getCategoryStatus("prize", pPass.completedCategories), "available");
+  });
+});
+
+describe("WiseCub Scam Safety - Prize and Giveaway Scams Level (prize)", () => {
+  beforeEach(() => {
+    mockStorage.clear();
+  });
+
+  it("Prize Level Content: Contains 7 lesson sections and 8 scenarios with correct answer distribution", async () => {
+    const { getLessonSectionsForCategory, getScenariosForCategory } = await import(
+      "../modules/scam-safety/data/smsScenarios.ts"
+    );
+
+    const sections = getLessonSectionsForCategory("prize");
+    assert.equal(sections.length, 7, "Prize lesson must contain 7 sections");
+    const headings = sections.map((s) => s.heading);
+    assert.ok(headings.some((h) => h.includes("Wheel") || h.includes("Mystery")), "Should cover spin wheel/mystery box");
+    assert.ok(headings.some((h) => h.includes("Shipping Fee") || h.includes("Advance")), "Should cover advance fees");
+
+    const scenarios = getScenariosForCategory("prize");
+    assert.equal(scenarios.length, 8, "Must contain 8 prize scenarios");
+    let suspiciousCount = 0;
+    let safeCount = 0;
+
+    for (const sc of scenarios) {
+      assert.ok(sc.id >= 401 && sc.id <= 408, `Invalid scenario ID: ${sc.id}`);
+      assert.ok(sc.body.length > 0, "Scenario must have body");
+      assert.ok(sc.warningSigns.length >= 2, "Must provide warning signs");
+      assert.ok(sc.explanation.length > 0, "Must provide explanation");
+      assert.ok(sc.tip.length > 0, "Must provide tip");
+
+      if (sc.correctAnswer === "Suspicious") suspiciousCount++;
+      if (sc.correctAnswer === "Looks Safe") safeCount++;
+    }
+
+    assert.equal(suspiciousCount, 5, "Must have 5 suspicious prize scenarios");
+    assert.equal(safeCount, 3, "Must have 3 safe prize scenarios");
+  });
+
+  it("Prize Level Unlocking: Passing Prize with >= 80% unlocks Impersonation scams (impersonation)", () => {
+    saveCategoryProgress("phishing", 80);
+    saveCategoryProgress("sms", 80);
+    saveCategoryProgress("qr", 80);
+
+    const pFail = saveCategoryProgress("prize", 60);
+    assert.equal(getCategoryStatus("impersonation", pFail.completedCategories), "locked");
+
+    const pPass = saveCategoryProgress("prize", 80);
+    assert.equal(getCategoryStatus("prize", pPass.completedCategories), "completed");
+    assert.equal(getCategoryStatus("impersonation", pPass.completedCategories), "available");
+  });
+});
+
+describe("WiseCub Scam Safety - Impersonation Scams Level (impersonation)", () => {
+  beforeEach(() => {
+    mockStorage.clear();
+  });
+
+  it("Impersonation Level Content: Contains 7 lesson sections and 8 scenarios with correct answer distribution", async () => {
+    const { getLessonSectionsForCategory, getScenariosForCategory } = await import(
+      "../modules/scam-safety/data/smsScenarios.ts"
+    );
+
+    const sections = getLessonSectionsForCategory("impersonation");
+    assert.equal(sections.length, 7, "Impersonation lesson must contain 7 sections");
+    const headings = sections.map((s) => s.heading);
+    assert.ok(headings.some((h) => h.includes("Game Moderators") || h.includes("Admin")), "Should cover fake mods/admins");
+    assert.ok(headings.some((h) => h.includes("Cloned")), "Should cover cloned profiles");
+
+    const scenarios = getScenariosForCategory("impersonation");
+    assert.equal(scenarios.length, 8, "Must contain 8 impersonation scenarios");
+    let suspiciousCount = 0;
+    let safeCount = 0;
+
+    for (const sc of scenarios) {
+      assert.ok(sc.id >= 501 && sc.id <= 508, `Invalid scenario ID: ${sc.id}`);
+      assert.ok(sc.body.length > 0, "Scenario must have body");
+      assert.ok(sc.warningSigns.length >= 2, "Must provide warning signs");
+      assert.ok(sc.explanation.length > 0, "Must provide explanation");
+      assert.ok(sc.tip.length > 0, "Must provide tip");
+
+      if (sc.correctAnswer === "Suspicious") suspiciousCount++;
+      if (sc.correctAnswer === "Looks Safe") safeCount++;
+    }
+
+    assert.equal(suspiciousCount, 5, "Must have 5 suspicious impersonation scenarios");
+    assert.equal(safeCount, 3, "Must have 3 safe impersonation scenarios");
+  });
+
+  it("Impersonation Level Unlocking: Passing Impersonation with >= 80% unlocks Financial scams (financial)", () => {
+    saveCategoryProgress("phishing", 80);
+    saveCategoryProgress("sms", 80);
+    saveCategoryProgress("qr", 80);
+    saveCategoryProgress("prize", 80);
+
+    const pFail = saveCategoryProgress("impersonation", 75);
+    assert.equal(getCategoryStatus("financial", pFail.completedCategories), "locked");
+
+    const pPass = saveCategoryProgress("impersonation", 85);
+    assert.equal(getCategoryStatus("impersonation", pPass.completedCategories), "completed");
+    assert.equal(getCategoryStatus("financial", pPass.completedCategories), "available");
+  });
+});
+
+describe("WiseCub Scam Safety - Deceptive Financial Offers Level (financial)", () => {
+  beforeEach(() => {
+    mockStorage.clear();
+  });
+
+  it("Financial Level Content: Contains 7 lesson sections and 8 scenarios with correct answer distribution", async () => {
+    const { getLessonSectionsForCategory, getScenariosForCategory } = await import(
+      "../modules/scam-safety/data/smsScenarios.ts"
+    );
+
+    const sections = getLessonSectionsForCategory("financial");
+    assert.equal(sections.length, 7, "Financial lesson must contain 7 sections");
+    const headings = sections.map((s) => s.heading);
+    assert.ok(headings.some((h) => h.includes("Doubler")), "Should cover money doublers");
+    assert.ok(headings.some((h) => h.includes("Pyramid")), "Should cover pyramid schemes");
+
+    const scenarios = getScenariosForCategory("financial");
+    assert.equal(scenarios.length, 8, "Must contain 8 financial scenarios");
+    let suspiciousCount = 0;
+    let safeCount = 0;
+
+    for (const sc of scenarios) {
+      assert.ok(sc.id >= 601 && sc.id <= 608, `Invalid scenario ID: ${sc.id}`);
+      assert.ok(sc.body.length > 0, "Scenario must have body");
+      assert.ok(sc.warningSigns.length >= 2, "Must provide warning signs");
+      assert.ok(sc.explanation.length > 0, "Must provide explanation");
+      assert.ok(sc.tip.length > 0, "Must provide tip");
+
+      if (sc.correctAnswer === "Suspicious") suspiciousCount++;
+      if (sc.correctAnswer === "Looks Safe") safeCount++;
+    }
+
+    assert.equal(suspiciousCount, 5, "Must have 5 suspicious financial scenarios");
+    assert.equal(safeCount, 3, "Must have 3 safe financial scenarios");
+  });
+
+  it("End-to-End Progression: Completing all 6 categories unlocks entire journey", () => {
+    const cats: CategoryId[] = ["phishing", "sms", "qr", "prize", "impersonation", "financial"];
+    for (const c of cats) {
+      const p = saveCategoryProgress(c, 100);
+      assert.ok(p.completedCategories.includes(c));
+    }
+    const finalState = loadScamProgress();
+    assert.equal(finalState.completedCategories.length, 6);
+    assert.ok(cats.every((c) => finalState.completedCategories.includes(c)));
+  });
+});
+
+
