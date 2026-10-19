@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
+import { useDemoChild } from '../../../pages/auth/demoSession';
 import { MISSION_CATALOG } from '../data/missions/catalog';
 import { RESCUE_PUPPY_MISSION } from '../data/missions/rescuePuppy';
-import { LevelDefinition, LevelMasteryResult } from '../types/mission.types';
-import { UserLearningState } from '../types/progress.types';
-import { PrototypeStorage } from '../services/prototypeStorage';
+import { useMissionProgress } from '../hooks/useMissionProgress';
+import { getCompetencyHistory } from '../services/gamifiedApi';
 import { DecisionLogger } from '../services/decisionLogger';
-import { FinancialSimulationEngine } from '../engine/financialSimulationEngine';
-import { CompetencyEvaluationEngine } from '../engine/competencyEvaluationEngine';
-import { EmotionalStateEngine } from '../engine/emotionalStateEngine';
-import { LevelMasteryEngine } from '../engine/levelMasteryEngine';
+import { INITIAL_COMPETENCY_PROFILE, INITIAL_PUPPY_STATE } from '../services/prototypeStorage';
+import { CompetencyProfile } from '../types/competency.types';
+import { LevelDefinition } from '../types/mission.types';
+import { MissionProgress } from '../types/progress.types';
 
 // Components
 import { MissionHubView } from '../components/hub/MissionHubView';
@@ -37,32 +37,101 @@ type PageViewMode =
   | 'RETRY'
   | 'MISSION_COMPLETE';
 
+function getFriendlySkillName(comp: string): string {
+  switch (comp) {
+    case 'budgetingSkill':
+      return 'Budgeting Boss';
+    case 'spendingDiscipline':
+      return 'Smart Spending';
+    case 'savingBehavior':
+      return 'Savings Hero';
+    case 'investmentAwareness':
+      return 'Value Hunter';
+    case 'goalAchievement':
+      return 'Goal Crusher';
+    default:
+      return 'Money Smart';
+  }
+}
+
 export function MissionBoardPage() {
-  const [userState, setUserState] = useState<UserLearningState>(() =>
-    PrototypeStorage.getUserState()
-  );
+  const { child, authReady } = useDemoChild();
   const [viewMode, setViewMode] = useState<PageViewMode>('HUB');
   const [selectedMissionId, setSelectedMissionId] = useState<string>('mission_rescue_puppy');
   const [currentLevelNumber, setCurrentLevelNumber] = useState<number>(1);
-  const [currentMasteryResult, setCurrentMasteryResult] = useState<LevelMasteryResult | null>(null);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState<boolean>(false);
   const [lockedAlertLevel, setLockedAlertLevel] = useState<LevelDefinition | null>(null);
+  const [competencyProfile, setCompetencyProfile] = useState<CompetencyProfile>(INITIAL_COMPETENCY_PROFILE);
 
-  // Synchronize user state
+  const {
+    progress,
+    submitting,
+    error: apiError,
+    lastMasteryResult,
+    beginLevel,
+    submitOptionSelection,
+    submitAllocation,
+    submitMultiPeriod,
+    clearError,
+    resetProgress,
+  } = useMissionProgress(selectedMissionId, child?.username || child?.name);
+
+  // Synchronize current unlocked level when progress loads or updates
   useEffect(() => {
-    const loaded = PrototypeStorage.getUserState();
-    setUserState(loaded);
-    const puppyProgress = loaded.missionProgress['mission_rescue_puppy'];
-    if (puppyProgress) {
-      setCurrentLevelNumber(puppyProgress.unlockedLevelNumber);
+    if (progress?.unlockedLevelNumber) {
+      setCurrentLevelNumber(progress.unlockedLevelNumber);
     }
-  }, []);
+  }, [progress?.unlockedLevelNumber]);
+
+  // Synchronize competency profile when analytics opens or mastery result arrives
+  useEffect(() => {
+    if (lastMasteryResult) {
+      setCompetencyProfile((prev) => ({
+        ...prev,
+        budgetingSkill: lastMasteryResult.dimensionScores.budgetingSkill ?? prev.budgetingSkill,
+        spendingDiscipline: lastMasteryResult.dimensionScores.spendingDiscipline ?? prev.spendingDiscipline,
+        savingBehavior: lastMasteryResult.dimensionScores.savingBehavior ?? prev.savingBehavior,
+        investmentAwareness: lastMasteryResult.dimensionScores.investmentAwareness ?? prev.investmentAwareness,
+        goalAchievement: lastMasteryResult.dimensionScores.goalAchievement ?? prev.goalAchievement,
+        lastUpdatedIso: lastMasteryResult.timestamp,
+      }));
+    }
+  }, [lastMasteryResult]);
+
+  useEffect(() => {
+    if (showAnalyticsModal) {
+      getCompetencyHistory(selectedMissionId)
+        .then((hist) => {
+          if (hist.current_profile && Object.keys(hist.current_profile).length > 0) {
+            setCompetencyProfile((prev) => ({
+              ...prev,
+              budgetingSkill: hist.current_profile.budgetingSkill ?? prev.budgetingSkill,
+              spendingDiscipline: hist.current_profile.spendingDiscipline ?? prev.spendingDiscipline,
+              savingBehavior: hist.current_profile.savingBehavior ?? prev.savingBehavior,
+              investmentAwareness: hist.current_profile.investmentAwareness ?? prev.investmentAwareness,
+              goalAchievement: hist.current_profile.goalAchievement ?? prev.goalAchievement,
+            }));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [showAnalyticsModal, selectedMissionId]);
 
   const currentMission =
     MISSION_CATALOG.find((m) => m.id === selectedMissionId) || RESCUE_PUPPY_MISSION;
-  const puppyProgress =
-    userState.missionProgress['mission_rescue_puppy'] ||
-    userState.missionProgress[selectedMissionId];
+
+  const puppyProgress: MissionProgress = progress || {
+    missionId: selectedMissionId,
+    unlockedLevelNumber: 1,
+    completedLevelNumbers: [],
+    highestCompletedLevelNumber: 0,
+    characterState: { ...INITIAL_PUPPY_STATE },
+    attemptsByLevel: {},
+    lastAttemptAtIso: new Date().toISOString(),
+    isMissionCompleted: false,
+    earnedCoins: 0,
+  };
+
   const activeLevel =
     currentMission.levels.find((l) => l.levelNumber === currentLevelNumber) ||
     currentMission.levels[0];
@@ -78,9 +147,14 @@ export function MissionBoardPage() {
     setViewMode('MAP');
   };
 
-  const handleSelectLevelFromMap = (lvlNumber: number) => {
+  const handleSelectLevelFromMap = async (lvlNumber: number) => {
     const isUnlocked = lvlNumber <= puppyProgress.unlockedLevelNumber;
     if (isUnlocked) {
+      try {
+        await beginLevel(lvlNumber);
+      } catch (e) {
+        console.warn('Server lock warning:', e);
+      }
       setCurrentLevelNumber(lvlNumber);
       DecisionLogger.logEvent(
         selectedMissionId,
@@ -98,24 +172,67 @@ export function MissionBoardPage() {
     setLockedAlertLevel(lvl);
   };
 
-  const handleResetDemoData = () => {
-    const fresh = PrototypeStorage.resetDemoData();
-    DecisionLogger.clearEvents();
-    setUserState(fresh);
-    setCurrentLevelNumber(1);
-    setCurrentMasteryResult(null);
-    setViewMode('HUB');
-    setShowAnalyticsModal(false);
+  const handleResetDemoData = async () => {
+    try {
+      await resetProgress();
+      DecisionLogger.clearEvents();
+      setCurrentLevelNumber(1);
+      setViewMode('HUB');
+      setShowAnalyticsModal(false);
+    } catch (e) {
+      console.error('Failed to reset demo progress', e);
+    }
   };
 
   // -------------------------------------------------------------
-  // Core Decision Execution & State Machine
+  // Authoritative Backend Decision Handlers (CDEMF + MongoDB)
   // -------------------------------------------------------------
-  const processDecisionOutcome = (
-    financialState: any,
-    outcome: any,
-    selectedOptionIds?: string[],
-    selectedRationaleId?: string
+  const handleOptionSelectionSubmit = async (selectedOptionIds: string[]) => {
+    DecisionLogger.logEvent(
+      selectedMissionId,
+      activeLevel.id,
+      activeLevel.levelNumber,
+      (puppyProgress.attemptsByLevel[activeLevel.levelNumber]?.length || 0) + 1,
+      'DECISION_SUBMITTED',
+      { selectedOptionIds }
+    );
+    try {
+      await submitOptionSelection({
+        levelId: activeLevel.id,
+        levelNumber: activeLevel.levelNumber,
+        interactionType: activeLevel.interactionType,
+        selectedOptionIds,
+      });
+      setViewMode('TRANSITION');
+    } catch (err) {
+      console.error('Option submission failed:', err);
+    }
+  };
+
+  const handleCategoryAllocationsSubmit = async (allocations: Record<string, number>) => {
+    DecisionLogger.logEvent(
+      selectedMissionId,
+      activeLevel.id,
+      activeLevel.levelNumber,
+      (puppyProgress.attemptsByLevel[activeLevel.levelNumber]?.length || 0) + 1,
+      'DECISION_SUBMITTED',
+      { allocations }
+    );
+    try {
+      await submitAllocation({
+        levelId: activeLevel.id,
+        levelNumber: activeLevel.levelNumber,
+        interactionType: activeLevel.interactionType,
+        allocations,
+      });
+      setViewMode('TRANSITION');
+    } catch (err) {
+      console.error('Allocation submission failed:', err);
+    }
+  };
+
+  const handleMultiPeriodSavingSubmit = async (
+    weeklyDecisions: Array<{ period: number; savedAmountLKR: number; resistedTemptation: boolean }>
   ) => {
     DecisionLogger.logEvent(
       selectedMissionId,
@@ -123,134 +240,61 @@ export function MissionBoardPage() {
       activeLevel.levelNumber,
       (puppyProgress.attemptsByLevel[activeLevel.levelNumber]?.length || 0) + 1,
       'DECISION_SUBMITTED',
-      {
-        selectedOptionIds,
-        allocations: financialState.allocatedCategories,
-        totalSpentLKR: financialState.totalSpentLKR,
-        selectedRationaleId,
-      }
+      { weeklyDecisions }
     );
-
-    // 1. Competency Evaluation
-    const compEval = CompetencyEvaluationEngine.evaluateDecision(
-      activeLevel,
-      financialState,
-      outcome,
-      selectedRationaleId
-    );
-
-    // 2. Emotional State Transition
-    const { newState: newPuppyState, transition } = EmotionalStateEngine.deriveCharacterState(
-      puppyProgress.characterState,
-      financialState,
-      outcome,
-      activeLevel
-    );
-
-    // 3. Strict Level Mastery & Gating
-    const masteryResult = LevelMasteryEngine.evaluatePassFail(
-      activeLevel,
-      financialState,
-      outcome,
-      compEval.dimensionScores,
-      transition,
-      selectedOptionIds,
-      selectedRationaleId
-    );
-
-    // 4. Update Profile
-    const updatedProfile = CompetencyEvaluationEngine.updateCumulativeProfile(
-      userState.competencyProfile,
-      compEval.dimensionScores,
-      compEval.secondaryScores
-    );
-
-    // 5. Persist Progress
-    const updatedUserState = PrototypeStorage.recordLevelAttempt(
-      selectedMissionId,
-      activeLevel.levelNumber,
-      activeLevel.id,
-      masteryResult,
-      newPuppyState,
-      updatedProfile
-    );
-
-    setUserState(updatedUserState);
-    setCurrentMasteryResult(masteryResult);
-
-    // 6. Log Events
-    DecisionLogger.logEvent(
-      selectedMissionId,
-      activeLevel.id,
-      activeLevel.levelNumber,
-      (puppyProgress.attemptsByLevel[activeLevel.levelNumber]?.length || 0) + 1,
-      'CHARACTER_STATE_CHANGED',
-      { transition }
-    );
-
-    DecisionLogger.logEvent(
-      selectedMissionId,
-      activeLevel.id,
-      activeLevel.levelNumber,
-      (puppyProgress.attemptsByLevel[activeLevel.levelNumber]?.length || 0) + 1,
-      masteryResult.passed ? 'LEVEL_PASSED' : 'LEVEL_FAILED',
-      { passed: masteryResult.passed, score: masteryResult.overallScore }
-    );
-
-    // 7. Transition view first!
-    setViewMode('TRANSITION');
+    try {
+      await submitMultiPeriod({
+        levelId: activeLevel.id,
+        levelNumber: activeLevel.levelNumber,
+        weeklyDecisions: weeklyDecisions.map((w) => ({
+          period: w.period,
+          saved_amount_lkr: w.savedAmountLKR,
+          resisted_temptation: w.resistedTemptation,
+        })),
+      });
+      setViewMode('TRANSITION');
+    } catch (err) {
+      console.error('Multi-period submission failed:', err);
+    }
   };
 
-  // Challenge specific handlers
-  const handleOptionSelectionSubmit = (selectedOptionIds: string[]) => {
-    const { financialState, outcome } = FinancialSimulationEngine.evaluateOptionSelections(
-      activeLevel,
-      selectedOptionIds,
-      activeLevel.existingReserveLKR || 0
-    );
-    processDecisionOutcome(financialState, outcome, selectedOptionIds);
-  };
-
-  const handleCategoryAllocationsSubmit = (allocations: Record<string, number>) => {
-    const { financialState, outcome } = FinancialSimulationEngine.evaluateCategoryAllocations(
-      activeLevel,
-      allocations,
-      activeLevel.existingReserveLKR || 0
-    );
-    processDecisionOutcome(financialState, outcome);
-  };
-
-  const handleMultiPeriodSavingSubmit = (
-    weeklyDecisions: Array<{ period: number; savedAmountLKR: number; resistedTemptation: boolean }>
-  ) => {
-    const { financialState, outcome } = FinancialSimulationEngine.evaluateMultiPeriodSavings(
-      activeLevel,
-      weeklyDecisions
-    );
-    processDecisionOutcome(financialState, outcome);
-  };
-
-  const handleTradeoffJustificationSubmit = (
+  const handleTradeoffJustificationSubmit = async (
     selectedOptionIds: string[],
     selectedRationaleId: string
   ) => {
-    const { financialState, outcome } = FinancialSimulationEngine.evaluateOptionSelections(
-      activeLevel,
-      selectedOptionIds,
-      activeLevel.existingReserveLKR || 0
+    DecisionLogger.logEvent(
+      selectedMissionId,
+      activeLevel.id,
+      activeLevel.levelNumber,
+      (puppyProgress.attemptsByLevel[activeLevel.levelNumber]?.length || 0) + 1,
+      'DECISION_SUBMITTED',
+      { selectedOptionIds, selectedRationaleId }
     );
-    processDecisionOutcome(financialState, outcome, selectedOptionIds, selectedRationaleId);
+    try {
+      await submitOptionSelection({
+        levelId: activeLevel.id,
+        levelNumber: activeLevel.levelNumber,
+        interactionType: activeLevel.interactionType,
+        selectedOptionIds,
+        selectedRationaleId,
+      });
+      setViewMode('TRANSITION');
+    } catch (err) {
+      console.error('Tradeoff submission failed:', err);
+    }
   };
 
   // -------------------------------------------------------------
   // Flow Handlers after Evaluation
   // -------------------------------------------------------------
   const handleProceedAfterEvaluation = () => {
-    if (activeLevel.levelNumber >= 8) {
+    if (activeLevel.levelNumber >= currentMission.totalLevels && lastMasteryResult?.passed) {
       setViewMode('MISSION_COMPLETE');
     } else {
-      const nextLevelNum = activeLevel.levelNumber + 1;
-      setCurrentLevelNumber(nextLevelNum);
+      const targetLevel = lastMasteryResult?.passed
+        ? Math.min(puppyProgress.unlockedLevelNumber, currentMission.totalLevels)
+        : activeLevel.levelNumber;
+      setCurrentLevelNumber(targetLevel);
       setViewMode('MAP');
     }
   };
@@ -272,6 +316,29 @@ export function MissionBoardPage() {
   // =============================================================
   return (
     <div className="gamified-learning-module">
+      {/* AUTHENTICATION / GUEST NOTIFICATION */}
+      {!child && authReady && (
+        <div style={{ background: '#fff3cd', color: '#856404', padding: '0.6rem 1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid #ffeeba', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>⚠️ You are playing as a guest. Decisions will not be persisted to a verified student account. Please log in to save your progress to MongoDB.</span>
+          <a href="/login" style={{ color: '#533f03', fontWeight: 'bold', textDecoration: 'underline', marginLeft: '1rem' }}>Log In</a>
+        </div>
+      )}
+
+      {/* SERVER ERROR BANNER */}
+      {apiError && (
+        <div style={{ background: '#f8d7da', color: '#721c24', padding: '0.6rem 1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid #f5c6cb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>⚠️ {apiError}</span>
+          <button type="button" onClick={clearError} style={{ background: 'transparent', border: 'none', color: '#721c24', fontWeight: 'bold', cursor: 'pointer' }}>✕</button>
+        </div>
+      )}
+
+      {/* SUBMISSION SPINNER OVERLAY */}
+      {submitting && (
+        <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', color: '#1d4ed8', padding: '0.6rem 1rem', borderRadius: '8px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+          <span>⏳ Persisting financial decision to MongoDB & evaluating Barnaby's recovery...</span>
+        </div>
+      )}
+
       {/* VIEW 1: STORY MISSION HUB */}
       {viewMode === 'HUB' && (
         <MissionHubView
@@ -295,7 +362,9 @@ export function MissionBoardPage() {
               ← Back to Mission Hub
             </button>
             <div className="nav-bar-right">
-              <span className="coins-display">🪙 Virtual Coins: {userState.totalVirtualCoins}</span>
+              <span className="coins-display">
+                <span className="coin-icon" role="img" aria-label="coins">🪙</span> Virtual Coins: {puppyProgress.earnedCoins}
+              </span>
               <button
                 type="button"
                 className="btn-analytics-pill"
@@ -359,31 +428,41 @@ export function MissionBoardPage() {
             size={160}
           />
 
-          {/* Level Story Introduction Card */}
+          {/* Kid-Friendly Mission Briefing Card */}
           <div className="level-intro-card">
-            <div className="intro-meta-row">
-              <span className="meta-topic-pill">
-                🎯 Target Competency:{' '}
-                <strong>
-                  {activeLevel.targetCompetency === 'budgetingSkill'
-                    ? 'Budgeting Skill'
-                    : activeLevel.targetCompetency === 'spendingDiscipline'
-                    ? 'Spending Discipline'
-                    : activeLevel.targetCompetency === 'savingBehavior'
-                    ? 'Saving Behavior'
-                    : activeLevel.targetCompetency === 'investmentAwareness'
-                    ? 'Value & Investment'
-                    : 'Goal Achievement'}
-                </strong>
-              </span>
-              <span className="meta-objective-pill">Story Chapter {activeLevel.levelNumber}</span>
+            <div className="intro-header-row">
+              <div className="intro-badges">
+                <span className="badge-chapter">
+                  ⭐ Chapter {activeLevel.levelNumber} of {currentMission.totalLevels}
+                </span>
+                <span className="badge-skill">
+                  🎯 Skill: {getFriendlySkillName(activeLevel.targetCompetency)}
+                </span>
+                <span className="badge-budget">
+                  💰 Budget: Rs. {activeLevel.startingBudgetLKR.toLocaleString()}
+                </span>
+              </div>
             </div>
+
             <h2 className="intro-title">{activeLevel.title}</h2>
             <p className="intro-subtitle">{activeLevel.subtitle}</p>
-            <p className="intro-story">{activeLevel.storyIntro}</p>
 
-            <div className="learning-objective-box">
-              <strong>Learning Objective:</strong> {activeLevel.learningObjective}
+            <div className="mission-brief-grid">
+              <div className="brief-card story-card">
+                <div className="brief-card-header">
+                  <span className="brief-icon">📖</span>
+                  <span className="brief-label">The Story</span>
+                </div>
+                <p className="brief-text">{activeLevel.storyIntro}</p>
+              </div>
+
+              <div className="brief-card goal-card">
+                <div className="brief-card-header">
+                  <span className="brief-icon">🎯</span>
+                  <span className="brief-label">Your Mission</span>
+                </div>
+                <p className="brief-text">{activeLevel.learningObjective}</p>
+              </div>
             </div>
           </div>
 
@@ -437,28 +516,29 @@ export function MissionBoardPage() {
       )}
 
       {/* VIEW 4: CHARACTER EMOTIONAL & PHYSICAL TRANSITION */}
-      {viewMode === 'TRANSITION' && currentMasteryResult && (
+      {viewMode === 'TRANSITION' && lastMasteryResult && (
         <CharacterTransitionPanel
-          transition={currentMasteryResult.characterTransition}
+          transition={lastMasteryResult.characterTransition}
           onContinue={() => setViewMode('EVALUATION')}
         />
       )}
 
       {/* VIEW 5: COMPETENCY EVALUATION */}
-      {viewMode === 'EVALUATION' && currentMasteryResult && (
+      {viewMode === 'EVALUATION' && lastMasteryResult && (
         <CompetencyEvidenceModal
-          masteryResult={currentMasteryResult}
+          masteryResult={lastMasteryResult}
           onProceed={handleProceedAfterEvaluation}
           onRetry={() => setViewMode('RETRY')}
         />
       )}
 
       {/* VIEW 6: RETRY & REMEDIATION SUPPORT */}
-      {viewMode === 'RETRY' && currentMasteryResult && activeLevel && (
+      {viewMode === 'RETRY' && lastMasteryResult && activeLevel && (
         <RetrySupportPanel
           level={activeLevel}
-          masteryResult={currentMasteryResult}
+          masteryResult={lastMasteryResult}
           attemptNumber={
+            lastMasteryResult.attemptNumber ||
             (puppyProgress.attemptsByLevel[activeLevel.levelNumber]?.length || 1)
           }
           onRetry={handleRetryFromRemediation}
@@ -492,11 +572,11 @@ export function MissionBoardPage() {
               <span className="comp-stat-label">Recovery Vitality</span>
             </div>
             <div className="comp-stat-card">
-              <span className="comp-stat-num">{userState.totalVirtualCoins}</span>
+              <span className="comp-stat-num">{puppyProgress.earnedCoins}</span>
               <span className="comp-stat-label">Virtual Coins Earned</span>
             </div>
             <div className="comp-stat-card">
-              <span className="comp-stat-num">{userState.competencyProfile.overallMasteryLevel}</span>
+              <span className="comp-stat-num">{competencyProfile.overallMasteryLevel}</span>
               <span className="comp-stat-label">Mastery Tier</span>
             </div>
           </div>
@@ -566,7 +646,7 @@ export function MissionBoardPage() {
       {showAnalyticsModal && (
         <LearningAnalyticsModal
           missionProgress={puppyProgress}
-          competencyProfile={userState.competencyProfile}
+          competencyProfile={competencyProfile}
           onClose={() => setShowAnalyticsModal(false)}
           onResetDemo={handleResetDemoData}
         />
