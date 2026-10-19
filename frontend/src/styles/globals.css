@@ -221,6 +221,85 @@ button {
   box-shadow: 0 10px 24px rgba(27, 39, 68, 0.2);
 }
 
+.cub-open-btn:focus-visible,
+.cub-icon-btn:focus-visible,
+.cub-chip:focus-visible,
+.cub-send:focus-visible,
+.cub-mic:focus-visible {
+  outline: 3px solid #1b4d9e;
+  outline-offset: 2px;
+}
+
+.cub-face-img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #fff7d6;
+}
+
+.cub-face-img.is-speaking {
+  animation: cub-speak 0.7s ease-in-out infinite;
+}
+
+.cub-page-tip {
+  margin: 0;
+  padding: 0.45rem 0.75rem 0.2rem;
+  font-size: 0.8rem;
+  color: #3d4a66;
+}
+
+.cub-lang {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+}
+
+.cub-lang button {
+  border: 1px solid #d7dee9;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.cub-lang button.is-on {
+  background: #fff4c2;
+  border-color: #f5c400;
+}
+
+.cub-note {
+  margin: 0;
+  padding: 0 0.75rem 0.7rem;
+  font-size: 0.78rem;
+  color: #5c6b63;
+}
+
+@keyframes cub-speak {
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cub-face-img.is-speaking {
+    animation: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .cub-chat {
+    right: 0.6rem;
+    bottom: 0.6rem;
+    width: min(22.5rem, calc(100vw - 1.2rem));
+  }
+
+  .cub-chat-log {
+    max-height: 10rem;
+  }
+}
+
 .app-header {
   display: flex;
   align-items: center;
