@@ -115,24 +115,22 @@ _L1 = LevelDefinition(
     id="level_puppy_1",
     level_number=1,
     title="Discover the Injured Puppy",
-    subtitle="Recognize Essential Needs vs Optional Wants",
+    subtitle="Needs vs. Wants",
     story_intro=(
-        "While walking home, you find Barnaby huddled under a park bench "
-        "with a sprained, bleeding paw. You have a starting emergency rescue "
-        "fund of Rs.\u202f5,000. Barnaby needs immediate stabilization before nightfall!"
+        "You find Barnaby shivering under a park bench with a hurt paw! You have Rs. 5,000 in "
+        "rescue money. Help him survive the night before it gets dark."
     ),
     learning_objective=(
-        "Distinguish essential survival needs from discretionary wants when "
-        "resources are strictly limited."
+        "Pick only what Barnaby needs to survive right now — save the rest of your cash!"
     ),
     target_competency="spendingDiscipline",
     interaction_type="needs_wants",
     starting_budget_lkr=5000,
     options=(
         DecisionOption("opt_first_aid", "Antiseptic & Sterile Bandage Kit", 2500, "essential_care", True, "certified_good"),
-        DecisionOption("opt_nutrition_pack", "High-Protein Puppy Meal & Clean Water", 1200, "nutrition", True, "certified_good"),
+        DecisionOption("opt_nutrition_pack", "Puppy Meal & Clean Water", 1200, "nutrition", True, "certified_good"),
         DecisionOption("opt_squeaky_toy", "Fancy Squeaky Plush Toy", 1500, "discretionary", False, "luxury_excess"),
-        DecisionOption("opt_cozy_towel", "Warm Thermal Rescue Blanket", 800, "essential_care", False, "certified_good"),
+        DecisionOption("opt_cozy_towel", "Warm Thermal Blanket", 800, "essential_care", False, "certified_good"),
     ),
     pass_criteria=PassCriteria(
         min_competency_score=70,
@@ -143,13 +141,13 @@ _L1 = LevelDefinition(
         min_reserve_preserved_lkr=500,
     ),
     hints=(
-        "Barnaby is bleeding and hungry. Focus your funds on the wound dressing and food first.",
-        "Beware of decorative toys right now—toys cannot disinfect a bleeding paw!",
+        "Barnaby is bleeding and hungry. Focus your funds on medicine and food first.",
+        "Beware of cute toys right now — a squeaky toy cannot fix a hurt paw!",
     ),
     remediation_scaffolding=RemediationScaffolding(
         rule_explanation=(
-            "Essential needs are items that prevent death, worsening injury, or serious harm. "
-            "Wants are nice-to-have but not critical. When budgets are tight, fund essential needs first."
+            "When an emergency occurs, non-negotiable needs (safety, medicine, food) must always "
+            "come first before optional wants (toys, luxury extras)."
         ),
         guiding_questions=(
             "Which items help Barnaby survive this emergency night safely?",
@@ -163,14 +161,13 @@ _L2 = LevelDefinition(
     id="level_puppy_2",
     level_number=2,
     title="Plan the Care Budget",
-    subtitle="Multi-Category Expense Allocation & Emergency Reserve",
+    subtitle="Budgeting & Safety Cushion",
     story_intro=(
-        "Barnaby’s initial wound is dressed, but he needs a comprehensive care plan for the week. "
-        "The community shelter grants you a care budget of Rs. 15,000. You must allocate every "
-        "rupee wisely across veterinary, medication, transport, and reserve categories."
+        "Barnaby’s paw is bandaged, but he needs a full week of care. The shelter gave you Rs. 15,000. "
+        "Split it wisely across his vet check, medicine, transport, and emergency cushion."
     ),
     learning_objective=(
-        "Create a balanced, comprehensive budget that fully covers essential line-items and sets aside an emergency buffer."
+        "Fund all essential care while keeping at least Rs. 2,500 safely tucked away in your emergency cushion."
     ),
     target_competency="budgetingSkill",
     interaction_type="budget_allocator",
@@ -189,8 +186,8 @@ _L2 = LevelDefinition(
         min_reserve_preserved_lkr=2500,
     ),
     hints=(
-        "Total allocated amounts must not exceed Rs. 15,000.",
-        "Make sure the Vet Checkup gets at least Rs. 6,000 and the Emergency Reserve gets at least Rs. 2,500.",
+        "Your total spending must not go over Rs. 15,000.",
+        "Make sure the Vet Check gets at least Rs. 6,000 and the Emergency Safety Cushion gets at least Rs. 2,500.",
     ),
     remediation_scaffolding=RemediationScaffolding(
         rule_explanation=(
@@ -210,14 +207,13 @@ _L3 = LevelDefinition(
     id="level_puppy_3",
     level_number=3,
     title="Save for Treatment",
-    subtitle="Multi-Period Savings Discipline & Goal Progress",
+    subtitle="The 3-Week Saving Challenge",
     story_intro=(
-        "The vet says Barnaby’s torn ligament requires a specialized orthopedic splint in 3 weeks, costing Rs. 12,000. "
-        "You earn a weekly community stipend of Rs. 5,000 for 3 weeks (total Rs. 15,000). Each week brings essential "
-        "living costs and alluring impulse temptations. Will you accumulate the required Rs. 12,000?"
+        "Barnaby needs a Rs. 12,000 leg splint in 3 weeks so he can run again! You get Rs. 5,000 allowance each week. "
+        "Can you cover his food, resist tempting treats, and save Rs. 12,000 in time?"
     ),
     learning_objective=(
-        "Demonstrate multi-period savings discipline by consistently banking funds and resisting non-essential spending temptations."
+        "Bank Rs. 4,000 each week by resisting quick impulse fun so Barnaby gets his splint!"
     ),
     target_competency="savingBehavior",
     interaction_type="multi_period_saving",
@@ -265,8 +261,8 @@ _L3 = LevelDefinition(
         min_reserve_preserved_lkr=12000,
     ),
     hints=(
-        "To reach Rs. 12,000 over 3 weeks, you must save an average of Rs. 4,000 each week!",
-        "Since your weekly income is Rs. 5,000 and mandatory costs are Rs. 1,000, giving in to temptations leaves you short of the goal.",
+        "To reach Rs. 12,000 in 3 weeks, you must stash away Rs. 4,000 every single week!",
+        "After paying Rs. 1,000 for basics, spending money on pizza or arcade games will make you fail the goal.",
     ),
     remediation_scaffolding=RemediationScaffolding(
         rule_explanation=(
@@ -283,14 +279,14 @@ _L3 = LevelDefinition(
 _L4 = LevelDefinition(
     id="level_puppy_4",
     level_number=4,
-    title="Make Smart Purchasing Decisions",
-    subtitle="Value-for-Money Analysis: Cheap Traps vs Certified Care",
+    title="Smart Shopping Decisions",
+    subtitle="Value for Money: Safe Care vs. Cheap Traps",
     story_intro=(
-        "You have Rs. 8,000 ready to purchase the medical procedure and antibiotics. Three medical providers offer "
-        "different packages. Be careful: the cheapest option may be unsafe, while the most expensive option charges for unnecessary luxury."
+        "You have Rs. 8,000 for Barnaby’s medicine and care. Three clinics offer treatments. "
+        "Watch out: the cheapest one is sketchy, and the luxury pet spa charges for useless perks!"
     ),
     learning_objective=(
-        "Evaluate value-for-money by balancing safety, certified efficacy, and cost, rather than assuming cheapest is best or expensive is required."
+        "Pick the certified, safe clinic that gives true value without falling for cheap fakes or overpaying for hype."
     ),
     target_competency="investmentAwareness",
     interaction_type="value_comparison",
@@ -309,8 +305,8 @@ _L4 = LevelDefinition(
         min_reserve_preserved_lkr=1000,
     ),
     hints=(
-        "Compare what each provider actually delivers. Does Barnaby need silk pillows to heal?",
-        "Look out for fake or uncertified cheap medicines that could harm the puppy.",
+        "Does Barnaby need silk pillows to heal, or real medicine from a certified doctor?",
+        "Watch out for fake bargains — cheap unverified medicine can make a sick pet worse!",
     ),
     remediation_scaffolding=RemediationScaffolding(
         rule_explanation=(
@@ -327,15 +323,14 @@ _L4 = LevelDefinition(
 _L5 = LevelDefinition(
     id="level_puppy_5",
     level_number=5,
-    title="Unexpected Financial Emergency",
-    subtitle="Resilience Under Pressure: Utilizing Emergency Reserves",
+    title="Unexpected Emergency!",
+    subtitle="Using Your Emergency Fund",
     story_intro=(
-        "Disaster strikes at midnight! Barnaby develops a sudden allergic fever and requires an immediate specialized "
-        "antihistamine injection costing Rs. 4,500. Your current cash on hand is only Rs. 2,000, but fortunately you preserved "
-        "an Emergency Reserve from previous levels of Rs. 3,500!"
+        "Midnight alert! Barnaby woke up with a burning fever and needs an urgent Rs. 4,500 clinic injection. "
+        "You only have Rs. 2,000 cash in your pocket. Luckily, you saved an emergency fund!"
     ),
     learning_objective=(
-        "Protect essential health by prudently tapping emergency reserves while avoiding predatory debt or postponing non-negotiable care."
+        "Use your saved emergency cash to solve the crisis instantly with zero debt!"
     ),
     target_competency="savingBehavior",
     interaction_type="emergency_response",
@@ -355,8 +350,8 @@ _L5 = LevelDefinition(
         min_reserve_preserved_lkr=1000,
     ),
     hints=(
-        "You specifically saved an Emergency Cushion for situations like this. Use it!",
-        "Never take high-interest predatory loans when your own savings can cover the emergency.",
+        "This is exactly why you saved an Emergency Cushion. Use it!",
+        "Never take loans with crazy interest fees when your own savings can cover the emergency.",
     ),
     remediation_scaffolding=RemediationScaffolding(
         rule_explanation=(
@@ -374,13 +369,13 @@ _L6 = LevelDefinition(
     id="level_puppy_6",
     level_number=6,
     title="Recovery Planning",
-    subtitle="Long-Term Recurring Care & Reserve Sustainability",
+    subtitle="Monthly Budget Balance",
     story_intro=(
-        "Barnaby’s fever has subsided and his splint is doing its job. Now comes the critical 3-month rehabilitation phase. "
-        "You manage a monthly youth animal guardian allowance of Rs. 8,000 per month. You must design a sustainable recurring monthly budget."
+        "Barnaby’s fever is gone and his splint works! Now you manage an Rs. 8,000 monthly allowance for his "
+        "3-month recovery. Balance his nutrition, physio workouts, and backup savings."
     ),
     learning_objective=(
-        "Balance recurring monthly operating costs with ongoing reserve accumulation to sustain recovery over several months."
+        "Keep total monthly spending under Rs. 8,000 while putting money back into your emergency fund."
     ),
     target_competency="budgetingSkill",
     interaction_type="recurring_budget",
@@ -398,8 +393,8 @@ _L6 = LevelDefinition(
         min_reserve_preserved_lkr=2000,
     ),
     hints=(
-        "Total monthly expenses must stay under Rs. 8,000.",
-        "Ensure both prescription food (Rs. 3,000) and physical therapy (Rs. 2,500) are funded, while setting aside at least Rs. 2,000 into the maintenance reserve.",
+        "Total monthly spending must stay within your Rs. 8,000 allowance.",
+        "Fund the healing kibble (Rs. 3,000) and physio (Rs. 2,500), and put at least Rs. 2,000 into backup savings.",
     ),
     remediation_scaffolding=RemediationScaffolding(
         rule_explanation=(
@@ -416,16 +411,14 @@ _L6 = LevelDefinition(
 _L7 = LevelDefinition(
     id="level_puppy_7",
     level_number=7,
-    title="Difficult Financial Trade-Off",
-    subtitle="Evaluating Competing Priorities with Financial Reasoning",
+    title="Tough Money Choices",
+    subtitle="Real Health vs. Shiny Comforts",
     story_intro=(
-        "With Rs. 10,000 remaining, you face competing priorities as Barnaby enters his final recovery stage. "
-        "A friend urges you to buy a customized heated orthopedic bed (Rs. 4,500) and premium toys, while the "
-        "vet recommends mandatory vaccinations & microchip (Rs. 4,000) plus an advanced mobility checkup (Rs. 4,000). "
-        "You cannot afford everything! Choose wisely and explain your financial rationale."
+        "You have Rs. 10,000 left for Barnaby’s final healing step. A friend wants you to buy a fancy "
+        "Rs. 4,500 heated velvet bed, but Barnaby needs his vaccines and mobility clearance. You can’t buy both!"
     ),
     learning_objective=(
-        "Defend a financial trade-off by identifying long-term preventive protection over short-term material comfort."
+        "Choose lasting health protection over short-term luxury and explain your smart reasoning."
     ),
     target_competency="investmentAwareness",
     interaction_type="tradeoff_justification",
@@ -457,8 +450,8 @@ _L7 = LevelDefinition(
         required_rationale_id="rat_sound_preventive",
     ),
     hints=(
-        "Think long-term: what prevents future disease versus what is merely a cozy luxury?",
-        "Select the rationale that highlights preventive care over superficial pampering.",
+        "Think long term: what permanently protects Barnaby from disease, versus what’s just cozy luxury?",
+        "Pick the explanation that values prevention over luxury pampering.",
     ),
     remediation_scaffolding=RemediationScaffolding(
         rule_explanation=(
@@ -475,15 +468,14 @@ _L7 = LevelDefinition(
 _L8 = LevelDefinition(
     id="level_puppy_8",
     level_number=8,
-    title="Final Rescue and Recovery Challenge",
-    subtitle="Capstone Synthesis: Independent Financial Stewardship",
+    title="Barnaby’s Forever Home",
+    subtitle="Graduation Capstone: Money Master",
     story_intro=(
-        "Today is Barnaby’s adoption day celebration! You are given a comprehensive graduation fund of Rs. 20,000. "
-        "You must formulate Barnaby’s permanent adoption setup: finalize the adoption registration, secure a 6-month "
-        "preventive care pack, allocate a permanent emergency cushion, and avoid wasteful overspending."
+        "Adoption Day is here! You have a Rs. 20,000 graduation fund to set up Barnaby’s forever life: "
+        "legal adoption papers, 6 months of wellness medicine, and a permanent safety cushion."
     ),
     learning_objective=(
-        "Synthesize budgeting, saving, needs prioritization, and emergency buffer planning in an independent capstone scenario."
+        "Prove your money mastery: fund all essential care and lock in a big safety cushion for Barnaby!"
     ),
     target_competency="goalAchievement",
     interaction_type="capstone_challenge",
@@ -501,8 +493,8 @@ _L8 = LevelDefinition(
         min_reserve_preserved_lkr=6000,
     ),
     hints=(
-        "Do not spend money on loud fireworks that terrify animals.",
-        "Ensure the Permanent Safety Cushion receives at least Rs. 6,000 and all essential registration & medicine are funded.",
+        "Don’t blow money on loud fireworks that scare pets and burn cash.",
+        "Ensure the Permanent Safety Cushion gets at least Rs. 6,000 and all essential care is funded.",
     ),
     remediation_scaffolding=RemediationScaffolding(
         rule_explanation=(

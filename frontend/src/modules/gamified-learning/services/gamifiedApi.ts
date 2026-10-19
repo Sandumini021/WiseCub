@@ -257,6 +257,13 @@ export function startOrResumeMission(missionId: string): Promise<MissionProgress
 }
 
 /**
+ * Reset the authenticated student's progress for a mission back to level 1.
+ */
+export function resetMissionProgress(missionId: string): Promise<MissionProgressApi> {
+  return apiPost<MissionProgressApi>(`/api/gamified/missions/${missionId}/reset`);
+}
+
+/**
  * Fetch the authenticated student's current progress for a mission.
  * Restores progress across devices and browser refreshes.
  */

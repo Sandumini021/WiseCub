@@ -158,6 +158,9 @@ export function persistAvatar(avatarId: string) {
 export function clearDemoChild() {
   window.localStorage.removeItem(KEY);
   window.localStorage.setItem(ID_KEY, window.crypto.randomUUID());
+  window.localStorage.removeItem('wisecub_cdemf_user_state_v1');
+  window.localStorage.removeItem('wisecub_cdemf_event_stream_v1');
+  window.localStorage.removeItem('wisecub_cdemf_session_id');
   notifySession();
   void logoutAccount().catch(() => {});
 }

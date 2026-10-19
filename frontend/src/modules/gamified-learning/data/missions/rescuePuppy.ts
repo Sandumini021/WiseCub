@@ -30,11 +30,11 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
       id: 'level_puppy_1',
       levelNumber: 1,
       title: 'Discover the Injured Puppy',
-      subtitle: 'Recognize Essential Needs vs Optional Wants',
+      subtitle: 'Needs vs. Wants',
       storyIntro:
-        'While walking home, you find Barnaby huddled under a park bench with a sprained, bleeding paw. You have a starting emergency rescue fund of Rs. 5,000. Barnaby needs immediate stabilization before nightfall!',
+        'You find Barnaby shivering under a park bench with a hurt paw! You have Rs. 5,000 in rescue money. Help him survive the night before it gets dark.',
       learningObjective:
-        'Distinguish essential survival needs from discretionary wants when resources are strictly limited.',
+        'Pick only what Barnaby needs to survive right now — save the rest of your cash!',
       targetCompetency: 'spendingDiscipline',
       interactionType: 'needs_wants',
       startingBudgetLKR: 5000,
@@ -43,45 +43,45 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           id: 'opt_first_aid',
           title: 'Antiseptic & Sterile Bandage Kit',
           description:
-            'Cleans the wound thoroughly and binds the injured paw to prevent dangerous infection.',
+            'Cleans the wound and bandages the hurt paw to stop dangerous infection.',
           costLKR: 2500,
           category: 'essential_care',
           isEssential: true,
           financialTradeoffNote:
-            'Indispensable medical need. Without this, infection risks worsen.',
+            'Must-have care! Without this, the infection will get worse.',
         },
         {
           id: 'opt_nutrition_pack',
-          title: 'High-Protein Puppy Meal & Clean Water',
+          title: 'Puppy Meal & Clean Water',
           description:
-            'Nourishes the dehydrated, hungry puppy to rebuild bodily strength.',
+            'Nourishing puppy food and water to give hungry Barnaby energy.',
           costLKR: 1200,
           category: 'nutrition',
           isEssential: true,
           financialTradeoffNote:
-            'Vital nourishment needed immediately to stabilize vitality.',
+            'Vital nutrition needed right away to keep him strong.',
         },
         {
           id: 'opt_squeaky_toy',
           title: 'Fancy Squeaky Plush Toy',
           description:
-            'A cute plush bone toy that looks fun, but provides no medical healing or nutrition.',
+            'A cute plush bone. Fun to play with, but won’t heal a hurt paw!',
           costLKR: 1500,
           category: 'discretionary',
           isEssential: false,
           financialTradeoffNote:
-            'Discretionary want. Buying this would exhaust your funds and cause an overspend if essentials are bought.',
+            'An optional want. Buying this empties your pockets and leaves nothing for tomorrow.',
         },
         {
           id: 'opt_cozy_towel',
-          title: 'Warm Thermal Rescue Blanket',
+          title: 'Warm Thermal Blanket',
           description:
-            'Keeps the shivering puppy warm during chilly evening recovery.',
+            'A soft warm blanket to keep Barnaby comfortable tonight.',
           costLKR: 800,
           category: 'essential_care',
           isEssential: false,
           financialTradeoffNote:
-            'Helpful comfort item that fits neatly within remaining change.',
+            'A helpful comfort item that fits neatly within leftover change.',
         },
       ],
       passCriteria: {
@@ -93,12 +93,12 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
         requireBudgetFeasibility: true,
       },
       hints: [
-        'Barnaby is bleeding and hungry. Focus your funds on the wound dressing and food first.',
-        'Beware of decorative toys right now—toys cannot disinfect a bleeding paw!',
+        'Barnaby is bleeding and hungry. Focus your funds on medicine and food first.',
+        'Beware of cute toys right now — a squeaky toy cannot fix a hurt paw!',
       ],
       remediationScaffolding: {
         ruleExplanation:
-          'When an emergency occurs, non-negotiable needs (safety, medicine, food) must always take 100% precedence over optional wants (toys, luxury extras).',
+          'When an emergency occurs, non-negotiable needs (safety, medicine, food) must always come first before optional wants (toys, luxury extras).',
         guidingQuestions: [
           'What happens to Barnaby if you buy the plush toy but cannot afford the bandage kit?',
           'How much cash remains in your pocket for tomorrow after buying essentials?',
@@ -115,11 +115,11 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
       id: 'level_puppy_2',
       levelNumber: 2,
       title: 'Plan the Care Budget',
-      subtitle: 'Multi-Category Budget Allocation & Reserve Preservation',
+      subtitle: 'Budgeting & Safety Cushion',
       storyIntro:
-        'Barnaby’s initial wound is dressed, but he needs a comprehensive care plan for the week. The community shelter grants you a care budget of Rs. 15,000. You must allocate every rupee wisely across veterinary, medication, transport, and reserve categories.',
+        'Barnaby’s paw is bandaged, but he needs a full week of care. The shelter gave you Rs. 15,000. Split it wisely across his vet check, medicine, transport, and emergency cushion.',
       learningObjective:
-        'Create a balanced, comprehensive budget that fully covers essential line-items and sets aside an emergency buffer.',
+        'Fund all essential care while keeping at least Rs. 2,500 safely tucked away in your emergency cushion.',
       targetCompetency: 'budgetingSkill',
       interactionType: 'budget_allocator',
       startingBudgetLKR: 15000,
@@ -134,7 +134,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           stepLKR: 500,
           defaultAmountLKR: 6000,
           description:
-            'Professional veterinary diagnosis, physical palpation, and x-ray consultation.',
+            'Professional vet visit, health checkup, and paw x-ray.',
         },
         {
           id: 'cat_medicine_dress',
@@ -146,7 +146,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           stepLKR: 500,
           defaultAmountLKR: 3500,
           description:
-            'Prescription pain relievers and daily wound dressing replenishment.',
+            'Pain relief medicine and fresh bandages for daily dressing changes.',
         },
         {
           id: 'cat_transport',
@@ -158,7 +158,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           stepLKR: 500,
           defaultAmountLKR: 2000,
           description:
-            'Gentle, low-vibration transport so Barnaby’s hurt leg is not jarred on bumpy roads.',
+            'Safe, gentle pet taxi so Barnaby’s hurt leg doesn’t get bumped on bumpy roads.',
         },
         {
           id: 'cat_emergency_reserve',
@@ -170,7 +170,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           stepLKR: 500,
           defaultAmountLKR: 3500,
           description:
-            'Unallocated reserve kept safe in the cash box for sudden complications.',
+            'Backup emergency money kept safe in your cash box for sudden surprises.',
         },
         {
           id: 'cat_deluxe_grooming',
@@ -182,7 +182,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           stepLKR: 500,
           defaultAmountLKR: 0,
           description:
-            'A perfumed coat spray and designer bandana. Completely optional.',
+            'Fancy scented fur spray and designer bandana. Fun, but totally optional!',
         },
       ],
       passCriteria: {
@@ -192,8 +192,8 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
         requireBudgetFeasibility: true,
       },
       hints: [
-        'Total allocated amounts must not exceed Rs. 15,000.',
-        'Make sure the Vet Checkup gets at least Rs. 6,000 and the Emergency Reserve gets at least Rs. 2,500.',
+        'Your total spending must not go over Rs. 15,000.',
+        'Make sure the Vet Check gets at least Rs. 6,000 and the Emergency Safety Cushion gets at least Rs. 2,500.',
       ],
       remediationScaffolding: {
         ruleExplanation:
@@ -214,11 +214,11 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
       id: 'level_puppy_3',
       levelNumber: 3,
       title: 'Save for Treatment',
-      subtitle: 'Multi-Period Savings Discipline & Goal Progress',
+      subtitle: 'The 3-Week Saving Challenge',
       storyIntro:
-        'The vet says Barnaby’s torn ligament requires a specialized orthopedic splint in 3 weeks, costing Rs. 12,000. You earn a weekly community stipend of Rs. 5,000 for 3 weeks (total Rs. 15,000). Each week brings essential living costs and alluring impulse temptations. Will you accumulate the required Rs. 12,000?',
+        'Barnaby needs a Rs. 12,000 leg splint in 3 weeks so he can run again! You get Rs. 5,000 allowance each week. Can you cover his food, resist tempting treats, and save Rs. 12,000 in time?',
       learningObjective:
-        'Demonstrate multi-period savings discipline by consistently banking funds and resisting non-essential spending temptations.',
+        'Bank Rs. 4,000 each week by resisting quick impulse fun so Barnaby gets his splint!',
       targetCompetency: 'savingBehavior',
       interactionType: 'multi_period_saving',
       startingBudgetLKR: 15000,
@@ -235,7 +235,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
             temptationCostLKR: 1500,
             temptationTitle: 'Video Game Arcade Afternoon with Friends',
             temptationDescription:
-              'Spend Rs. 1,500 on tokens at the game parlor.',
+              'Spend Rs. 1,500 on game tokens at the mall arcade.',
           },
           {
             period: 2,
@@ -268,8 +268,8 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
         requireBudgetFeasibility: true,
       },
       hints: [
-        'To reach Rs. 12,000 over 3 weeks, you must save an average of Rs. 4,000 each week!',
-        'Since your weekly income is Rs. 5,000 and mandatory costs are Rs. 1,000, giving in to temptations leaves you short of the goal.',
+        'To reach Rs. 12,000 in 3 weeks, you must stash away Rs. 4,000 every single week!',
+        'After paying Rs. 1,000 for basics, spending money on pizza or arcade games will make you fail the goal.',
       ],
       remediationScaffolding: {
         ruleExplanation:
@@ -289,12 +289,12 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
     {
       id: 'level_puppy_4',
       levelNumber: 4,
-      title: 'Make Smart Purchasing Decisions',
-      subtitle: 'Value-for-Money Analysis: Cheap Traps vs Certified Care',
+      title: 'Smart Shopping Decisions',
+      subtitle: 'Value for Money: Safe Care vs. Cheap Traps',
       storyIntro:
-        'You have Rs. 8,000 ready to purchase the medical procedure and antibiotics. Three medical providers offer different packages. Be careful: the cheapest option may be unsafe, while the most expensive option charges for unnecessary luxury.',
+        'You have Rs. 8,000 for Barnaby’s medicine and care. Three clinics offer treatments. Watch out: the cheapest one is sketchy, and the luxury pet spa charges for useless perks!',
       learningObjective:
-        'Evaluate value-for-money by balancing safety, certified efficacy, and cost, rather than assuming cheapest is best or expensive is required.',
+        'Pick the certified, safe clinic that gives true value without falling for cheap fakes or overpaying for hype.',
       targetCompetency: 'investmentAwareness',
       interactionType: 'value_comparison',
       startingBudgetLKR: 8000,
@@ -303,37 +303,37 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           id: 'opt_clinic_shady',
           title: 'Unlicensed Street Stall "Miracle Ointment"',
           description:
-            'Cost: Rs. 2,000. Unverified chemical ointment with no vet certification. High risk of chemical burns and toxic skin irritation.',
+            'Cost: Rs. 2,000. Mystery potion from a street stall with no vet license. Dangerous! Could cause skin burns.',
           costLKR: 2000,
           category: 'medical_supplies',
           isEssential: false,
           qualityLevel: 'substandard',
           financialTradeoffNote:
-            'A dangerous cheap trap. Saves money initially but causes medical disaster.',
+            'A dangerous cheap trap. Saves money at first but causes medical disaster.',
         },
         {
           id: 'opt_clinic_certified',
           title: 'Community Veterinary Hospital Standard Treatment',
           description:
-            'Cost: Rs. 6,500. Fully certified veterinary staff, sterile surgical equipment, verified antibiotics, and a 2-week follow-up guarantee.',
+            'Cost: Rs. 6,500. Real animal hospital with licensed doctors, sterile tools, verified medicine, and 2-week checkup guarantee.',
           costLKR: 6500,
           category: 'medical_supplies',
           isEssential: true,
           qualityLevel: 'certified_good',
           financialTradeoffNote:
-            'True value-for-money: certified efficacy that fits within budget and leaves Rs. 1,500 in reserve.',
+            'True value for money: certified care that fits in budget and leaves Rs. 1,500 in savings.',
         },
         {
           id: 'opt_clinic_luxury',
           title: 'Prestige Pet Spa & VIP Treatment Suite',
           description:
-            'Cost: Rs. 14,000. Same medical antibiotics as the hospital, plus silk puppy pillows, classical music, and golden bowls.',
+            'Cost: Rs. 14,000. Same medicine as the hospital, plus silk puppy pillows, classical music, and golden bowls. Way over budget!',
           costLKR: 14000,
           category: 'medical_supplies',
           isEssential: false,
           qualityLevel: 'luxury_excess',
           financialTradeoffNote:
-            'Wasteful luxury. Far exceeds your Rs. 8,000 budget with zero additional medical benefit.',
+            'Wasteful luxury. Far exceeds your Rs. 8,000 budget with zero extra medical benefit.',
         },
       ],
       passCriteria: {
@@ -345,8 +345,8 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
         requireBudgetFeasibility: true,
       },
       hints: [
-        'Compare what each provider actually delivers. Does Barnaby need silk pillows to heal?',
-        'Look out for fake or uncertified cheap medicines that could harm the puppy.',
+        'Does Barnaby need silk pillows to heal, or real medicine from a certified doctor?',
+        'Watch out for fake bargains — cheap unverified medicine can make a sick pet worse!',
       ],
       remediationScaffolding: {
         ruleExplanation:
@@ -366,12 +366,12 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
     {
       id: 'level_puppy_5',
       levelNumber: 5,
-      title: 'Unexpected Financial Emergency',
-      subtitle: 'Resilience Under Pressure: Utilizing Emergency Reserves',
+      title: 'Unexpected Emergency!',
+      subtitle: 'Using Your Emergency Fund',
       storyIntro:
-        'Disaster strikes at midnight! Barnaby develops a sudden allergic fever and requires an immediate specialized antihistamine injection costing Rs. 4,500. Your current cash on hand is only Rs. 2,000, but fortunately you preserved an Emergency Reserve from previous levels of Rs. 3,500!',
+        'Midnight alert! Barnaby woke up with a burning fever and needs an urgent Rs. 4,500 clinic injection. You only have Rs. 2,000 cash in your pocket. Luckily, you saved an emergency fund!',
       learningObjective:
-        'Protect essential health by prudently tapping emergency reserves while avoiding predatory debt or postponing non-negotiable care.',
+        'Use your saved emergency cash to solve the crisis instantly with zero debt!',
       targetCompetency: 'savingBehavior',
       interactionType: 'emergency_response',
       startingBudgetLKR: 5500, // Rs. 2000 cash + Rs. 3500 emergency reserve
@@ -381,18 +381,18 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           id: 'opt_use_emergency_fund',
           title: 'Deploy Emergency Reserve + Available Cash',
           description:
-            'Use Rs. 2,000 cash and withdraw Rs. 2,500 from your emergency reserve. Leaves Rs. 1,000 in backup cushion with ZERO debt.',
+            'Use your Rs. 2,000 cash and Rs. 2,500 from your emergency cushion. Leaves Rs. 1,000 backup savings with ZERO debt!',
           costLKR: 4500,
           category: 'essential_care',
           isEssential: true,
           financialTradeoffNote:
-            'The correct financial move. This is exactly what emergency reserves exist for!',
+            'The smart move. This is exactly what emergency reserves exist for!',
         },
         {
           id: 'opt_delay_treatment',
           title: 'Delay the Antibiotic Injection until Next Week',
           description:
-            'Pay nothing today, but risk Barnaby’s fever spiking into a life-threatening illness.',
+            'Pay nothing today, but risk Barnaby’s fever turning into a life-threatening illness. Not safe!',
           costLKR: 0,
           category: 'discretionary',
           isEssential: false,
@@ -403,7 +403,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           id: 'opt_predatory_loan',
           title: 'Borrow from a Fast Money Shark (High 50% Weekly Interest)',
           description:
-            'Borrow Rs. 4,500 with a predatory repayment fee of Rs. 6,750 due in 7 days.',
+            'Borrow Rs. 4,500 from a shady loan shark who demands Rs. 6,750 back in 7 days! A dangerous money trap.',
           costLKR: 6750,
           category: 'discretionary',
           isEssential: false,
@@ -420,8 +420,8 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
         requireBudgetFeasibility: true,
       },
       hints: [
-        'You specifically saved an Emergency Cushion for situations like this. Use it!',
-        'Never take high-interest predatory loans when your own savings can cover the emergency.',
+        'This is exactly why you saved an Emergency Cushion. Use it!',
+        'Never take loans with crazy interest fees when your own savings can cover the emergency.',
       ],
       remediationScaffolding: {
         ruleExplanation:
@@ -442,11 +442,11 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
       id: 'level_puppy_6',
       levelNumber: 6,
       title: 'Recovery Planning',
-      subtitle: 'Long-Term Recurring Care & Reserve Sustainability',
+      subtitle: 'Monthly Budget Balance',
       storyIntro:
-        'Barnaby’s fever has subsided and his splint is doing its job. Now comes the critical 3-month rehabilitation phase. You manage a monthly youth animal guardian allowance of Rs. 8,000 per month. You must design a sustainable recurring monthly budget.',
+        'Barnaby’s fever is gone and his splint works! Now you manage an Rs. 8,000 monthly allowance for his 3-month recovery. Balance his nutrition, physio workouts, and backup savings.',
       learningObjective:
-        'Balance recurring monthly operating costs with ongoing reserve accumulation to sustain recovery over several months.',
+        'Keep total monthly spending under Rs. 8,000 while putting money back into your emergency fund.',
       targetCompetency: 'budgetingSkill',
       interactionType: 'recurring_budget',
       startingBudgetLKR: 8000,
@@ -461,7 +461,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           stepLKR: 500,
           defaultAmountLKR: 3000,
           description:
-            'Essential calcium and protein diet necessary for bone regrowth.',
+            'Nutritious calcium and protein food to help Barnaby’s bone heal strong.',
         },
         {
           id: 'cat_rec_physio',
@@ -473,7 +473,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           stepLKR: 500,
           defaultAmountLKR: 2500,
           description:
-            'Professional leg mobility exercises supervised by the animal therapist.',
+            'Guided leg exercises with the animal physical therapist.',
         },
         {
           id: 'cat_rec_reserve',
@@ -485,7 +485,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           stepLKR: 500,
           defaultAmountLKR: 2500,
           description:
-            'Replenishes the safety cushion for any future medical needs.',
+            'Puts money back into the emergency cushion for future health surprises.',
         },
         {
           id: 'cat_rec_treats',
@@ -497,7 +497,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           stepLKR: 500,
           defaultAmountLKR: 0,
           description:
-            'Expensive imported snacks that taste nice but offer no therapeutic benefit.',
+            'Imported gourmet treats. Yummy, but won’t help heal his bone!',
         },
       ],
       passCriteria: {
@@ -507,8 +507,8 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
         requireBudgetFeasibility: true,
       },
       hints: [
-        'Total monthly expenses must stay under Rs. 8,000.',
-        'Ensure both prescription food (Rs. 3,000) and physical therapy (Rs. 2,500) are funded, while setting aside at least Rs. 2,000 into the maintenance reserve.',
+        'Total monthly spending must stay within your Rs. 8,000 allowance.',
+        'Fund the healing kibble (Rs. 3,000) and physio (Rs. 2,500), and put at least Rs. 2,000 into backup savings.',
       ],
       remediationScaffolding: {
         ruleExplanation:
@@ -528,12 +528,12 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
     {
       id: 'level_puppy_7',
       levelNumber: 7,
-      title: 'Difficult Financial Trade-Off',
-      subtitle: 'Evaluating Competing Priorities with Financial Reasoning',
+      title: 'Tough Money Choices',
+      subtitle: 'Real Health vs. Shiny Comforts',
       storyIntro:
-        'With Rs. 10,000 remaining, you face competing priorities as Barnaby enters his final recovery stage. A friend urges you to buy a customized heated orthopedic bed (Rs. 4,500) and premium toys, while the vet recommends mandatory vaccinations & microchip (Rs. 4,000) plus an advanced mobility checkup (Rs. 4,000). You cannot afford everything! Choose wisely and explain your financial rationale.',
+        'You have Rs. 10,000 left for Barnaby’s final healing step. A friend wants you to buy a fancy Rs. 4,500 heated velvet bed, but Barnaby needs his vaccines and mobility clearance. You can’t buy both!',
       learningObjective:
-        'Defend a financial trade-off by identifying long-term preventive protection over short-term material comfort.',
+        'Choose lasting health protection over short-term luxury and explain your smart reasoning.',
       targetCompetency: 'investmentAwareness',
       interactionType: 'tradeoff_justification',
       startingBudgetLKR: 10000,
@@ -542,7 +542,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           id: 'opt_vaccine_chip',
           title: 'Mandatory Core Vaccinations & Safety Microchip',
           description:
-            'Cost: Rs. 4,000. Protects against rabies and parvo virus; microchip ensures Barnaby will never be lost again.',
+            'Cost: Rs. 4,000. Protects against deadly viral diseases, and the microchip ensures Barnaby never gets lost.',
           costLKR: 4000,
           category: 'essential_care',
           isEssential: true,
@@ -553,7 +553,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           id: 'opt_mobility_check',
           title: 'Final Physical Mobility & X-Ray Certification',
           description:
-            'Cost: Rs. 4,000. Confirms the leg bone is 100% healed and gives Barnaby medical clearance to run freely.',
+            'Cost: Rs. 4,000. Confirms the leg bone is 100% healed so Barnaby gets medical clearance to run freely.',
           costLKR: 4000,
           category: 'veterinary_fees',
           isEssential: true,
@@ -598,8 +598,8 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
         requireBudgetFeasibility: true,
       },
       hints: [
-        'Think long-term: what prevents future disease versus what is merely a cozy luxury?',
-        'Select the rationale that highlights preventive care over superficial pampering.',
+        'Think long term: what permanently protects Barnaby from disease, versus what’s just cozy luxury?',
+        'Pick the explanation that values prevention over luxury pampering.',
       ],
       remediationScaffolding: {
         ruleExplanation:
@@ -619,12 +619,12 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
     {
       id: 'level_puppy_8',
       levelNumber: 8,
-      title: 'Final Rescue and Recovery Challenge',
-      subtitle: 'Capstone Synthesis: Independent Financial Stewardship',
+      title: 'Barnaby’s Forever Home',
+      subtitle: 'Graduation Capstone: Money Master',
       storyIntro:
-        'Today is Barnaby’s adoption day celebration! You are given a comprehensive graduation fund of Rs. 20,000. You must formulate Barnaby’s permanent adoption setup: finalize the adoption registration, secure a 6-month preventive care pack, allocate a permanent emergency cushion, and avoid wasteful overspending.',
+        'Adoption Day is here! You have a Rs. 20,000 graduation fund to set up Barnaby’s forever life: legal adoption papers, 6 months of wellness medicine, and a permanent safety cushion.',
       learningObjective:
-        'Synthesize budgeting, saving, needs prioritization, and emergency buffer planning in an independent capstone scenario.',
+        'Prove your money mastery: fund all essential care and lock in a big safety cushion for Barnaby!',
       targetCompetency: 'goalAchievement',
       interactionType: 'capstone_challenge',
       startingBudgetLKR: 20000,
@@ -651,7 +651,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           stepLKR: 500,
           defaultAmountLKR: 7000,
           description:
-            'Six months of heartworm, flea, and joint protection supplements.',
+            'Full 6-month supply of flea protection, deworming, and joint supplements.',
         },
         {
           id: 'cap_permanent_reserve',
@@ -663,7 +663,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           stepLKR: 500,
           defaultAmountLKR: 6000,
           description:
-            'Dedicated high-yield emergency bank reserve for unforeseen future vet costs.',
+            'A locked emergency savings fund in the bank for future vet visits.',
         },
         {
           id: 'cap_celebration_party',
@@ -675,7 +675,7 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
           stepLKR: 500,
           defaultAmountLKR: 0,
           description:
-            'Noisy fireworks and party caterers that scare the puppy and drain Rs. 8,000.',
+            'Loud fireworks and party caterers. Terrifies the puppy and wastes Rs. 8,000!',
         },
       ],
       passCriteria: {
@@ -685,8 +685,8 @@ export const RESCUE_PUPPY_MISSION: MissionDefinition = {
         requireBudgetFeasibility: true,
       },
       hints: [
-        'Do not spend money on loud fireworks that terrify animals.',
-        'Ensure the Permanent Safety Cushion receives at least Rs. 6,000 and all essential registration & medicine are funded.',
+        'Don’t blow money on loud fireworks that scare pets and burn cash.',
+        'Ensure the Permanent Safety Cushion gets at least Rs. 6,000 and all essential care is funded.',
       ],
       remediationScaffolding: {
         ruleExplanation:

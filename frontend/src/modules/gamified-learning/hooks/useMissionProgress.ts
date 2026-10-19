@@ -26,6 +26,7 @@ import {
   decisionOutcomeFromApi,
   getOrCreateSessionId,
   getMissionProgress,
+  resetMissionProgress,
   resetSessionId,
   startLevel,
   startOrResumeMission,
@@ -69,6 +70,7 @@ function masteryResultFromApi(result: EvaluationResultApi): LevelMasteryResult {
   return {
     levelId: result.level_id,
     levelNumber: result.level_number,
+    attemptNumber: result.attempt_number,
     passed: result.passed,
     overallScore: result.overall_score,
     dimensionScores: {
@@ -104,7 +106,7 @@ function progressFromApiResponse(api: MissionProgressApi): MissionProgress {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
-export function useMissionProgress(missionId: string) {
+export function useMissionProgress(missionId: string, childKey?: string) {
   const [state, setState] = useState<MissionProgressState>({
     progress: null,
     loading: true,
@@ -119,9 +121,15 @@ export function useMissionProgress(missionId: string) {
   const missionIdRef = useRef(missionId);
   missionIdRef.current = missionId;
 
-  // ── Load progress from backend on mount / missionId change ─────────────────
+  // ── Load progress from backend on mount / missionId / childKey change ─────────
   const loadProgress = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+    setState((prev) => ({
+      ...prev,
+      loading: true,
+      error: null,
+      lastResult: null,
+      lastMasteryResult: null,
+    }));
     try {
       const api = await getMissionProgress(missionId);
       setState((prev) => ({
@@ -136,6 +144,7 @@ export function useMissionProgress(missionId: string) {
       if (err instanceof ApiError && err.status === 401) {
         setState((prev) => ({
           ...prev,
+          progress: null,
           loading: false,
           isAuthenticated: false,
           error: 'Please log in to save your progress.',
@@ -167,7 +176,7 @@ export function useMissionProgress(missionId: string) {
         }));
       }
     }
-  }, [missionId]);
+  }, [missionId, childKey]);
 
   useEffect(() => {
     loadProgress();
@@ -316,7 +325,32 @@ export function useMissionProgress(missionId: string) {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  // ── Reload (e.g. after retry) ──────────────────────────────────────────────
+  // ── Reset progress ────────────────────────────────────────────────────────
+  const resetProgress = useCallback(async () => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      const api = await resetMissionProgress(missionId);
+      resetSessionId();
+      setState((prev) => ({
+        ...prev,
+        progress: progressFromApiResponse(api),
+        loading: false,
+        initialized: true,
+        isAuthenticated: true,
+        error: null,
+        lastResult: null,
+        lastMasteryResult: null,
+      }));
+    } catch (err) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: err instanceof Error ? err.message : 'Could not reset progress.',
+      }));
+    }
+  }, [missionId]);
+
+  // ── Reload progress ───────────────────────────────────────────────────────
   const reload = useCallback(() => {
     loadProgress();
   }, [loadProgress]);
@@ -329,5 +363,6 @@ export function useMissionProgress(missionId: string) {
     submitMultiPeriod,
     clearError,
     reload,
+    resetProgress,
   };
 }

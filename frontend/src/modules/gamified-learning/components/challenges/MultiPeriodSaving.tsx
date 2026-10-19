@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LevelDefinition } from '../../types/mission.types';
 
 interface MultiPeriodSavingProps {
@@ -18,20 +18,31 @@ export const MultiPeriodSaving: React.FC<MultiPeriodSavingProps> = ({
   const periods = config.periods;
   const targetGoalLKR = config.targetGoalLKR;
 
-  // Track user choices for each week
+  // Track user choices for each week — start with 0 so the student actively plans savings
   const [choices, setChoices] = useState<
     Record<number, { savedAmountLKR: number; resistedTemptation: boolean }>
   >(() => {
     const init: Record<number, { savedAmountLKR: number; resistedTemptation: boolean }> = {};
     for (const p of periods) {
-      // By default, recommend saving the full surplus: allowance - mandatory
       init[p.period] = {
-        savedAmountLKR: p.allowanceLKR - p.mandatoryCostLKR,
-        resistedTemptation: true,
+        savedAmountLKR: 0,
+        resistedTemptation: false,
       };
     }
     return init;
   });
+
+  // Reset choices whenever the level changes
+  useEffect(() => {
+    const init: Record<number, { savedAmountLKR: number; resistedTemptation: boolean }> = {};
+    for (const p of periods) {
+      init[p.period] = {
+        savedAmountLKR: 0,
+        resistedTemptation: false,
+      };
+    }
+    setChoices(init);
+  }, [level.id]);
 
   const toggleTemptation = (periodNum: number) => {
     if (disabled) return;
@@ -171,8 +182,12 @@ export const MultiPeriodSaving: React.FC<MultiPeriodSavingProps> = ({
       </div>
 
       <div className="challenge-submit-row">
-        <button type="submit" className="btn-confirm-decision" disabled={disabled}>
-          Lock 3-Week Savings Plan & Check Target
+        <button
+          type="submit"
+          className="btn-confirm-decision"
+          disabled={disabled || totalSaved === 0}
+        >
+          {totalSaved === 0 ? 'Plan Savings to Continue' : 'Lock 3-Week Savings Plan & Check Target'}
         </button>
       </div>
     </form>

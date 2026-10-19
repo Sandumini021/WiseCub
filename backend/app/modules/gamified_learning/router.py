@@ -300,6 +300,50 @@ async def start_or_resume_mission(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# POST /api/gamified/missions/{mission_id}/reset
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.post("/api/gamified/missions/{mission_id}/reset")
+async def reset_mission_progress(
+    request: Request,
+    mission_id: str,
+) -> MissionProgressOut:
+    """Reset the authenticated student's progress for a mission back to level 1."""
+    account = await current_account(request)
+    child_id: str = account["child_id"]
+    db = require_db()
+
+    mission = get_mission(mission_id)
+    if not mission:
+        raise HTTPException(status_code=404, detail="Mission not found.")
+
+    default_char = _default_char_state(mission_id)
+    now = _now_iso()
+    reset_doc = {
+        "schema_version": SCHEMA_VERSION,
+        "child_id": child_id,
+        "mission_id": mission_id,
+        "unlocked_level_number": 1,
+        "completed_level_numbers": [],
+        "highest_completed_level_number": 0,
+        "character_state": _char_state_to_doc(default_char),
+        "attempts_by_level": {},
+        "last_attempt_at_iso": now,
+        "is_mission_completed": False,
+        "earned_coins": 0,
+        "started_at": now,
+        "updated_at": now,
+    }
+    await db.gamified_progress.replace_one(
+        {"child_id": child_id, "mission_id": mission_id},
+        reset_doc,
+        upsert=True,
+    )
+    return _build_progress_out(reset_doc)
+
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # POST /api/gamified/levels/start
 # ─────────────────────────────────────────────────────────────────────────────
 
