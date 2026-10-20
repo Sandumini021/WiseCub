@@ -369,23 +369,46 @@ export function ScamHomePage() {
 
   // ── Category progress (persisted to localStorage via scamProgress) ─
   const [completedCategories, setCompletedCategories] = useState<CategoryId[]>(
-    () => loadScamProgress().completedCategories
+    () => loadScamProgress(getChildId()).completedCategories
   );
   const [categoryScores, setCategoryScores] = useState<Partial<Record<CategoryId, number>>>(
-    () => loadScamProgress().categoryScores
+    () => loadScamProgress(getChildId()).categoryScores
   );
   const [activeCategory, setActiveCategory] = useState<CategoryId | null>(null);
 
-  // ── Backend sync: load merged progress on mount ───────────────────
+  // ── Backend sync & Account Switching: load progress for current child ─
   useEffect(() => {
-    const id = getChildId();
-    if (!id) return;
-    void syncProgressFromBackend(id, loadModuleState).then((merged) => {
-      setCompletedCategories(merged.completedCategories);
-      setCategoryScores(merged.categoryScores);
-    });
-    // Only runs once on mount — intentional
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let active = true;
+
+    function syncForCurrentChild() {
+      const id = getChildId();
+      // Immediately load local cache for this child
+      const local = loadScamProgress(id);
+      if (active) {
+        setCompletedCategories(local.completedCategories);
+        setCategoryScores(local.categoryScores);
+      }
+
+      if (!id) return;
+      void syncProgressFromBackend(id, loadModuleState)
+        .then((merged) => {
+          if (active) {
+            setCompletedCategories(merged.completedCategories);
+            setCategoryScores(merged.categoryScores);
+          }
+        })
+        .catch(() => {});
+    }
+
+    syncForCurrentChild();
+
+    window.addEventListener("wisecub-session", syncForCurrentChild);
+    window.addEventListener("storage", syncForCurrentChild);
+    return () => {
+      active = false;
+      window.removeEventListener("wisecub-session", syncForCurrentChild);
+      window.removeEventListener("storage", syncForCurrentChild);
+    };
   }, []);
 
   // ── Phishing category lesson state ────────────────────────────────
@@ -550,12 +573,13 @@ export function ScamHomePage() {
 
   const handleFinishPhishingPractice = useCallback(() => {
     if (activeCategory) {
+      const id = getChildId();
       const pct = calculateScorePercent(phishingCorrect, phishingTotal);
-      const updated = saveCategoryProgress(activeCategory, pct);
+      const updated = saveCategoryProgress(activeCategory, pct, id);
       setCompletedCategories(updated.completedCategories);
       setCategoryScores(updated.categoryScores);
       // Persist to backend — fire-and-forget, never blocks UI
-      syncProgressToBackend(getChildId(), updated, saveModuleState);
+      syncProgressToBackend(id, updated, saveModuleState);
     }
     setView("cat-results");
   }, [activeCategory, phishingCorrect, phishingTotal]);
@@ -605,11 +629,12 @@ export function ScamHomePage() {
     if (view === "cat-results" && activeCategory) {
       const pct = calculateScorePercent(phishingCorrect, phishingTotal);
       if (isCategoryPassing(pct) && !completedCategories.includes(activeCategory)) {
-        const updated = saveCategoryProgress(activeCategory, pct);
+        const id = getChildId();
+        const updated = saveCategoryProgress(activeCategory, pct, id);
         setCompletedCategories(updated.completedCategories);
         setCategoryScores(updated.categoryScores);
         // Persist to backend — fire-and-forget, never blocks UI
-        syncProgressToBackend(getChildId(), updated, saveModuleState);
+        syncProgressToBackend(id, updated, saveModuleState);
       }
     }
   }, [view, activeCategory, phishingCorrect, phishingTotal, completedCategories]);

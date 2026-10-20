@@ -35,12 +35,21 @@ export const CATEGORY_ORDER: readonly CategoryId[] = [
 /** Passing threshold percentage (80 %). Exactly 80 % is passing. */
 export const PASSING_PERCENTAGE = 80;
 
-/** Primary storage key in localStorage. */
+/** Primary storage key in localStorage (legacy/unscoped fallback). */
 export const SCAM_PROGRESS_STORAGE_KEY = "wisecub.scamSafety.progress";
 
-/** Legacy fallback storage keys for backward compatibility. */
+/** Legacy fallback storage keys for backward compatibility with unscoped callers. */
 export const SCAM_COMPLETED_STORAGE_KEY = "wisecub.scamSafety.completedCategories";
 export const SCAM_SCORES_STORAGE_KEY = "wisecub.scamSafety.scores";
+
+/** Returns the account-scoped storage key for a child ID. */
+export function getScamProgressKey(childId?: string): string {
+  const clean = childId?.trim();
+  if (clean) {
+    return `wisecub.scamSafety.progress.${clean}`;
+  }
+  return SCAM_PROGRESS_STORAGE_KEY;
+}
 
 export type ScamProgress = {
   completedCategories: CategoryId[];
@@ -106,9 +115,11 @@ export function getNextCategory(catId: CategoryId): CategoryId | null {
 
 /**
  * Safely loads scam safety progress from localStorage.
- * Combines primary progress with legacy keys if present, ensuring backward compatibility.
+ * When childId is provided, ONLY reads that child's account-scoped key.
+ * Never merges unowned legacy storage into an authenticated account.
+ * When childId is omitted, reads the unscoped legacy key for backward compatibility.
  */
-export function loadScamProgress(): ScamProgress {
+export function loadScamProgress(childId?: string): ScamProgress {
   const defaultProgress: ScamProgress = {
     completedCategories: [],
     categoryScores: {},
@@ -119,10 +130,49 @@ export function loadScamProgress(): ScamProgress {
     return defaultProgress;
   }
 
+  const cleanId = childId?.trim();
   const completedSet = new Set<CategoryId>();
   const scores: Partial<Record<CategoryId, number>> = {};
 
-  // 1. Try reading primary storage
+  if (cleanId) {
+    // Account-specific progress: ONLY read the child-scoped key.
+    // NEVER merge unowned legacy global storage into a specific account!
+    try {
+      const raw = window.localStorage.getItem(getScamProgressKey(cleanId));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed.completedCategories)) {
+          for (const id of parsed.completedCategories) {
+            if (isValidCategoryId(id)) completedSet.add(id);
+          }
+        }
+        if (parsed.categoryScores && typeof parsed.categoryScores === "object") {
+          for (const [key, val] of Object.entries(parsed.categoryScores)) {
+            if (isValidCategoryId(key) && typeof val === "number") {
+              scores[key] = val;
+              if (isCategoryPassing(val)) {
+                completedSet.add(key);
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // Malformed JSON; return default empty progress
+    }
+
+    const completedCategories = CATEGORY_ORDER.filter((id) =>
+      completedSet.has(id)
+    );
+
+    return {
+      completedCategories,
+      categoryScores: scores,
+      lastUpdated: new Date().toISOString(),
+    };
+  }
+
+  // Unscoped / legacy fallback (used only when no childId is provided)
   try {
     const raw = window.localStorage.getItem(SCAM_PROGRESS_STORAGE_KEY);
     if (raw) {
@@ -198,21 +248,30 @@ export function loadScamProgress(): ScamProgress {
 
 /**
  * Persists updated progress to localStorage.
+ * When childId is provided, writes exclusively to the child-scoped key.
  */
-function persistScamProgress(progress: ScamProgress): void {
+export function persistScamProgress(progress: ScamProgress, childId?: string): void {
   if (typeof window === "undefined" || !window.localStorage) {
     return;
   }
+  const cleanId = childId?.trim();
   try {
-    window.localStorage.setItem(
-      SCAM_PROGRESS_STORAGE_KEY,
-      JSON.stringify(progress)
-    );
-    // Also write to legacy key for compatibility with any older readers
-    window.localStorage.setItem(
-      SCAM_COMPLETED_STORAGE_KEY,
-      JSON.stringify(progress.completedCategories)
-    );
+    if (cleanId) {
+      window.localStorage.setItem(
+        getScamProgressKey(cleanId),
+        JSON.stringify(progress)
+      );
+    } else {
+      window.localStorage.setItem(
+        SCAM_PROGRESS_STORAGE_KEY,
+        JSON.stringify(progress)
+      );
+      // Also write to legacy key for compatibility with older unscoped callers
+      window.localStorage.setItem(
+        SCAM_COMPLETED_STORAGE_KEY,
+        JSON.stringify(progress.completedCategories)
+      );
+    }
   } catch {
     // Storage quota or security restriction; state is kept in memory
   }
@@ -226,9 +285,10 @@ function persistScamProgress(progress: ScamProgress): void {
  */
 export function saveCategoryProgress(
   catId: CategoryId,
-  scorePercent: number
+  scorePercent: number,
+  childId?: string
 ): ScamProgress {
-  const current = loadScamProgress();
+  const current = loadScamProgress(childId);
   const passed = isCategoryPassing(scorePercent);
 
   // Keep highest score
@@ -252,27 +312,27 @@ export function saveCategoryProgress(
     lastUpdated: new Date().toISOString(),
   };
 
-  persistScamProgress(updatedProgress);
+  persistScamProgress(updatedProgress, childId);
   return updatedProgress;
 }
 
 /**
  * Marks a category as completed directly (e.g. on manual pass confirmation).
  */
-export function markCategoryCompleted(catId: CategoryId): ScamProgress {
-  return saveCategoryProgress(catId, 100);
+export function markCategoryCompleted(catId: CategoryId, childId?: string): ScamProgress {
+  return saveCategoryProgress(catId, 100, childId);
 }
 
 /**
- * Resets all scam safety progress (useful for testing or profile resets).
+ * Resets all scam safety progress for the specified child (or default).
  */
-export function resetScamProgress(): ScamProgress {
+export function resetScamProgress(childId?: string): ScamProgress {
   const empty: ScamProgress = {
     completedCategories: [],
     categoryScores: {},
     lastUpdated: new Date().toISOString(),
   };
-  persistScamProgress(empty);
+  persistScamProgress(empty, childId);
   return empty;
 }
 
@@ -283,15 +343,13 @@ export function resetScamProgress(): ScamProgress {
 //  WiseCub backend (PUT/GET /api/state/{child_id}/safety).
 //
 //  Design principles:
-//  - localStorage is always kept as the local cache and fallback.
+//  - localStorage is kept as a local per-child cache.
 //  - Backend sync is fire-and-forget (non-blocking). A failed request never
 //    clears or replaces valid local progress.
 //  - Merge is additive: the best score for each category is always kept,
 //    and completed categories are never removed once earned.
-//  - Progress is only written to the backend for the child who owns it.
-//    The caller (ScamHomePage) passes the child_id obtained from the live
-//    session (demoSession.childId()), so cross-child contamination cannot
-//    occur here.
+//  - Progress is strictly isolated per child: unowned legacy data or other
+//    children's progress is never merged into a new child's account.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -338,16 +396,16 @@ export function mergeProgress(a: ScamProgress, b: ScamProgress): ScamProgress {
 
 /**
  * Loads Scam Safety progress from the backend for the given child,
- * merges it with local localStorage progress (keeping best scores),
- * persists the merged result locally, and returns it.
+ * merges it with the child's local progress (keeping best scores),
+ * persists the merged result locally for this child, and returns it.
  *
- * Safe fallback: if the backend is unreachable or the child has no saved
- * state yet (HTTP 404), the local progress is returned unchanged.
- * This function never clears or replaces local progress with empty data.
+ * If the backend returns 404 (brand new child with no saved state yet):
+ * - It returns only the child's own progress (which is empty for new signups).
+ * - It NEVER inherits or merges unowned legacy progress into a new child!
  *
  * @param childId   - The authenticated child's UUID (from demoSession.childId()).
  * @param loadState - The loadModuleState helper from apiClient.
- * @returns         The merged ScamProgress, or local-only progress on any error.
+ * @returns         The merged ScamProgress for this child.
  */
 export async function syncProgressFromBackend(
   childId: string,
@@ -356,14 +414,15 @@ export async function syncProgressFromBackend(
     module: string,
   ) => Promise<{ child_id: string; module: string; data: unknown }>,
 ): Promise<ScamProgress> {
-  const local = loadScamProgress();
+  const cleanId = childId?.trim();
+  const local = loadScamProgress(cleanId);
 
-  if (!childId) {
+  if (!cleanId) {
     return local;
   }
 
   try {
-    const response = await loadState(childId, "safety");
+    const response = await loadState(cleanId, "safety");
     const remote = response.data;
 
     // Validate that the remote payload looks like a ScamProgress object
@@ -392,11 +451,13 @@ export async function syncProgressFromBackend(
       }
 
       const merged = mergeProgress(local, remoteProgress);
-      persistScamProgress(merged);
+      persistScamProgress(merged, cleanId);
       return merged;
     }
   } catch {
-    // 404 (no saved state yet) or network error — return local progress unchanged
+    // 404 (no saved state yet) or network error — return local progress for this child.
+    // For a new signup, local is { completedCategories: [], categoryScores: {} },
+    // so they start fresh at Level 1 with no prior levels completed.
   }
 
   return local;
@@ -415,10 +476,11 @@ export function syncProgressToBackend(
   progress: ScamProgress,
   saveState: (childId: string, module: string, data: unknown) => Promise<unknown>,
 ): void {
-  if (!childId) {
+  const cleanId = childId?.trim();
+  if (!cleanId) {
     return;
   }
-  void saveState(childId, "safety", {
+  void saveState(cleanId, "safety", {
     completedCategories: progress.completedCategories,
     categoryScores: progress.categoryScores,
     lastUpdated: progress.lastUpdated,
