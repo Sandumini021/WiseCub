@@ -26,6 +26,7 @@ import { RetrySupportPanel } from '../components/feedback/RetrySupportPanel';
 import { LearningAnalyticsModal } from '../components/analytics/LearningAnalyticsModal';
 import { PuppyCharacterSvg } from '../components/character/PuppyCharacterSvg';
 import { SquirrelCharacterSvg } from '../components/character/SquirrelCharacterSvg';
+import { PandaCharacterSvg } from '../components/character/PandaCharacterSvg';
 
 import '../styles/gamified-learning.css';
 
@@ -527,7 +528,13 @@ export function MissionBoardPage() {
       {viewMode === 'MISSION_COMPLETE' && (
         <div className="mission-complete-card">
           <div className="completion-hero">
-            {selectedMissionId === 'mission_squirrel_savings' ? (
+            {selectedMissionId === 'mission_panda_fair' ? (
+              <PandaCharacterSvg
+                condition="HEALTHY_ACTIVE"
+                emotion="PROUD_AND_HAPPY"
+                size={220}
+              />
+            ) : selectedMissionId === 'mission_squirrel_savings' ? (
               <SquirrelCharacterSvg
                 condition="HEALTHY_ACTIVE"
                 emotion="HAPPY_AND_SECURE"
@@ -541,12 +548,16 @@ export function MissionBoardPage() {
               />
             )}
             <h1 className="completion-title">
-              {selectedMissionId === 'mission_squirrel_savings'
+              {selectedMissionId === 'mission_panda_fair'
+                ? "🎉 The School Charity Fair is a Triumphant Success!"
+                : selectedMissionId === 'mission_squirrel_savings'
                 ? "🎉 Nutty's Winter Sanctuary is Fully Prepared!"
                 : '🎉 Barnaby is Fully Rescued & Adopted!'}
             </h1>
             <p className="completion-subtitle">
-              {selectedMissionId === 'mission_squirrel_savings'
+              {selectedMissionId === 'mission_panda_fair'
+                ? "Through all 6 financial story chapters, your responsible budgeting, vendor price comparisons, and disciplined stewardship funded the Community Learning Library and left seed reserves for next year!"
+                : selectedMissionId === 'mission_squirrel_savings'
                 ? "Through all 6 financial story chapters, your responsible budgeting, savings discipline, and emergency resilience secured Nutty's warm home, full pantry, and happy winter survival!"
                 : 'Through all 8 financial story chapters, your responsible budgeting, savings discipline, and emergency preparedness nurtured Barnaby back to vibrant, joyful health!'}
             </p>

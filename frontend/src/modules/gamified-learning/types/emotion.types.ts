@@ -25,7 +25,11 @@ export type CharacterEmotionalState =
   | 'JOYFUL_HEALTHY'
   | 'TEMPTED'
   | 'CONFIDENT'
-  | 'HAPPY_AND_SECURE';
+  | 'HAPPY_AND_SECURE'
+  | 'EXCITED'
+  | 'CONFUSED'
+  | 'STRESSED'
+  | 'PROUD_AND_HAPPY';
 
 export interface CharacterState {
   characterId: string;
@@ -41,6 +45,12 @@ export interface CharacterState {
   shelterReadiness?: number;
   winterPreparedness?: number;
   emotionalWellbeing?: number;
+  budgetHealth?: number;
+  fairReadiness?: number;
+  charityGoalProgress?: number;
+  vendorRelationships?: number;
+  customerSatisfaction?: number;
+  financialRiskExposure?: number;
 }
 
 export interface CharacterTransition {

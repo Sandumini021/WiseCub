@@ -2,6 +2,7 @@ import React from 'react';
 import { CharacterState } from '../../types/emotion.types';
 import { PuppyCharacterSvg } from './PuppyCharacterSvg';
 import { SquirrelCharacterSvg } from './SquirrelCharacterSvg';
+import { PandaCharacterSvg } from './PandaCharacterSvg';
 
 interface CharacterStageProps {
   characterState: CharacterState;
@@ -19,19 +20,43 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
   const { physicalCondition, emotionalState, vitalityScore, happinessScore, activeDialogue } =
     characterState;
 
+  const isPanda =
+    characterState.characterId === 'char_panda_baobao' ||
+    characterState.name?.toLowerCase().includes('bao') ||
+    characterState.name?.toLowerCase().includes('panda');
+
   const isSquirrel =
-    characterState.characterId === 'char_squirrel_nutty' ||
-    characterState.name?.toLowerCase().includes('nutty');
+    !isPanda &&
+    (characterState.characterId === 'char_squirrel_nutty' ||
+      characterState.name?.toLowerCase().includes('nutty'));
 
   // Format labels for child-friendly reading
   const conditionLabelMap: Record<string, { label: string; tone: string }> = {
     // Puppy conditions
-    NEEDS_CARE: { label: 'Needs Care (Injured)', tone: 'badge-urgent' },
-    WEAK_STABILIZED: { label: 'Stabilized & Resting', tone: 'badge-warning' },
-    RECEIVING_TREATMENT: { label: 'Receiving Treatment', tone: 'badge-info' },
-    RECOVERING: { label: 'Rehabilitating & Healing', tone: 'badge-progress' },
-    HEALTHY_ACTIVE: { label: 'Fully Healed & Playful!', tone: 'badge-success' },
-    SETBACK_WAITING: { label: 'Waiting for Supplies', tone: 'badge-setback' },
+    NEEDS_CARE: {
+      label: isPanda ? 'Safety Unfunded' : 'Needs Care (Injured)',
+      tone: 'badge-urgent',
+    },
+    WEAK_STABILIZED: {
+      label: isPanda ? 'Stalls Staged & Ready' : 'Stabilized & Resting',
+      tone: 'badge-warning',
+    },
+    RECEIVING_TREATMENT: {
+      label: isPanda ? 'Wholesale Secured' : 'Receiving Treatment',
+      tone: 'badge-info',
+    },
+    RECOVERING: {
+      label: isPanda ? 'Booths Active & Lively' : 'Rehabilitating & Healing',
+      tone: 'badge-progress',
+    },
+    HEALTHY_ACTIVE: {
+      label: isPanda ? 'Charity Triumphant!' : 'Fully Healed & Playful!',
+      tone: 'badge-success',
+    },
+    SETBACK_WAITING: {
+      label: isPanda ? 'Balancing Fair Ledger' : 'Waiting for Supplies',
+      tone: 'badge-setback',
+    },
     // Nutty squirrel conditions
     SHELTER_UNPREPARED: { label: 'Shelter Unprepared', tone: 'badge-urgent' },
     BASIC_STOCKS_FORMED: { label: 'Basic Stocks Ready', tone: 'badge-warning' },
@@ -53,6 +78,10 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
     TEMPTED: { emoji: '🍭', text: 'Tempted' },
     CONFIDENT: { emoji: '🛡️', text: 'Confident' },
     HAPPY_AND_SECURE: { emoji: '🏡', text: 'Happy & Secure' },
+    EXCITED: { emoji: '🎈', text: 'Excited' },
+    CONFUSED: { emoji: '❓', text: 'Confused' },
+    STRESSED: { emoji: '😰', text: 'Stressed' },
+    PROUD_AND_HAPPY: { emoji: '🏆', text: 'Proud & Happy!' },
   };
 
   const conditionInfo = conditionLabelMap[physicalCondition] || {
@@ -60,14 +89,16 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
     tone: 'badge-info',
   };
   const emotionInfo = emotionLabelMap[emotionalState] || {
-    emoji: isSquirrel ? '🐿️' : '🐾',
+    emoji: isPanda ? '🐼' : isSquirrel ? '🐿️' : '🐾',
     text: emotionalState.replace(/_/g, ' '),
   };
 
   if (compact) {
     return (
       <div className="character-stage-compact">
-        {isSquirrel ? (
+        {isPanda ? (
+          <PandaCharacterSvg condition={physicalCondition} emotion={emotionalState} size={70} />
+        ) : isSquirrel ? (
           <SquirrelCharacterSvg condition={physicalCondition} emotion={emotionalState} size={70} />
         ) : (
           <PuppyCharacterSvg condition={physicalCondition} emotion={emotionalState} size={70} />
@@ -80,7 +111,9 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
             </span>
           </div>
           <div className="mini-meters">
-            <div className="meter-label">{isSquirrel ? 'Preparedness' : 'Vitality'}: {vitalityScore}%</div>
+            <div className="meter-label">
+              {isPanda ? 'Fair Readiness' : isSquirrel ? 'Preparedness' : 'Vitality'}: {vitalityScore}%
+            </div>
             <div className="meter-bar">
               <div className="meter-fill fill-vitality" style={{ width: `${vitalityScore}%` }} />
             </div>
@@ -108,7 +141,13 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
       <div className="character-stage-main">
         {/* Animated Visual Character */}
         <div className="character-visual-container">
-          {isSquirrel ? (
+          {isPanda ? (
+            <PandaCharacterSvg
+              condition={physicalCondition}
+              emotion={emotionalState}
+              size={size}
+            />
+          ) : isSquirrel ? (
             <SquirrelCharacterSvg
               condition={physicalCondition}
               emotion={emotionalState}
@@ -137,7 +176,11 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
         <div className="stage-meter-card">
           <div className="meter-header">
             <span className="meter-title">
-              {isSquirrel ? '❄️ Winter Preparedness' : '❤️ Vitality & Health'}
+              {isPanda
+                ? '🎪 Fair Readiness'
+                : isSquirrel
+                ? '❄️ Winter Preparedness'
+                : '❤️ Vitality & Health'}
             </span>
             <span className="meter-value">{vitalityScore} / 100</span>
           </div>
@@ -152,7 +195,11 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
         <div className="stage-meter-card">
           <div className="meter-header">
             <span className="meter-title">
-              {isSquirrel ? '✨ Security & Mood' : '✨ Mood & Happiness'}
+              {isPanda
+                ? '✨ Treasurer Confidence'
+                : isSquirrel
+                ? '✨ Security & Mood'
+                : '✨ Mood & Happiness'}
             </span>
             <span className="meter-value">{happinessScore} / 100</span>
           </div>
@@ -194,6 +241,39 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
           <div style={{ background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '6px' }}>
             <span>🛡️ Resilience: </span>
             <strong>{characterState.winterPreparedness ?? 45}%</strong>
+          </div>
+        </div>
+      )}
+
+      {/* Panda Condition Dimensions Sub-grid if present */}
+      {isPanda && (
+        <div
+          style={{
+            marginTop: '0.75rem',
+            paddingTop: '0.75rem',
+            borderTop: '1px dashed #e2e8f0',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+            gap: '0.5rem',
+            fontSize: '0.8rem',
+            color: '#4b5563',
+          }}
+        >
+          <div style={{ background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '6px' }}>
+            <span>📊 Budget: </span>
+            <strong>{characterState.budgetHealth ?? 60}%</strong>
+          </div>
+          <div style={{ background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '6px' }}>
+            <span>🎪 Staging: </span>
+            <strong>{characterState.fairReadiness ?? 30}%</strong>
+          </div>
+          <div style={{ background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '6px' }}>
+            <span>📚 Charity: </span>
+            <strong>{characterState.charityGoalProgress ?? 0}%</strong>
+          </div>
+          <div style={{ background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '6px' }}>
+            <span>🤝 Vendors: </span>
+            <strong>{characterState.vendorRelationships ?? 50}%</strong>
           </div>
         </div>
       )}

@@ -4,34 +4,12 @@
 import { MissionDefinition } from '../../types/mission.types';
 import { RESCUE_PUPPY_MISSION } from './rescuePuppy';
 import { SQUIRREL_SAVINGS_MISSION } from './squirrelSavings';
+import { PANDA_FAIR_MISSION } from './pandaFair';
 
 export const MISSION_CATALOG: MissionDefinition[] = [
   RESCUE_PUPPY_MISSION,
   SQUIRREL_SAVINGS_MISSION,
-  {
-    id: 'mission_panda_fair',
-    title: "Panda's School Fair",
-    characterName: 'Bao Bao',
-    characterRole: 'Student committee treasurer organizing school charity fair',
-    characterSpecies: 'Giant Panda',
-    primaryCompetency: 'spendingDiscipline',
-    secondaryCompetencies: ['budgetingSkill', 'investmentAwareness', 'tradeoffReasoning'],
-    description:
-      'Distinguish needs from wants, negotiate vendor discounts, and manage booth budgets to create a joyous, financially successful school fair.',
-    totalLevels: 7,
-    themeColor: '#0a4d42',
-    initialCharacterState: {
-      characterId: 'char_panda_baobao',
-      name: 'Bao Bao',
-      physicalCondition: 'NEEDS_CARE',
-      emotionalState: 'WORRIED',
-      conditionDescription: 'Bao Bao is holding a stack of chaotic receipts for the school fair booths.',
-      vitalityScore: 50,
-      happinessScore: 40,
-      activeDialogue: 'Oh my! Everyone wants expensive carnival games, but our school committee budget is strictly limited!',
-    },
-    levels: [],
-  },
+  PANDA_FAIR_MISSION,
   {
     id: 'mission_turtle_emergency',
     title: "Turtle's Emergency Fund",
