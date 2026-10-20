@@ -418,3 +418,254 @@ def test_trigger_passed_level_simulation(client):
         assert res.status_code == 200
         assert res.json()["status"] == "sent"
         assert res.json()["category_id"] == "phishing"
+
+
+def test_simulated_inbox_and_link_click_event(client):
+    """Test retrieving child inbox and tracking link click event with debrief navigation."""
+    child_id = "test-child-inbox-click"
+
+    # Setup verified guardian
+    client.put(
+        f"/api/safety/guardian/{child_id}",
+        json={
+            "parent_name": "Elena Rostova",
+            "email": "elena@testmail.com",
+            "relationship": "Mother",
+            "consent_confirmed": True,
+            "simulation_enabled": True,
+        },
+    )
+    client.post(f"/api/safety/guardian/{child_id}/verify", json={})
+
+    # Trigger simulation for phishing level
+    with patch(
+        "app.modules.safety.router.send_simulation_email",
+        return_value={"success": True, "status": "sent", "to_email": "elena@testmail.com"},
+    ):
+        trigger_res = client.post(
+            f"/api/safety/simulation/trigger/{child_id}",
+            json={"category_id": "phishing", "score": 90, "attempt_id": "attempt-phishing-1"},
+        )
+        sim_id = trigger_res.json()["simulation_id"]
+
+    # 1. Inspect inbox
+    inbox_res = client.get(f"/api/safety/simulation/inbox/{child_id}")
+    assert inbox_res.status_code == 200
+    inbox_data = inbox_res.json()
+    assert inbox_data["total"] >= 1
+    item = next(i for i in inbox_data["items"] if i["simulation_id"] == sim_id)
+    assert item["category_id"] == "phishing"
+    assert len(item["sender_name"]) > 0
+    assert "@" in item["sender_email"]
+    assert item["link_clicked"] is False
+    assert item["outcome"] == "pending_decision"
+
+    # 2. Record inbox opened event
+    open_res = client.post(
+        f"/api/safety/simulation/event/{sim_id}",
+        json={"event_type": "inbox_opened"},
+    )
+    assert open_res.status_code == 200
+    assert open_res.json()["event_type"] == "inbox_opened"
+
+    # 3. Child clicks the simulated link -> record unsafe link click
+    click_res = client.post(
+        f"/api/safety/simulation/event/{sim_id}",
+        json={"event_type": "link_clicked"},
+    )
+    assert click_res.status_code == 200
+    click_data = click_res.json()
+    assert click_data["link_clicked"] is True
+    assert click_data["outcome"] == "unsafe_link_clicked"
+    assert "/safety/simulation-feedback?id=" in click_data["redirect_url"]
+    # Ensure controlled WiseCub URL, no external scam redirect
+    assert "http://" not in click_data["redirect_url"] and "https://" not in click_data["redirect_url"]
+
+
+def test_child_decision_reporting_without_click(client):
+    """Test child recognizing scam and reporting it as suspicious without clicking."""
+    child_id = "test-child-report-suspicious"
+
+    client.put(
+        f"/api/safety/guardian/{child_id}",
+        json={
+            "parent_name": "Marcus Vance",
+            "email": "marcus@testmail.com",
+            "relationship": "Father",
+            "consent_confirmed": True,
+            "simulation_enabled": True,
+        },
+    )
+    client.post(f"/api/safety/guardian/{child_id}/verify", json={})
+
+    with patch(
+        "app.modules.safety.router.send_simulation_email",
+        return_value={"success": True, "status": "sent", "to_email": "marcus@testmail.com"},
+    ):
+        trigger_res = client.post(
+            f"/api/safety/simulation/trigger/{child_id}",
+            json={"category_id": "sms", "score": 85, "attempt_id": "attempt-sms-1"},
+        )
+        sim_id = trigger_res.json()["simulation_id"]
+
+    # Child reports the message without clicking the link
+    report_res = client.post(
+        f"/api/safety/simulation/event/{sim_id}",
+        json={"event_type": "reported_suspicious", "selected_classification": "suspicious"},
+    )
+    assert report_res.status_code == 200
+    rep_data = report_res.json()
+    assert rep_data["reported_as_suspicious"] is True
+    assert rep_data["link_clicked"] is False
+    assert rep_data["outcome"] == "safely_reported"
+    assert "action=reported" in rep_data["redirect_url"]
+
+
+def test_simulation_follow_up_and_learning_metrics(client):
+    """Test debrief follow-up question submission and parent learning analytics calculation."""
+    child_id = "test-child-analytics-followup"
+
+    client.put(
+        f"/api/safety/guardian/{child_id}",
+        json={
+            "parent_name": "Samantha Wu",
+            "email": "samantha@testmail.com",
+            "relationship": "Guardian",
+            "consent_confirmed": True,
+            "simulation_enabled": True,
+        },
+    )
+    client.post(f"/api/safety/guardian/{child_id}/verify", json={})
+
+    with patch(
+        "app.modules.safety.router.send_simulation_email",
+        return_value={"success": True, "status": "sent", "to_email": "samantha@testmail.com"},
+    ):
+        res1 = client.post(
+            f"/api/safety/simulation/trigger/{child_id}",
+            json={"category_id": "phishing", "score": 90, "attempt_id": "wu-1"},
+        )
+        sim_id1 = res1.json()["simulation_id"]
+
+    # Safely report simulation 1
+    client.post(
+        f"/api/safety/simulation/event/{sim_id1}",
+        json={"event_type": "reported_suspicious", "selected_classification": "suspicious"},
+    )
+
+    # View debrief
+    fb_res = client.get(f"/api/safety/simulation/feedback/{sim_id1}")
+    assert fb_res.status_code == 200
+    fb_data = fb_res.json()
+    assert fb_data["reported_as_suspicious"] is True
+    assert "follow_up" in fb_data
+    correct_idx = fb_data["follow_up"]["correct_index"]
+
+    # Submit follow-up question answer
+    followup_res = client.post(
+        f"/api/safety/simulation/follow-up/{sim_id1}",
+        json={"selected_index": correct_idx},
+    )
+    assert followup_res.status_code == 200
+    f_data = followup_res.json()
+    assert f_data["is_correct"] is True
+    assert len(f_data["explanation"]) > 0
+
+    # Fetch Parent Learning Metrics
+    metrics_res = client.get(f"/api/safety/simulation/metrics/{child_id}")
+    assert metrics_res.status_code == 200
+    m_data = metrics_res.json()
+    assert m_data["total_simulations"] >= 1
+    assert m_data["correctly_reported_count"] >= 1
+    assert m_data["unsafe_clicks_count"] == 0
+    assert m_data["safe_avoidance_rate"] == 100.0
+    assert m_data["follow_up_completed_count"] >= 1
+    assert m_data["follow_up_accuracy"] == 100.0
+    assert "phishing" in m_data["by_level"]
+    assert m_data["by_level"]["phishing"]["correctly_reported"] >= 1
+
+
+def test_simulation_email_content_and_realistic_formatting():
+    """Verify outgoing simulation email matches inbox content without red flag spoilers."""
+    from app.modules.safety.email_service import build_simulation_html, LEVEL_TEMPLATES
+
+    for cat_id, tpl in LEVEL_TEMPLATES.items():
+        subject, plain_text, html = build_simulation_html(
+            parent_name="Alex",
+            category_id=cat_id,
+            simulation_id="test-sim-123",
+            feedback_url="http://localhost:5173/safety/simulation-feedback?id=test-sim-123",
+            child_name="Leo",
+        )
+        assert len(subject) > 5
+        assert len(plain_text) > 20
+        # Verify no upfront spoilers
+        assert "Red Flags to Discuss Together" not in html
+        assert "red-flag" not in html.lower()
+        # Verify realistic scenario elements
+        assert tpl["call_to_action"] in html
+        assert "test-sim-123" in html
+        assert "Consented Learning Simulation" in html
+        assert "safety/simulation-feedback?id=test-sim-123" in html
+
+
+def test_scanner_user_agent_does_not_trigger_link_click(client):
+    """Verify security scanner / bot prefetch does not count as an unsafe child click."""
+    child_id = "test-child-scanner"
+
+    client.put(
+        f"/api/safety/guardian/{child_id}",
+        json={
+            "parent_name": "Scanner Test",
+            "email": "scanner@testmail.com",
+            "relationship": "Parent",
+            "consent_confirmed": True,
+            "simulation_enabled": True,
+        },
+    )
+    client.post(f"/api/safety/guardian/{child_id}/verify", json={})
+
+    with patch(
+        "app.modules.safety.router.send_simulation_email",
+        return_value={"success": True, "status": "sent", "to_email": "scanner@testmail.com"},
+    ):
+        res = client.post(
+            f"/api/safety/simulation/trigger/{child_id}",
+            json={"category_id": "phishing", "score": 95, "attempt_id": "attempt-scanner-1"},
+        )
+        sim_id = res.json()["simulation_id"]
+
+    # Request with scanner User-Agent (GoogleImageProxy)
+    scanner_headers = {"User-Agent": "GoogleImageProxy/1.0"}
+    fb_res = client.get(f"/api/safety/simulation/feedback/{sim_id}", headers=scanner_headers)
+    assert fb_res.status_code == 200
+
+    # Ensure link_clicked is STILL False
+    status_res = client.get(f"/api/safety/simulation/inbox/{child_id}")
+    items = status_res.json()["items"]
+    sim_item = next(i for i in items if i["simulation_id"] == sim_id)
+    assert sim_item["link_clicked"] is False
+    assert sim_item["outcome"] == "pending_decision"
+
+
+def test_cross_student_authorization_isolation(client):
+    """Verify student A cannot access student B's inbox, status, or trigger events."""
+    from app.modules.accounts.security import COOKIE_NAME, issue_token
+
+    student_a_token = issue_token(child_id="student-A", role="student", remember=False)
+    client.cookies.set(COOKIE_NAME, student_a_token)
+
+    # Student A attempts to access Student B's inbox
+    res_inbox = client.get("/api/safety/simulation/inbox/student-B")
+    assert res_inbox.status_code == 403
+    assert "Unauthorized" in res_inbox.json()["detail"]
+
+    # Student A attempts to access Student B's status
+    res_status = client.get("/api/safety/simulation/status/student-B")
+    assert res_status.status_code == 403
+
+    # Student A attempts to access Student B's metrics
+    res_metrics = client.get("/api/safety/simulation/metrics/student-B")
+    assert res_metrics.status_code == 403
+
+

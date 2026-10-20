@@ -283,17 +283,120 @@ export type AllSimulationsResponse = {
   smtp_summary?: SmtpSummary;
 };
 
+export type SimulationFollowUp = {
+  question: string;
+  options: string[];
+  correct_index?: number;
+  explanation?: string;
+};
+
 export type SimulationFeedback = {
   simulation_id: string;
   category_id: string;
   level_title: string;
   scenario_name: string;
+  sender_name?: string;
+  sender_email?: string;
+  call_to_action?: string;
+  display_link_text?: string;
   simulated_body: string;
   red_flags: string[];
   learning_goal: string;
   score?: number;
   created_at?: string;
+  link_clicked?: boolean;
   educational_link_clicked?: boolean;
+  reported_as_suspicious?: boolean;
+  initial_classification?: string;
+  outcome?: string;
+  follow_up?: SimulationFollowUp;
+  follow_up_completed?: boolean;
+  follow_up_correct?: boolean;
+  follow_up_selected_index?: number;
+};
+
+export type SimulatedInboxItem = {
+  simulation_id: string;
+  category_id: string;
+  level_number: string;
+  level_title: string;
+  scenario_id: string;
+  scenario_name: string;
+  sender_name: string;
+  sender_email: string;
+  subject: string;
+  preview: string;
+  body: string;
+  call_to_action: string;
+  display_link_text: string;
+  created_at: string;
+  inbox_opened: boolean;
+  link_clicked: boolean;
+  reported_as_suspicious: boolean;
+  initial_classification: "unanswered" | "suspicious" | "safe" | "clicked_unsafe_link";
+  outcome: "pending_decision" | "safely_reported" | "unsafe_link_clicked" | "marked_safe";
+  debrief_viewed: boolean;
+  follow_up_completed: boolean;
+  follow_up_correct?: boolean;
+};
+
+export type SimulatedInboxResponse = {
+  child_id: string;
+  items: SimulatedInboxItem[];
+  total: number;
+  unread_count: number;
+};
+
+export type SimulationEventResponse = {
+  ok: boolean;
+  simulation_id: string;
+  event_type: "inbox_opened" | "link_clicked" | "reported_suspicious" | "marked_safe";
+  outcome: string;
+  initial_classification: string;
+  link_clicked: boolean;
+  reported_as_suspicious: boolean;
+  redirect_url?: string;
+  message?: string;
+};
+
+export type FollowUpSubmitResponse = {
+  ok: boolean;
+  simulation_id: string;
+  selected_index: number;
+  correct_index: number;
+  is_correct: boolean;
+  explanation: string;
+  learning_goal: string;
+};
+
+export type LevelLearningMetric = {
+  category_id: string;
+  title: string;
+  level_number: string;
+  attempts: number;
+  correctly_reported: number;
+  unsafe_clicks: number;
+  debrief_completed: number;
+  latest_outcome?: string | null;
+};
+
+export type SafetyLearningMetrics = {
+  child_id: string;
+  total_simulations: number;
+  completed_decisions: number;
+  pending_decisions: number;
+  correctly_reported_count: number;
+  unsafe_clicks_count: number;
+  marked_safe_count: number;
+  suspicious_recognition_rate: number;
+  safe_avoidance_rate: number;
+  debrief_completion_count: number;
+  debrief_completion_rate: number;
+  follow_up_completed_count: number;
+  follow_up_correct_count: number;
+  follow_up_accuracy: number;
+  by_level: Record<string, LevelLearningMetric>;
+  recent_attempts: Array<Record<string, unknown>>;
 };
 
 export function getGuardianDetails(childId: string) {
@@ -380,4 +483,30 @@ export function getSimulationStatuses(childId: string) {
 export function getSimulationFeedback(simulationId: string) {
   return apiGet<SimulationFeedback>(`/api/safety/simulation/feedback/${simulationId}`);
 }
+
+export function getSimulatedInbox(childId: string) {
+  return apiGet<SimulatedInboxResponse>(`/api/safety/simulation/inbox/${childId}`);
+}
+
+export function recordSimulationEvent(
+  simulationId: string,
+  eventType: "inbox_opened" | "link_clicked" | "reported_suspicious" | "marked_safe",
+  selectedClassification?: "suspicious" | "safe",
+) {
+  return apiPost<SimulationEventResponse>(`/api/safety/simulation/event/${simulationId}`, {
+    event_type: eventType,
+    selected_classification: selectedClassification,
+  });
+}
+
+export function submitSimulationFollowUp(simulationId: string, selectedIndex: number) {
+  return apiPost<FollowUpSubmitResponse>(`/api/safety/simulation/follow-up/${simulationId}`, {
+    selected_index: selectedIndex,
+  });
+}
+
+export function getSafetyLearningMetrics(childId: string) {
+  return apiGet<SafetyLearningMetrics>(`/api/safety/simulation/metrics/${childId}`);
+}
+
 

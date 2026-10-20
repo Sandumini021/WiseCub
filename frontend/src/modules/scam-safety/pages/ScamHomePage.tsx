@@ -36,8 +36,10 @@ import {
   triggerLevelSimulation,
   triggerPassedLevelSimulation,
   getSimulationStatuses,
+  getSafetyLearningMetrics,
   type GuardianDetails,
   type LevelSimulationStatus,
+  type SafetyLearningMetrics,
   loadModuleState,
   saveModuleState,
 } from "../../../services/apiClient";
@@ -398,6 +400,7 @@ export function ScamHomePage() {
     simulation_enabled: true,
   });
   const [simulations, setSimulations] = useState<Record<string, LevelSimulationStatus | null>>({});
+  const [learningMetrics, setLearningMetrics] = useState<SafetyLearningMetrics | null>(null);
   const [guardianSaving, setGuardianSaving] = useState(false);
   const [guardianMsg, setGuardianMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isEditingGuardian, setIsEditingGuardian] = useState(false);
@@ -412,7 +415,8 @@ export function ScamHomePage() {
     void Promise.allSettled([
       getGuardianDetails(id),
       getSimulationStatuses(id),
-    ]).then(([guardRes, simRes]) => {
+      getSafetyLearningMetrics(id),
+    ]).then(([guardRes, simRes, metricsRes]) => {
       if (guardRes.status === "fulfilled" && guardRes.value) {
         setGuardian(guardRes.value);
         if (guardRes.value.configured) {
@@ -427,6 +431,9 @@ export function ScamHomePage() {
       }
       if (simRes.status === "fulfilled" && simRes.value?.by_category) {
         setSimulations(simRes.value.by_category);
+      }
+      if (metricsRes.status === "fulfilled" && metricsRes.value) {
+        setLearningMetrics(metricsRes.value);
       }
     });
   }, []);
@@ -1015,6 +1022,64 @@ export function ScamHomePage() {
           </aside>
         </section>
 
+        {/* Practice Simulated Inbox Quick Card */}
+        <section
+          style={{
+            background: "linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)",
+            border: "1.5px solid #bbf7d0",
+            borderRadius: "18px",
+            padding: "20px 24px",
+            marginBottom: "24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "16px",
+            boxShadow: "0 4px 16px rgba(16, 185, 129, 0.08)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <span style={{ fontSize: "2.4rem" }}>📬</span>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                <h2 style={{ margin: 0, fontSize: "1.15rem", color: "#065f46" }}>
+                  Practice Simulation Inbox
+                </h2>
+                <span
+                  style={{
+                    background: "#dcfce7",
+                    color: "#15803d",
+                    fontSize: "0.74rem",
+                    fontWeight: 700,
+                    padding: "2px 8px",
+                    borderRadius: "999px",
+                  }}
+                >
+                  Realistic & Safe
+                </span>
+              </div>
+              <p style={{ margin: 0, fontSize: "0.88rem", color: "#374151", maxWidth: "620px", lineHeight: 1.45 }}>
+                Test your skills against real-world educational emails in our safe simulation sandbox. Evaluate sender addresses, urgent deadlines, and links without risking your personal data.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/safety/inbox"
+            className="safety-btn-primary"
+            style={{
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "10px 20px",
+              fontSize: "0.92rem",
+              background: "#059669",
+            }}
+          >
+            Open Practice Inbox ✉️ →
+          </Link>
+        </section>
+
         {/* Six Lessons Container */}
         <section className="safety-lessons" aria-labelledby="lessons-title">
           <div className="safety-lessons-head">
@@ -1448,6 +1513,134 @@ export function ScamHomePage() {
               </div>
             )}
           </div>
+
+          {/* Parent/Guardian Learning Analytics Panel */}
+          {learningMetrics && (
+            <div className="safety-analytics-card">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>
+                <h3 style={{ margin: 0, fontSize: "1.05rem", color: "#1e1b4b", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span>📊</span> Child Decision Analytics & Educational Progress
+                </h3>
+                <span style={{ fontSize: "0.78rem", color: "#64748b" }}>
+                  Independent metrics: Initial Decision, Link Clicks, and Follow-Up Mastery
+                </span>
+              </div>
+              <p style={{ margin: "0 0 16px 0", fontSize: "0.84rem", color: "#64748b", lineHeight: 1.45 }}>
+                WiseCub tracks realistic simulation behaviors separately from textbook quizzes. Review how your child identifies threats, responds to simulated links, and reinforces learning through debriefs.
+              </p>
+
+              <div className="safety-analytics-grid">
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num">{learningMetrics.total_simulations}</div>
+                  <div className="safety-metric-lbl">Total Simulations</div>
+                  <div className="safety-metric-hint">Delivered / Attempted</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: "#059669" }}>
+                    {learningMetrics.correctly_reported_count}
+                  </div>
+                  <div className="safety-metric-lbl">Safely Reported</div>
+                  <div className="safety-metric-hint">{learningMetrics.suspicious_recognition_rate}% recognition</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: learningMetrics.unsafe_clicks_count > 0 ? "#dc2626" : "#059669" }}>
+                    {learningMetrics.unsafe_clicks_count}
+                  </div>
+                  <div className="safety-metric-lbl">Unsafe Clicks</div>
+                  <div className="safety-metric-hint">Simulated links clicked</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: "#2563eb" }}>
+                    {learningMetrics.safe_avoidance_rate}%
+                  </div>
+                  <div className="safety-metric-lbl">Avoidance Rate</div>
+                  <div className="safety-metric-hint">Avoided unsafe clicks</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: "#7c3aed" }}>
+                    {learningMetrics.debrief_completion_rate}%
+                  </div>
+                  <div className="safety-metric-lbl">Debriefs Viewed</div>
+                  <div className="safety-metric-hint">{learningMetrics.debrief_completion_count} debriefs viewed</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: "#0284c7" }}>
+                    {learningMetrics.follow_up_completed_count > 0 ? `${learningMetrics.follow_up_accuracy}%` : "—"}
+                  </div>
+                  <div className="safety-metric-lbl">Follow-Up Score</div>
+                  <div className="safety-metric-hint">{learningMetrics.follow_up_correct_count} of {learningMetrics.follow_up_completed_count} correct</div>
+                </div>
+              </div>
+
+              {/* Per-Level Breakdown Table */}
+              <div style={{ marginTop: "18px", overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.84rem", textAlign: "left" }}>
+                  <thead>
+                    <tr style={{ background: "#f8fafc", borderBottom: "1.5px solid #e2e8f0", color: "#475569" }}>
+                      <th style={{ padding: "8px 12px" }}>Level</th>
+                      <th style={{ padding: "8px 12px" }}>Attempts</th>
+                      <th style={{ padding: "8px 12px" }}>Correctly Reported</th>
+                      <th style={{ padding: "8px 12px" }}>Unsafe Clicks</th>
+                      <th style={{ padding: "8px 12px" }}>Debrief Viewed</th>
+                      <th style={{ padding: "8px 12px" }}>Latest Decision Outcome</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {CATEGORY_META.map((cat, i) => {
+                      const lvl = learningMetrics.by_level[cat.id];
+                      const attempts = lvl?.attempts || 0;
+                      const reported = lvl?.correctly_reported || 0;
+                      const clicked = lvl?.unsafe_clicks || 0;
+                      const debriefs = lvl?.debrief_completed || 0;
+                      const latestOutcome = lvl?.latest_outcome;
+
+                      return (
+                        <tr key={cat.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                          <td style={{ padding: "8px 12px", fontWeight: 600, color: "#1e293b" }}>
+                            {cat.icon} Level {i + 1}: {cat.label}
+                          </td>
+                          <td style={{ padding: "8px 12px", color: "#475569" }}>{attempts}</td>
+                          <td style={{ padding: "8px 12px", color: "#059669", fontWeight: reported > 0 ? 700 : 400 }}>
+                            {reported}
+                          </td>
+                          <td style={{ padding: "8px 12px", color: clicked > 0 ? "#dc2626" : "#475569", fontWeight: clicked > 0 ? 700 : 400 }}>
+                            {clicked}
+                          </td>
+                          <td style={{ padding: "8px 12px", color: "#475569" }}>{debriefs}</td>
+                          <td style={{ padding: "8px 12px" }}>
+                            {latestOutcome === "safely_reported" ? (
+                              <span style={{ color: "#065f46", background: "#ecfdf5", padding: "2px 8px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 700 }}>
+                                Safely Reported ✓
+                              </span>
+                            ) : latestOutcome === "unsafe_link_clicked" ? (
+                              <span style={{ color: "#991b1b", background: "#fef2f2", padding: "2px 8px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 700 }}>
+                                Unsafe Click Recorded ⚠️
+                              </span>
+                            ) : latestOutcome === "marked_safe" ? (
+                              <span style={{ color: "#1e40af", background: "#eff6ff", padding: "2px 8px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 700 }}>
+                                Classified Safe
+                              </span>
+                            ) : attempts > 0 ? (
+                              <span style={{ color: "#b45309", background: "#fffbeb", padding: "2px 8px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 700 }}>
+                                Pending Review
+                              </span>
+                            ) : (
+                              <span style={{ color: "#94a3b8", fontSize: "0.78rem" }}>Not triggered yet</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Bottom 3-Card Grid */}

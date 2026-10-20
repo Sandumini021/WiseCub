@@ -8,6 +8,10 @@ import {
   triggerLevelSimulation,
   triggerPassedLevelSimulation,
   getSimulationStatuses,
+  getSimulatedInbox,
+  recordSimulationEvent,
+  submitSimulationFollowUp,
+  getSafetyLearningMetrics,
   type GuardianDetails,
   type LevelSimulationStatus,
 } from "../services/apiClient.ts";
@@ -300,5 +304,168 @@ describe("WiseCub Scam Safety - Parent/Guardian Details & Email Simulation", () 
       }),
       "Not passed yet"
     );
+  });
+
+  it("Simulated Inbox: getSimulatedInbox retrieves realistic educational items", async () => {
+    mockResponse = {
+      status: 200,
+      ok: true,
+      json: async () => ({
+        child_id: "child-inbox-1",
+        total: 1,
+        unread_count: 1,
+        items: [
+          {
+            simulation_id: "sim-inbox-101",
+            category_id: "phishing",
+            level_number: "1",
+            level_title: "Phishing emails",
+            scenario_name: "School Cafeteria Voucher",
+            sender_name: "Oakridge Canteen",
+            sender_email: "lunch@oakridge-canteen-promo.net",
+            subject: "URGENT: $15 Voucher",
+            preview: "Claim your lunch reward...",
+            body: "Dear Student,\nClaim now...",
+            call_to_action: "Claim Voucher Now",
+            display_link_text: "http://oakridge-cafeteria-reward.net",
+            inbox_opened: false,
+            link_clicked: false,
+            reported_as_suspicious: false,
+            initial_classification: "unanswered",
+            outcome: "pending_decision",
+            debrief_viewed: false,
+            follow_up_completed: false,
+          },
+        ],
+      }),
+    };
+
+    const inbox = await getSimulatedInbox("child-inbox-1");
+    assert.equal(lastFetchRequest?.options.method || "GET", "GET");
+    assert.ok(lastFetchRequest?.url.includes("/api/safety/simulation/inbox/child-inbox-1"));
+    assert.equal(inbox.total, 1);
+    assert.equal(inbox.items[0].simulation_id, "sim-inbox-101");
+    assert.equal(inbox.items[0].link_clicked, false);
+  });
+
+  it("Child Decision: recordSimulationEvent tracks unsafe link click and controlled debrief URL", async () => {
+    mockResponse = {
+      status: 200,
+      ok: true,
+      json: async () => ({
+        ok: true,
+        simulation_id: "sim-click-101",
+        event_type: "link_clicked",
+        outcome: "unsafe_link_clicked",
+        initial_classification: "clicked_unsafe_link",
+        link_clicked: true,
+        reported_as_suspicious: false,
+        redirect_url: "/safety/simulation-feedback?id=sim-click-101",
+      }),
+    };
+
+    const res = await recordSimulationEvent("sim-click-101", "link_clicked");
+    assert.equal(lastFetchRequest?.options.method, "POST");
+    assert.ok(lastFetchRequest?.url.includes("/api/safety/simulation/event/sim-click-101"));
+    const body = JSON.parse(String(lastFetchRequest?.options.body));
+    assert.equal(body.event_type, "link_clicked");
+    assert.equal(res.link_clicked, true);
+    assert.equal(res.outcome, "unsafe_link_clicked");
+    // Verify safe internal WiseCub destination, never external malicious phishing url
+    assert.ok(res.redirect_url?.startsWith("/safety/simulation-feedback"));
+  });
+
+  it("Child Decision: recordSimulationEvent tracks suspicious email reported without clicking", async () => {
+    mockResponse = {
+      status: 200,
+      ok: true,
+      json: async () => ({
+        ok: true,
+        simulation_id: "sim-report-101",
+        event_type: "reported_suspicious",
+        outcome: "safely_reported",
+        initial_classification: "suspicious",
+        link_clicked: false,
+        reported_as_suspicious: true,
+        redirect_url: "/safety/simulation-feedback?id=sim-report-101&action=reported",
+      }),
+    };
+
+    const res = await recordSimulationEvent("sim-report-101", "reported_suspicious", "suspicious");
+    assert.equal(lastFetchRequest?.options.method, "POST");
+    const body = JSON.parse(String(lastFetchRequest?.options.body));
+    assert.equal(body.event_type, "reported_suspicious");
+    assert.equal(body.selected_classification, "suspicious");
+    assert.equal(res.reported_as_suspicious, true);
+    assert.equal(res.link_clicked, false);
+    assert.equal(res.outcome, "safely_reported");
+  });
+
+  it("Debrief Follow-up: submitSimulationFollowUp records answer and returns feedback", async () => {
+    mockResponse = {
+      status: 200,
+      ok: true,
+      json: async () => ({
+        ok: true,
+        simulation_id: "sim-follow-101",
+        selected_index: 1,
+        correct_index: 1,
+        is_correct: true,
+        explanation: "Always verify the domain rather than trusting display names.",
+        learning_goal: "Sender domain inspection",
+      }),
+    };
+
+    const res = await submitSimulationFollowUp("sim-follow-101", 1);
+    assert.equal(lastFetchRequest?.options.method, "POST");
+    assert.ok(lastFetchRequest?.url.includes("/api/safety/simulation/follow-up/sim-follow-101"));
+    const body = JSON.parse(String(lastFetchRequest?.options.body));
+    assert.equal(body.selected_index, 1);
+    assert.equal(res.is_correct, true);
+  });
+
+  it("Parent Dashboard Analytics: getSafetyLearningMetrics provides aggregated learning metrics", async () => {
+    mockResponse = {
+      status: 200,
+      ok: true,
+      json: async () => ({
+        child_id: "child-metrics-1",
+        total_simulations: 3,
+        completed_decisions: 3,
+        pending_decisions: 0,
+        correctly_reported_count: 2,
+        unsafe_clicks_count: 1,
+        marked_safe_count: 0,
+        suspicious_recognition_rate: 66.7,
+        safe_avoidance_rate: 66.7,
+        debrief_completion_count: 3,
+        debrief_completion_rate: 100.0,
+        follow_up_completed_count: 2,
+        follow_up_correct_count: 2,
+        follow_up_accuracy: 100.0,
+        by_level: {
+          phishing: {
+            category_id: "phishing",
+            title: "Phishing emails",
+            level_number: "1",
+            attempts: 1,
+            correctly_reported: 1,
+            unsafe_clicks: 0,
+            debrief_completed: 1,
+            latest_outcome: "safely_reported",
+          },
+        },
+        recent_attempts: [],
+      }),
+    };
+
+    const metrics = await getSafetyLearningMetrics("child-metrics-1");
+    assert.equal(lastFetchRequest?.options.method || "GET", "GET");
+    assert.ok(lastFetchRequest?.url.includes("/api/safety/simulation/metrics/child-metrics-1"));
+    assert.equal(metrics.total_simulations, 3);
+    assert.equal(metrics.correctly_reported_count, 2);
+    assert.equal(metrics.unsafe_clicks_count, 1);
+    assert.equal(metrics.debrief_completion_rate, 100.0);
+    assert.equal(metrics.by_level.phishing.correctly_reported, 1);
   });
 });

@@ -12,11 +12,12 @@ import re
 from typing import Any
 import uuid
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
 from app.database.mongo import get_db
+from app.modules.accounts.security import COOKIE_NAME, read_token
 from app.modules.safety.email_service import LEVEL_TEMPLATES, send_simulation_email
 
 router = APIRouter(prefix="/api/safety", tags=["scam-safety"])
@@ -32,6 +33,45 @@ def require_db():
             detail="MongoDB is not connected. Start MongoDB to manage guardian consent.",
         )
     return db
+
+
+def check_student_authorization(request: Request, owner_child_id: str) -> None:
+    """
+    Ensures a student cannot view or modify another student's simulation record.
+    If authenticated via wisecub_session cookie or Authorization Bearer header,
+    verifies role and ownership.
+    """
+    token = request.cookies.get(COOKIE_NAME)
+    if not token:
+        auth_header = request.headers.get("authorization", "")
+        if auth_header.lower().startswith("bearer "):
+            token = auth_header[7:].strip()
+
+    if token:
+        payload = read_token(token)
+        if payload and payload.get("sub"):
+            user_id = str(payload["sub"])
+            user_role = payload.get("role", "student")
+            if user_role == "student" and user_id != str(owner_child_id):
+                raise HTTPException(
+                    status_code=403,
+                    detail="Unauthorized: Access to another student's simulation is forbidden.",
+                )
+
+
+def is_scanner_request(request: Request) -> bool:
+    """
+    Detects automated email security bots and preview scanners (e.g., GoogleImageProxy,
+    Proofpoint, Barracuda, Slackbot) to prevent false-positive link clicks.
+    """
+    user_agent = (request.headers.get("user-agent") or "").lower()
+    scanner_patterns = (
+        "googleimageproxy", "bingbot", "slackbot", "twitterbot", "facebookexternalhit",
+        "whatsapp", "linkedinbot", "crawler", "spider", "preview", "bot", "virus", "scan",
+        "barracuda", "proofpoint", "mimecast"
+    )
+    return any(p in user_agent for p in scanner_patterns)
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -65,16 +105,28 @@ class SimulationTriggerIn(BaseModel):
     force_retry: bool = Field(default=False)
 
 
+class SimulationEventIn(BaseModel):
+    event_type: str = Field(..., description="'open', 'link_clicked', 'reported_suspicious', 'marked_safe'")
+    child_id: str = Field(default="")
+    selected_classification: str | None = Field(default=None)
+
+
+class FollowUpIn(BaseModel):
+    selected_index: int = Field(ge=0, le=5)
+    child_id: str = Field(default="")
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 #  GUARDIAN CONTACT & CONSENT ENDPOINTS
 # ─────────────────────────────────────────────────────────────────────────────
 
 
 @router.get("/guardian/{child_id}")
-async def get_guardian_details(child_id: str) -> dict[str, Any]:
+async def get_guardian_details(child_id: str, request: Request) -> dict[str, Any]:
     """
     Returns the saved guardian details and consent status for the given child.
     """
+    check_student_authorization(request, child_id)
     db = require_db()
     doc = await db.guardian_consent.find_one({"child_id": child_id}, {"_id": 0})
     if not doc:
@@ -111,12 +163,13 @@ async def get_guardian_details(child_id: str) -> dict[str, Any]:
 
 
 @router.put("/guardian/{child_id}")
-async def save_guardian_details(child_id: str, body: GuardianIn) -> dict[str, Any]:
+async def save_guardian_details(child_id: str, body: GuardianIn, request: Request) -> dict[str, Any]:
     """
     Saves or updates parent/guardian contact details and consent for a child.
     Validates name and email address format.
     Generates a secure verification token for pending email verification.
     """
+    check_student_authorization(request, child_id)
     name = body.parent_name.strip()
     email = body.email.strip().lower()
 
@@ -223,10 +276,11 @@ async def verify_guardian_email(child_id: str, body: VerifyIn) -> dict[str, Any]
 
 
 @router.post("/guardian/{child_id}/consent")
-async def update_guardian_consent(child_id: str, body: ConsentUpdateIn) -> dict[str, Any]:
+async def update_guardian_consent(child_id: str, body: ConsentUpdateIn, request: Request) -> dict[str, Any]:
     """
     Updates or withdraws consent, or toggles future simulation emails.
     """
+    check_student_authorization(request, child_id)
     db = require_db()
     doc = await db.guardian_consent.find_one({"child_id": child_id})
     if not doc:
@@ -259,7 +313,7 @@ async def update_guardian_consent(child_id: str, body: ConsentUpdateIn) -> dict[
 
 
 @router.post("/simulation/trigger/{child_id}")
-async def trigger_level_simulation(child_id: str, body: SimulationTriggerIn) -> dict[str, Any]:
+async def trigger_level_simulation(child_id: str, body: SimulationTriggerIn, request: Request) -> dict[str, Any]:
     """
     Triggers an educational scam simulation email for one of the six completed levels.
     Enforces all strict safety and consent requirements:
@@ -268,6 +322,7 @@ async def trigger_level_simulation(child_id: str, body: SimulationTriggerIn) -> 
     3. Guardian must be registered, verified, and consent active.
     4. Server-side idempotency: prevents duplicate sends for the same attempt.
     """
+    check_student_authorization(request, child_id)
     category_id = body.category_id.strip().lower()
     if category_id not in LEVEL_TEMPLATES:
         raise HTTPException(
@@ -359,6 +414,7 @@ async def trigger_level_simulation(child_id: str, body: SimulationTriggerIn) -> 
         )
 
         now = datetime.now(timezone.utc).isoformat()
+        template = LEVEL_TEMPLATES.get(category_id, LEVEL_TEMPLATES["phishing"])
         update_fields = {
             "status": send_result["status"],
             "detail": send_result["detail"],
@@ -366,6 +422,13 @@ async def trigger_level_simulation(child_id: str, body: SimulationTriggerIn) -> 
             "parent_email": parent_email,
             "parent_name": parent_name,
             "score": body.score,
+            "scenario_id": template.get("scenario_id", f"{category_id}_scenario"),
+            "sender_name": template.get("fictional_sender_name", "WiseCub Safety Lab"),
+            "sender_email": template.get("fictional_sender_email", "alerts@wisecub-safety.org"),
+            "call_to_action": template.get("call_to_action", "View Link"),
+            "display_link_text": template.get("display_link_text", "http://safety-check.wisecub.org"),
+            "preview": template.get("preview", ""),
+            "simulated_body": template.get("simulated_body", ""),
             "updated_at": now,
         }
         await db.safety_simulations.update_one(
@@ -379,10 +442,10 @@ async def trigger_level_simulation(child_id: str, body: SimulationTriggerIn) -> 
             "retried": True,
             "simulation_id": simulation_id,
             "category_id": category_id,
-            "level_number": existing_attempt.get("level_number", LEVEL_TEMPLATES[category_id]["level_number"]),
-            "status": send_result["status"],
+            "level_number": existing_attempt.get("level_number", template["level_number"]),
+            "status": send_result.get("status", "sent"),
             "parent_email": parent_email,
-            "detail": send_result["detail"],
+            "detail": send_result.get("detail", ""),
             "feedback_url": feedback_url,
         }
 
@@ -407,21 +470,44 @@ async def trigger_level_simulation(child_id: str, body: SimulationTriggerIn) -> 
     )
 
     now = datetime.now(timezone.utc).isoformat()
+    template = LEVEL_TEMPLATES.get(category_id, LEVEL_TEMPLATES["phishing"])
     sim_doc = {
         "simulation_id": simulation_id,
         "child_id": child_id,
         "category_id": category_id,
-        "level_number": LEVEL_TEMPLATES[category_id]["level_number"],
+        "scenario_id": template.get("scenario_id", f"{category_id}_scenario"),
+        "level_number": template["level_number"],
         "attempt_id": attempt_id,
         "score": body.score,
         "passed": True,
         "parent_email": parent_email,
         "parent_name": parent_name,
-        "status": send_result["status"],  # "sent", "not_configured", or "failed"
-        "detail": send_result["detail"],
+        "status": send_result.get("status", "sent"),  # "sent", "not_configured", or "failed"
+        "detail": send_result.get("detail", ""),
         "subject": send_result.get("subject", ""),
+        "sender_name": template.get("fictional_sender_name", "WiseCub Safety Lab"),
+        "sender_email": template.get("fictional_sender_email", "alerts@wisecub-safety.org"),
+        "call_to_action": template.get("call_to_action", "View Link"),
+        "display_link_text": template.get("display_link_text", "http://safety-check.wisecub.org"),
+        "preview": template.get("preview", ""),
+        "simulated_body": template.get("simulated_body", ""),
         "feedback_url": feedback_url,
         "red_flags_identified": body.red_flags_identified,
+        "inbox_opened": False,
+        "inbox_opened_at": None,
+        "initial_classification": "unanswered",
+        "classification_submitted_at": None,
+        "link_clicked": False,
+        "link_clicked_at": None,
+        "reported_as_suspicious": False,
+        "reported_at": None,
+        "debrief_viewed": False,
+        "debrief_viewed_at": None,
+        "follow_up_completed": False,
+        "follow_up_selected_index": None,
+        "follow_up_correct": None,
+        "follow_up_completed_at": None,
+        "outcome": "pending_decision",
         "educational_link_clicked": False,
         "feedback_viewed_at": None,
         "created_at": now,
@@ -437,20 +523,21 @@ async def trigger_level_simulation(child_id: str, body: SimulationTriggerIn) -> 
         "simulation_id": simulation_id,
         "category_id": category_id,
         "level_number": sim_doc["level_number"],
-        "status": send_result["status"],
+        "status": send_result.get("status", "sent"),
         "parent_email": parent_email,
-        "detail": send_result["detail"],
+        "detail": send_result.get("detail", ""),
         "feedback_url": feedback_url,
     }
 
 
 @router.post("/simulation/trigger-passed/{child_id}/{category_id}")
-async def trigger_passed_level_simulation(child_id: str, category_id: str) -> dict[str, Any]:
+async def trigger_passed_level_simulation(child_id: str, category_id: str, request: Request) -> dict[str, Any]:
     """
     Triggers an educational simulation email for a level that was previously completed with >= 80%
     (e.g., passed before guardian email was verified or before SMTP was configured).
     Reuses the real recorded passing score and completion record.
     """
+    check_student_authorization(request, child_id)
     category_id = category_id.strip().lower()
     if category_id not in LEVEL_TEMPLATES:
         raise HTTPException(status_code=400, detail=f"Invalid category '{category_id}'.")
@@ -498,14 +585,15 @@ async def trigger_passed_level_simulation(child_id: str, category_id: str) -> di
         attempt_id=attempt_id,
         force_retry=True,
     )
-    return await trigger_level_simulation(child_id, trigger_in)
+    return await trigger_level_simulation(child_id, trigger_in, request)
 
 
 @router.get("/simulation/status/{child_id}")
-async def get_simulation_status(child_id: str) -> dict[str, Any]:
+async def get_simulation_status(child_id: str, request: Request) -> dict[str, Any]:
     """
     Returns the simulation history and status for each of the six Scam Safety levels.
     """
+    check_student_authorization(request, child_id)
     db = require_db()
     cursor = db.safety_simulations.find({"child_id": child_id}, {"_id": 0}).sort("created_at", -1)
     simulations = await cursor.to_list(length=100)
@@ -530,11 +618,253 @@ async def get_simulation_status(child_id: str) -> dict[str, Any]:
     }
 
 
-@router.get("/simulation/feedback/{simulation_id}")
-async def get_simulation_feedback(simulation_id: str) -> dict[str, Any]:
+@router.get("/simulation/inbox/{child_id}")
+async def get_simulated_inbox(child_id: str, request: Request) -> dict[str, Any]:
     """
-    Safe educational destination for parents/children clicking the simulation email link.
-    Records that the educational link was clicked and returns the educational debrief.
+    Returns the list of simulated scam and educational emails dispatched
+    for the child to practice inspecting in the child-facing simulated inbox.
+    """
+    check_student_authorization(request, child_id)
+    db = require_db()
+    cursor = db.safety_simulations.find({"child_id": child_id}, {"_id": 0}).sort("created_at", -1)
+    simulations = await cursor.to_list(length=100)
+
+    inbox_items: list[dict[str, Any]] = []
+    for sim in simulations:
+        cat = sim.get("category_id", "phishing")
+        tpl = LEVEL_TEMPLATES.get(cat, LEVEL_TEMPLATES["phishing"])
+
+        sim_id = sim.get("simulation_id")
+        feedback_url = f"{settings.frontend_origin}/safety/simulation-feedback?id={sim_id}"
+
+        inbox_items.append({
+            "simulation_id": sim_id,
+            "category_id": cat,
+            "level_number": sim.get("level_number", tpl["level_number"]),
+            "level_title": tpl["title"],
+            "title": tpl["title"],
+            "scenario_id": sim.get("scenario_id", tpl.get("scenario_id")),
+            "scenario_name": tpl.get("scenario_name", ""),
+            "sender_name": sim.get("sender_name") or tpl.get("fictional_sender_name", "WiseCub Safety Lab"),
+            "sender_email": sim.get("sender_email") or tpl.get("fictional_sender_email", "alerts@wisecub-safety.org"),
+            "subject": sim.get("subject") or tpl["email_subject"],
+            "preview": sim.get("preview") or tpl.get("preview", ""),
+            "body": sim.get("simulated_body") or tpl["simulated_body"],
+            "simulated_body": sim.get("simulated_body") or tpl["simulated_body"],
+            "call_to_action": sim.get("call_to_action") or tpl.get("call_to_action", "View Link"),
+            "display_link_text": sim.get("display_link_text") or tpl.get("display_link_text", "http://safety-check.wisecub.org"),
+            "created_at": sim.get("created_at"),
+            "inbox_opened": bool(sim.get("inbox_opened")),
+            "initial_classification": sim.get("initial_classification", "unanswered"),
+            "link_clicked": bool(sim.get("link_clicked") or sim.get("educational_link_clicked")),
+            "reported_as_suspicious": bool(sim.get("reported_as_suspicious")),
+            "debrief_viewed": bool(sim.get("debrief_viewed")),
+            "follow_up_completed": bool(sim.get("follow_up_completed")),
+            "follow_up_correct": sim.get("follow_up_correct"),
+            "outcome": sim.get("outcome", "pending_decision"),
+            "feedback_url": feedback_url,
+        })
+
+    unanswered = sum(1 for m in inbox_items if m["initial_classification"] == "unanswered")
+    return {
+        "child_id": child_id,
+        "total": len(inbox_items),
+        "total_messages": len(inbox_items),
+        "unread_count": unanswered,
+        "unanswered_count": unanswered,
+        "items": inbox_items,
+        "messages": inbox_items,
+    }
+
+
+@router.post("/simulation/event/{simulation_id}")
+async def record_simulation_event(simulation_id: str, body: SimulationEventIn, request: Request) -> dict[str, Any]:
+    """
+    Records a granular decision event by the child:
+    - 'open' / 'inbox_opened': Message was opened in simulated inbox.
+    - 'link_clicked': Unsafe click on the simulated link. Navigates to debrief.
+    - 'reported_suspicious': Child correctly identified and reported the email without clicking link.
+    - 'marked_safe': Child classified the email as safe without clicking link.
+    """
+    db = require_db()
+    sim = await db.safety_simulations.find_one({"simulation_id": simulation_id})
+    if not sim:
+        raise HTTPException(status_code=404, detail="Simulation session not found.")
+
+    sim_child_id = sim.get("child_id", "")
+    if body.child_id and body.child_id != sim_child_id:
+        raise HTTPException(status_code=403, detail="Child ID does not match simulation owner.")
+    check_student_authorization(request, sim_child_id)
+
+    now = datetime.now(timezone.utc).isoformat()
+    event_type = body.event_type.strip().lower()
+
+    if event_type in ("open", "inbox_opened"):
+        if not sim.get("inbox_opened"):
+            await db.safety_simulations.update_one(
+                {"simulation_id": simulation_id},
+                {"$set": {"inbox_opened": True, "inbox_opened_at": now, "updated_at": now}},
+            )
+        return {
+            "ok": True,
+            "simulation_id": simulation_id,
+            "event": "inbox_opened",
+            "event_type": "inbox_opened",
+            "outcome": sim.get("outcome", "pending_decision"),
+            "initial_classification": sim.get("initial_classification", "unanswered"),
+            "link_clicked": bool(sim.get("link_clicked")),
+            "reported_as_suspicious": bool(sim.get("reported_as_suspicious")),
+        }
+
+    elif event_type == "link_clicked":
+        # Unsafe link click
+        update_set: dict[str, Any] = {
+            "link_clicked": True,
+            "link_clicked_at": now,
+            "educational_link_clicked": True,
+            "feedback_viewed_at": now,
+            "outcome": "unsafe_link_clicked",
+            "updated_at": now,
+        }
+        initial_classification = sim.get("initial_classification")
+        if not initial_classification or initial_classification == "unanswered":
+            update_set["initial_classification"] = "clicked_unsafe_link"
+            update_set["classification_submitted_at"] = now
+            initial_classification = "clicked_unsafe_link"
+
+        await db.safety_simulations.update_one(
+            {"simulation_id": simulation_id},
+            {"$set": update_set},
+        )
+        return {
+            "ok": True,
+            "simulation_id": simulation_id,
+            "event": "link_clicked",
+            "event_type": "link_clicked",
+            "outcome": "unsafe_link_clicked",
+            "initial_classification": initial_classification,
+            "link_clicked": True,
+            "reported_as_suspicious": bool(sim.get("reported_as_suspicious")),
+            "redirect_url": f"/safety/simulation-feedback?id={simulation_id}",
+            "feedback_url": f"{settings.frontend_origin}/safety/simulation-feedback?id={simulation_id}&decision=clicked",
+        }
+
+    elif event_type == "reported_suspicious":
+        # Safe identification: child reported suspicious without clicking
+        has_clicked = sim.get("link_clicked") or sim.get("educational_link_clicked")
+        outcome = "unsafe_link_clicked" if has_clicked else "safely_reported"
+        update_set = {
+            "reported_as_suspicious": True,
+            "reported_at": now,
+            "initial_classification": "suspicious",
+            "classification_submitted_at": now,
+            "outcome": outcome,
+            "updated_at": now,
+        }
+        await db.safety_simulations.update_one(
+            {"simulation_id": simulation_id},
+            {"$set": update_set},
+        )
+        return {
+            "ok": True,
+            "simulation_id": simulation_id,
+            "event": "reported_suspicious",
+            "event_type": "reported_suspicious",
+            "outcome": outcome,
+            "initial_classification": "suspicious",
+            "link_clicked": bool(has_clicked),
+            "reported_as_suspicious": True,
+            "redirect_url": f"/safety/simulation-feedback?id={simulation_id}&action=reported",
+            "feedback_url": f"{settings.frontend_origin}/safety/simulation-feedback?id={simulation_id}&decision=reported",
+        }
+
+    elif event_type == "marked_safe":
+        # Child explicitly marked message as safe
+        has_clicked = sim.get("link_clicked") or sim.get("educational_link_clicked")
+        outcome = "unsafe_link_clicked" if has_clicked else "marked_safe"
+        update_set = {
+            "initial_classification": "safe",
+            "classification_submitted_at": now,
+            "outcome": outcome,
+            "updated_at": now,
+        }
+        await db.safety_simulations.update_one(
+            {"simulation_id": simulation_id},
+            {"$set": update_set},
+        )
+        return {
+            "ok": True,
+            "simulation_id": simulation_id,
+            "event": "marked_safe",
+            "event_type": "marked_safe",
+            "outcome": outcome,
+            "initial_classification": "safe",
+            "link_clicked": bool(has_clicked),
+            "reported_as_suspicious": bool(sim.get("reported_as_suspicious")),
+            "redirect_url": f"/safety/simulation-feedback?id={simulation_id}&action=marked_safe",
+            "feedback_url": f"{settings.frontend_origin}/safety/simulation-feedback?id={simulation_id}&decision=safe",
+        }
+
+    else:
+        raise HTTPException(status_code=400, detail=f"Unsupported event type: '{event_type}'")
+
+
+@router.post("/simulation/follow-up/{simulation_id}")
+async def submit_simulation_follow_up(simulation_id: str, body: FollowUpIn, request: Request) -> dict[str, Any]:
+    """
+    Evaluates and records the child's response to the follow-up understanding check question.
+    """
+    db = require_db()
+    sim = await db.safety_simulations.find_one({"simulation_id": simulation_id})
+    if not sim:
+        raise HTTPException(status_code=404, detail="Simulation session not found.")
+
+    sim_child_id = sim.get("child_id", "")
+    if body.child_id and body.child_id != sim_child_id:
+        raise HTTPException(status_code=403, detail="Child ID does not match simulation owner.")
+    check_student_authorization(request, sim_child_id)
+
+    cat = sim.get("category_id", "phishing")
+    tpl = LEVEL_TEMPLATES.get(cat, LEVEL_TEMPLATES["phishing"])
+    follow_up_data = tpl.get("follow_up")
+    if not follow_up_data:
+        raise HTTPException(status_code=400, detail="No follow-up check configured for this scenario.")
+
+    correct_index = follow_up_data["correct_index"]
+    is_correct = (body.selected_index == correct_index)
+    now = datetime.now(timezone.utc).isoformat()
+
+    await db.safety_simulations.update_one(
+        {"simulation_id": simulation_id},
+        {
+            "$set": {
+                "follow_up_completed": True,
+                "follow_up_selected_index": body.selected_index,
+                "follow_up_correct": is_correct,
+                "follow_up_completed_at": now,
+                "debrief_viewed": True,
+                "debrief_viewed_at": sim.get("debrief_viewed_at") or now,
+                "updated_at": now,
+            }
+        },
+    )
+
+    return {
+        "ok": True,
+        "simulation_id": simulation_id,
+        "selected_index": body.selected_index,
+        "correct_index": correct_index,
+        "is_correct": is_correct,
+        "explanation": follow_up_data["explanation"],
+        "learning_goal": tpl["learning_goal"],
+    }
+
+
+@router.get("/simulation/feedback/{simulation_id}")
+async def get_simulation_feedback(simulation_id: str, request: Request) -> dict[str, Any]:
+    """
+    Safe educational destination for parents/children clicking the simulation email link or debrief.
+    Records debrief viewing and returns the scenario breakdown, red flags, and follow-up question.
     Does NOT collect credentials, passwords, or personal financial details.
     """
     db = require_db()
@@ -542,20 +872,38 @@ async def get_simulation_feedback(simulation_id: str) -> dict[str, Any]:
     if not doc:
         raise HTTPException(status_code=404, detail="Educational simulation session not found.")
 
+    check_student_authorization(request, doc.get("child_id", ""))
+
+    is_scanner = is_scanner_request(request)
     now = datetime.now(timezone.utc).isoformat()
-    if not doc.get("educational_link_clicked"):
-        await db.safety_simulations.update_one(
-            {"simulation_id": simulation_id},
-            {
-                "$set": {
-                    "educational_link_clicked": True,
-                    "feedback_viewed_at": now,
-                    "updated_at": now,
-                }
-            },
-        )
-        doc["educational_link_clicked"] = True
-        doc["feedback_viewed_at"] = now
+    update_fields: dict[str, Any] = {}
+
+    if not is_scanner:
+        if not doc.get("debrief_viewed"):
+            update_fields["debrief_viewed"] = True
+            update_fields["debrief_viewed_at"] = now
+            doc["debrief_viewed"] = True
+            doc["debrief_viewed_at"] = now
+
+        # When arriving directly at the feedback link (e.g. from real email link) without prior report:
+        if not doc.get("reported_as_suspicious") and not doc.get("link_clicked"):
+            update_fields["educational_link_clicked"] = True
+            update_fields["link_clicked"] = True
+            update_fields["link_clicked_at"] = now
+            update_fields["clicked_at"] = now
+            if not doc.get("initial_classification") or doc.get("initial_classification") == "unanswered":
+                update_fields["initial_classification"] = "clicked_unsafe_link"
+            update_fields["outcome"] = "unsafe_link_clicked"
+            doc["educational_link_clicked"] = True
+            doc["link_clicked"] = True
+            doc["outcome"] = "unsafe_link_clicked"
+
+        if update_fields:
+            update_fields["updated_at"] = now
+            await db.safety_simulations.update_one(
+                {"simulation_id": simulation_id},
+                {"$set": update_fields},
+            )
 
     category_id = doc.get("category_id", "phishing")
     template = LEVEL_TEMPLATES.get(category_id, LEVEL_TEMPLATES["phishing"])
@@ -565,10 +913,112 @@ async def get_simulation_feedback(simulation_id: str) -> dict[str, Any]:
         "category_id": category_id,
         "level_title": template["title"],
         "scenario_name": template["scenario_name"],
-        "simulated_body": template["simulated_body"],
+        "sender_name": doc.get("sender_name") or template.get("fictional_sender_name", "WiseCub Safety Lab"),
+        "sender_email": doc.get("sender_email") or template.get("fictional_sender_email", "alerts@wisecub-safety.org"),
+        "call_to_action": doc.get("call_to_action") or template.get("call_to_action", "View Link"),
+        "display_link_text": doc.get("display_link_text") or template.get("display_link_text", "http://safety-check.wisecub.org"),
+        "simulated_body": doc.get("simulated_body") or template["simulated_body"],
         "red_flags": template["red_flags"],
         "learning_goal": template["learning_goal"],
         "score": doc.get("score"),
         "created_at": doc.get("created_at"),
-        "educational_link_clicked": doc.get("educational_link_clicked"),
+        "link_clicked": bool(doc.get("link_clicked") or doc.get("educational_link_clicked")),
+        "educational_link_clicked": bool(doc.get("educational_link_clicked") or doc.get("link_clicked")),
+        "reported_as_suspicious": bool(doc.get("reported_as_suspicious")),
+        "initial_classification": doc.get("initial_classification", "unanswered"),
+        "outcome": doc.get("outcome", "pending_decision"),
+        "follow_up": template.get("follow_up"),
+        "follow_up_completed": bool(doc.get("follow_up_completed")),
+        "follow_up_correct": doc.get("follow_up_correct"),
+        "follow_up_selected_index": doc.get("follow_up_selected_index"),
+    }
+
+
+@router.get("/simulation/metrics/{child_id}")
+async def get_simulation_learning_metrics(child_id: str, request: Request) -> dict[str, Any]:
+    """
+    Returns aggregated learning metrics for the parent/guardian dashboard:
+    - Total attempts, correctly reported, unsafe link clicks, safe classifications
+    - Debrief completion rate, follow-up accuracy
+    - Per-level breakdown across the six curriculum levels
+    """
+    check_student_authorization(request, child_id)
+    db = require_db()
+    cursor = db.safety_simulations.find({"child_id": child_id}, {"_id": 0}).sort("created_at", -1)
+    simulations = await cursor.to_list(length=200)
+
+    total = len(simulations)
+    unsafe_clicks = 0
+    correctly_reported = 0
+    marked_safe = 0
+    debrief_completed = 0
+    follow_up_completed = 0
+    follow_up_correct = 0
+
+    by_level: dict[str, dict[str, Any]] = {}
+    for cat in LEVEL_TEMPLATES.keys():
+        by_level[cat] = {
+            "category_id": cat,
+            "title": LEVEL_TEMPLATES[cat]["title"],
+            "level_number": LEVEL_TEMPLATES[cat]["level_number"],
+            "attempts": 0,
+            "correctly_reported": 0,
+            "unsafe_clicks": 0,
+            "debrief_completed": 0,
+            "latest_outcome": None,
+        }
+
+    for s in simulations:
+        cat = s.get("category_id")
+        if cat in by_level:
+            by_level[cat]["attempts"] += 1
+            if by_level[cat]["latest_outcome"] is None:
+                by_level[cat]["latest_outcome"] = s.get("outcome", "pending_decision")
+
+        if s.get("link_clicked") or s.get("educational_link_clicked"):
+            unsafe_clicks += 1
+            if cat in by_level:
+                by_level[cat]["unsafe_clicks"] += 1
+
+        if s.get("reported_as_suspicious") and not (s.get("link_clicked") or s.get("educational_link_clicked")):
+            correctly_reported += 1
+            if cat in by_level:
+                by_level[cat]["correctly_reported"] += 1
+
+        if s.get("initial_classification") == "safe" and not s.get("reported_as_suspicious"):
+            marked_safe += 1
+
+        if s.get("debrief_viewed") or s.get("educational_link_clicked"):
+            debrief_completed += 1
+            if cat in by_level:
+                by_level[cat]["debrief_completed"] += 1
+
+        if s.get("follow_up_completed"):
+            follow_up_completed += 1
+            if s.get("follow_up_correct"):
+                follow_up_correct += 1
+
+    decided = correctly_reported + unsafe_clicks + marked_safe
+    recognition_rate = round((correctly_reported / max(1, decided)) * 100, 1) if decided > 0 else 0.0
+    avoidance_rate = round(((total - unsafe_clicks) / max(1, total)) * 100, 1) if total > 0 else 100.0
+    follow_up_accuracy = round((follow_up_correct / max(1, follow_up_completed)) * 100, 1) if follow_up_completed > 0 else 0.0
+    debrief_rate = round((debrief_completed / max(1, total)) * 100, 1) if total > 0 else 0.0
+
+    return {
+        "child_id": child_id,
+        "total_simulations": total,
+        "completed_decisions": decided,
+        "pending_decisions": total - decided,
+        "correctly_reported_count": correctly_reported,
+        "unsafe_clicks_count": unsafe_clicks,
+        "marked_safe_count": marked_safe,
+        "suspicious_recognition_rate": recognition_rate,
+        "safe_avoidance_rate": avoidance_rate,
+        "debrief_completion_count": debrief_completed,
+        "debrief_completion_rate": debrief_rate,
+        "follow_up_completed_count": follow_up_completed,
+        "follow_up_correct_count": follow_up_correct,
+        "follow_up_accuracy": follow_up_accuracy,
+        "by_level": by_level,
+        "recent_attempts": simulations[:15],
     }
