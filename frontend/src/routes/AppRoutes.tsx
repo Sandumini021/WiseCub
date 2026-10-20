@@ -3,6 +3,7 @@ import { AppLayout } from "../components/layout/AppLayout";
 import { LevelsPage } from "../modules/decision-making/pages/LevelsPage";
 import { MissionBoardPage } from "../modules/gamified-learning/pages/MissionBoardPage";
 import { ScamHomePage } from "../modules/scam-safety/pages/ScamHomePage";
+import { SimulationFeedbackPage } from "../modules/scam-safety/pages/SimulationFeedbackPage";
 import { MarketHomePage } from "../modules/stock-market/pages/MarketHomePage";
 import { MarketTerminalPage } from "../modules/stock-market/pages/MarketTerminalPage";
 import { PortfolioPage } from "../modules/stock-market/pages/PortfolioPage";
@@ -40,6 +41,7 @@ export function AppRoutes() {
       <Route path="/guardian/tips" element={<GuardianStubPage title="Recommendations" />} />
       <Route path="/market" element={<MarketHomePage />} />
       <Route path="/safety" element={<ScamHomePage />} />
+      <Route path="/safety/simulation-feedback" element={<SimulationFeedbackPage />} />
       <Route element={<AppLayout />}>
         <Route path="/market/lessons/:n" element={<MarketLessonPage />} />
         <Route path="/market/terminal" element={<MarketTerminalPage />} />

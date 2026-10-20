@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE_URL) || "http://localhost:8000";
 
 export class ApiError extends Error {
   status: number;
@@ -223,3 +223,161 @@ export function getMarketBehaviour(childId: string, sessionId?: string) {
   const query = sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : "";
   return apiGet<BehaviourReport>(`/api/market/behaviour/${childId}${query}`);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  SCAM SAFETY GUARDIAN & SIMULATION API
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type SmtpSummary = {
+  configured: boolean;
+  host?: string | null;
+  port: number;
+  from_email: string;
+  use_tls: boolean;
+  auth_configured: boolean;
+};
+
+export type GuardianDetails = {
+  child_id: string;
+  configured: boolean;
+  parent_name: string;
+  email: string;
+  relationship: string;
+  consent_confirmed: boolean;
+  simulation_enabled: boolean;
+  verification_status: "unconfigured" | "pending" | "verified";
+  verification_method?: "unconfigured" | "simulated_dev_assist" | "email_link" | string;
+  verified_at: string | null;
+  updated_at?: string;
+  smtp_configured?: boolean;
+  smtp_summary?: SmtpSummary;
+  verification_token_dev?: string;
+};
+
+export type LevelSimulationStatus = {
+  simulation_id?: string;
+  category_id: string;
+  level_number?: string;
+  score?: number;
+  status:
+    | "sent"
+    | "not_configured"
+    | "failed"
+    | "not_passed"
+    | "no_guardian"
+    | "consent_required"
+    | "unverified"
+    | "disabled"
+    | "pending";
+  detail?: string;
+  parent_email?: string;
+  created_at?: string;
+};
+
+export type AllSimulationsResponse = {
+  child_id: string;
+  by_category: Record<string, LevelSimulationStatus | null>;
+  total_simulations: number;
+  history: LevelSimulationStatus[];
+  smtp_configured?: boolean;
+  smtp_summary?: SmtpSummary;
+};
+
+export type SimulationFeedback = {
+  simulation_id: string;
+  category_id: string;
+  level_title: string;
+  scenario_name: string;
+  simulated_body: string;
+  red_flags: string[];
+  learning_goal: string;
+  score?: number;
+  created_at?: string;
+  educational_link_clicked?: boolean;
+};
+
+export function getGuardianDetails(childId: string) {
+  return apiGet<GuardianDetails>(`/api/safety/guardian/${childId}`);
+}
+
+export function saveGuardianDetails(
+  childId: string,
+  body: {
+    parent_name: string;
+    email: string;
+    relationship?: string;
+    consent_confirmed: boolean;
+    simulation_enabled: boolean;
+  },
+) {
+  return apiPut<GuardianDetails>(`/api/safety/guardian/${childId}`, body);
+}
+
+export function verifyGuardianEmail(
+  childId: string,
+  token: string = "",
+  isSimulatedDevVerification: boolean = false,
+) {
+  return apiPost<{ ok: boolean; verification_status: string; verification_method?: string }>(
+    `/api/safety/guardian/${childId}/verify`,
+    { token, is_simulated_dev_verification: isSimulatedDevVerification },
+  );
+}
+
+export function updateGuardianConsent(
+  childId: string,
+  body: { consent_confirmed: boolean; simulation_enabled: boolean },
+) {
+  return apiPost<{ ok: boolean; consent_confirmed: boolean; simulation_enabled: boolean }>(
+    `/api/safety/guardian/${childId}/consent`,
+    body,
+  );
+}
+
+export function triggerLevelSimulation(
+  childId: string,
+  body: {
+    category_id: string;
+    score: number;
+    attempt_id: string;
+    red_flags_identified?: string[];
+    force_retry?: boolean;
+  },
+) {
+  return apiPost<{
+    eligible: boolean;
+    duplicate?: boolean;
+    retried?: boolean;
+    simulation_id?: string;
+    category_id: string;
+    level_number?: string;
+    status: string;
+    parent_email?: string;
+    detail?: string;
+    feedback_url?: string;
+  }>(`/api/safety/simulation/trigger/${childId}`, body);
+}
+
+export function triggerPassedLevelSimulation(childId: string, categoryId: string) {
+  return apiPost<{
+    eligible: boolean;
+    duplicate?: boolean;
+    retried?: boolean;
+    simulation_id?: string;
+    category_id: string;
+    level_number?: string;
+    status: string;
+    parent_email?: string;
+    detail?: string;
+    feedback_url?: string;
+  }>(`/api/safety/simulation/trigger-passed/${childId}/${categoryId}`, {});
+}
+
+export function getSimulationStatuses(childId: string) {
+  return apiGet<AllSimulationsResponse>(`/api/safety/simulation/status/${childId}`);
+}
+
+export function getSimulationFeedback(simulationId: string) {
+  return apiGet<SimulationFeedback>(`/api/safety/simulation/feedback/${simulationId}`);
+}
+
