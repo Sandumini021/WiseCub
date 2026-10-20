@@ -114,6 +114,11 @@ class CharacterStateOut(BaseModel):
     vitality_score: int
     happiness_score: int
     active_dialogue: str
+    food_supply: int | None = None
+    savings_reserve: int | None = None
+    shelter_readiness: int | None = None
+    winter_preparedness: int | None = None
+    emotional_wellbeing: int | None = None
 
 
 class MissionProgressOut(BaseModel):
