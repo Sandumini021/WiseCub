@@ -821,6 +821,351 @@ _SQUIRREL_L6 = LevelDefinition(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Panda's School Fair Levels (Levels 1 - 6)
+# ─────────────────────────────────────────────────────────────────────────────
+
+_PANDA_L1 = LevelDefinition(
+    id="level_panda_1",
+    level_number=1,
+    title="The School Fair Begins",
+    subtitle="Needs vs. Wants & Fair Staging",
+    story_intro=(
+        "Bao Bao is selected as student treasurer for the School Charity Fair! With Rs. 20,000 in starting "
+        "funds, Bao Bao must build safe, attractive stalls, set up essential hygiene supplies, and print promotional "
+        "posters while preserving at least Rs. 4,000 as a contingency buffer for fair week."
+    ),
+    learning_objective=(
+        "Prioritize non-negotiable stall tables, first aid, and basic signage within budget, resisting oversized neon decorations."
+    ),
+    target_competency="budgetingSkill",
+    interaction_type="needs_wants",
+    starting_budget_lkr=20000,
+    options=(
+        DecisionOption("opt_panda_sturdy_stalls", "Sturdy Stall Tables & Wooden Booth Frames", 7000, "essential_care", True, "certified_good"),
+        DecisionOption("opt_panda_hygiene_safety", "First Aid Kit, Hand Sanitizer & Covered Bins", 4000, "essential_care", True, "certified_good"),
+        DecisionOption("opt_panda_fair_flyers", "Printed Fair Posters & Directional Signs", 2000, "essential_care", True, "certified_good"),
+        DecisionOption("opt_panda_paper_streamers", "Affordable Colorful Paper Banners & Chalkboards", 2000, "discretionary", False, "certified_good"),
+        DecisionOption("opt_panda_neon_archway", "Giant Flashing Neon Balloon Archway", 9000, "discretionary", False, "luxury_excess"),
+        DecisionOption("opt_panda_vip_sound_system", "DJ Sound Blaster with Fog & Smoke Effects", 8000, "discretionary", False, "luxury_excess"),
+    ),
+    pass_criteria=PassCriteria(
+        min_competency_score=75,
+        max_budget_lkr=20000,
+        require_budget_feasibility=True,
+        min_reserve_preserved_lkr=4000,
+        must_include_option_ids=("opt_panda_sturdy_stalls", "opt_panda_hygiene_safety", "opt_panda_fair_flyers"),
+        disallowed_option_ids=("opt_panda_neon_archway", "opt_panda_vip_sound_system"),
+    ),
+    hints=(
+        "Ensure every student has safe stalls to sell from and clean waste bins before buying decorations.",
+        "Keep at least Rs. 4,000 in reserve for unforeseen fair expenses.",
+    ),
+    remediation_scaffolding=RemediationScaffolding(
+        rule_explanation="Sound project budgeting funds safety, infrastructure, and promotion first, setting aside a liquid cash buffer before entertaining luxury aesthetics.",
+        guiding_questions=(
+            "Can the fair operate safely without sturdy tables or a first aid kit?",
+            "How much reserve cash remains if you purchase the flashing neon archway?",
+        ),
+        suggested_focus="Select Sturdy Stall Tables (Rs. 7,000), Hygiene & Safety Kit (Rs. 4,000), and Fair Posters (Rs. 2,000). Optionally add Paper Banners (Rs. 2,000) and preserve Rs. 5,000.",
+    ),
+)
+
+_PANDA_L2 = LevelDefinition(
+    id="level_panda_2",
+    level_number=2,
+    title="The Clever Vendor Deal",
+    subtitle="Price Comparison & Value Assessment",
+    story_intro=(
+        "Bao Bao must purchase 300 game prizes and 500 visitor game tokens. Several wholesale vendors have submitted "
+        "competing bids. Some offer cheap substandard prizes with hidden delivery fees, while others offer certified "
+        "durable prize bundles with student discounts and free delivery."
+    ),
+    learning_objective=(
+        "Compare unit pricing, quality standards, and hidden transport fees to choose the highest-value vendor package."
+    ),
+    target_competency="investmentAwareness",
+    interaction_type="value_comparison",
+    starting_budget_lkr=12000,
+    options=(
+        DecisionOption(
+            "opt_panda_vendor_bamboo_coop",
+            "Honest Bamboo Wholesale Bundle (300 prizes, 500 tokens, free delivery, replacement guarantee)",
+            9500,
+            "essential_care",
+            True,
+            "certified_good",
+        ),
+        DecisionOption(
+            "opt_panda_vendor_cheap_trap",
+            "Discount Clearance Emporium (Fragile sharp-edged prizes, hidden Rs. 2,500 courier fee, no returns)",
+            6500,
+            "discretionary",
+            False,
+            "substandard",
+        ),
+        DecisionOption(
+            "opt_panda_vendor_luxury_boutique",
+            "Prestige Imperial Fair Kit (Gold-trimmed boutique crates, imported silk tokens, luxury packaging)",
+            14500,
+            "discretionary",
+            False,
+            "luxury_excess",
+        ),
+        DecisionOption(
+            "opt_panda_vendor_standard_retail",
+            "Corner Stationery Retailer (Individual item prices, no bulk discount, paid delivery fee)",
+            11500,
+            "discretionary",
+            False,
+            "certified_good",
+        ),
+    ),
+    pass_criteria=PassCriteria(
+        min_competency_score=75,
+        max_budget_lkr=12000,
+        require_budget_feasibility=True,
+        must_include_option_ids=("opt_panda_vendor_bamboo_coop",),
+        disallowed_option_ids=("opt_panda_vendor_cheap_trap", "opt_panda_vendor_luxury_boutique"),
+    ),
+    hints=(
+        "Watch out for hidden delivery fees and substandard toys that break easily.",
+        "The best purchase is the one offering verified durability, fair bulk pricing, and a healthy remaining reserve.",
+    ),
+    remediation_scaffolding=RemediationScaffolding(
+        rule_explanation="Value assessment weighs total landed cost (including transit and guarantees) against item quality, rather than blindly picking the lowest sticker price.",
+        guiding_questions=(
+            "What happens to the school's reputation if prizes break immediately in children's hands?",
+            "Which package leaves a Rs. 2,500 cash buffer while guaranteeing certified safety?",
+        ),
+        suggested_focus="Choose the Honest Bamboo Wholesale Bundle for Rs. 9,500.",
+    ),
+)
+
+_PANDA_L3 = LevelDefinition(
+    id="level_panda_3",
+    level_number=3,
+    title="Needs, Wants & Festival Temptations",
+    subtitle="Spending Discipline & Delayed Gratification",
+    story_intro=(
+        "Excited classmates urge Bao Bao to rent a giant commercial bouncy castle and an imported chocolate fountain. "
+        "However, the fair's true mission is raising money for the Community Learning Library! Bao Bao has Rs. 16,000 "
+        "and must balance affordable carnival games and student photo art with a dedicated charity seed fund."
+    ),
+    learning_objective=(
+        "Demonstrate spending discipline by choosing affordable student activities and locking in the charity fund, justifying your trade-off."
+    ),
+    target_competency="spendingDiscipline",
+    interaction_type="tradeoff_justification",
+    starting_budget_lkr=16000,
+    options=(
+        DecisionOption("opt_panda_carnival_games", "Classic Ring Toss & Ball Roll Stalls", 6000, "essential_care", True, "certified_good"),
+        DecisionOption("opt_panda_diy_photobooth", "Student Art Photo Booth & Face Paint Station", 3500, "discretionary", False, "certified_good"),
+        DecisionOption("opt_panda_inflatable_castle", "Commercial Giant Inflatable Bouncy Castle", 9500, "discretionary", False, "luxury_excess"),
+        DecisionOption("opt_panda_chocolate_fountain", "Imported Belgian Chocolate Dip Fountain", 7000, "discretionary", False, "luxury_excess"),
+        DecisionOption("opt_panda_charity_seed", "Protected Community Library Seed Fund", 5000, "essential_care", True, "certified_good"),
+    ),
+    tradeoff_rationales=(
+        TradeoffRationale(
+            "rat_panda_balanced_fun",
+            True,
+            "Sound trade-off: Balances high student enjoyment with ethical charity preservation within budget.",
+        ),
+        TradeoffRationale(
+            "rat_panda_all_luxury",
+            False,
+            "Flawed reasoning: Flashy luxury rentals consume all funds and leave zero profit for the library.",
+        ),
+        TradeoffRationale(
+            "rat_panda_no_fun",
+            False,
+            "Flawed reasoning: A fair with zero activities attracts no visitors and fails to raise community funds.",
+        ),
+    ),
+    pass_criteria=PassCriteria(
+        min_competency_score=75,
+        max_budget_lkr=16000,
+        require_budget_feasibility=True,
+        required_rationale_id="rat_panda_balanced_fun",
+        must_include_option_ids=("opt_panda_carnival_games", "opt_panda_charity_seed"),
+        disallowed_option_ids=("opt_panda_inflatable_castle", "opt_panda_chocolate_fountain"),
+    ),
+    hints=(
+        "Include the Classic Ring Toss and the Library Seed Fund.",
+        "Pair affordable student entertainment with the sound rationale that protects the charity goal.",
+    ),
+    remediation_scaffolding=RemediationScaffolding(
+        rule_explanation="Delayed gratification and spending discipline require resisting impulsive status purchases to safeguard long-term moral commitments.",
+        guiding_questions=(
+            "What is the core purpose of the school charity fair?",
+            "Can students have fun with creative games without spending Rs. 9,500 on a bouncy castle?",
+        ),
+        suggested_focus="Select Ring Toss Stalls (Rs. 6,000), DIY Photo Booth (Rs. 3,500), and Library Seed Fund (Rs. 5,000) with the balanced fun rationale.",
+    ),
+)
+
+_PANDA_L4 = LevelDefinition(
+    id="level_panda_4",
+    level_number=4,
+    title="The Unexpected Fair Problem",
+    subtitle="Emergency Budgeting & Financial Resilience",
+    story_intro=(
+        "On the morning of the fair, an unexpected tropical downpour soaks the food stalls and triggers an electrical "
+        "short in the outdoor string lights! Bao Bao has Rs. 10,000 in emergency reserves. Bao Bao must replace "
+        "damaged staging with waterproof tarps and deploy safe solar lanterns without making panic purchases."
+    ),
+    learning_objective=(
+        "Use emergency funds to remediate safety hazards with certified materials while preserving a cash contingency."
+    ),
+    target_competency="savingBehavior",
+    interaction_type="emergency_response",
+    starting_budget_lkr=10000,
+    existing_reserve_lkr=10000,
+    options=(
+        DecisionOption("opt_panda_repair_waterproof_stalls", "Heavy-Duty Weatherproof Tarps & Timber Staging", 4500, "essential_care", True, "certified_good"),
+        DecisionOption("opt_panda_repair_solar_lanterns", "Emergency Solar-Powered LED Safety Lanterns", 2500, "essential_care", True, "certified_good"),
+        DecisionOption("opt_panda_repair_panic_generator", "Diesel Generator & Luxury Heated Gazebo Express Rental", 12000, "discretionary", False, "luxury_excess"),
+        DecisionOption("opt_panda_repair_duct_tape_hack", "Wet Cardboard & Frayed Wire Quick Tape", 1000, "discretionary", False, "substandard"),
+    ),
+    pass_criteria=PassCriteria(
+        min_competency_score=75,
+        max_budget_lkr=10000,
+        require_budget_feasibility=True,
+        min_reserve_preserved_lkr=2500,
+        must_include_option_ids=("opt_panda_repair_waterproof_stalls", "opt_panda_repair_solar_lanterns"),
+        disallowed_option_ids=("opt_panda_repair_panic_generator", "opt_panda_repair_duct_tape_hack"),
+    ),
+    hints=(
+        "Address both structural waterproofing and lighting safety.",
+        "Never use frayed tape on wet wiring, and avoid overspending on luxury diesel generators.",
+    ),
+    remediation_scaffolding=RemediationScaffolding(
+        rule_explanation="Emergency financial management deploys reserves strictly for certified risk mitigation, preventing panic overspending and hazardous stopgaps.",
+        guiding_questions=(
+            "Does duct-taping frayed wet wires create an unacceptable electrical danger for children?",
+            "Can emergency reserves cover both waterproof tarps and solar lanterns while retaining a safety buffer?",
+        ),
+        suggested_focus="Purchase Waterproof Tarps (Rs. 4,500) and Solar LED Lanterns (Rs. 2,500), preserving Rs. 3,000 in reserves.",
+    ),
+)
+
+_PANDA_L5 = LevelDefinition(
+    id="level_panda_5",
+    level_number=5,
+    title="Pricing for a Successful Fair",
+    subtitle="Cost, Revenue, Profit & Affordability",
+    story_intro=(
+        "The fair is about to welcome visitors! Bao Bao must set ticket bundle pricing. If prices are set too high, "
+        "families cannot afford to attend and charity revenue collapses. If prices are below cost, every ticket loses money! "
+        "Bao Bao must select the optimal pricing model that ensures high attendance, affordability, and maximum net profit."
+    ),
+    learning_objective=(
+        "Understand unit costs, visitor volume, and profit margins to select a sustainable, student-friendly pricing strategy."
+    ),
+    target_competency="budgetingSkill",
+    interaction_type="value_comparison",
+    starting_budget_lkr=15000,
+    options=(
+        DecisionOption(
+            "opt_panda_pricing_sweet_spot",
+            "Optimal Fair Entry & Token Combo (Rs. 100/ticket, 300 visitors -> Rs. 30,000 revenue, Rs. 12,000 costs, Rs. 18,000 charity profit)",
+            12000,
+            "essential_care",
+            True,
+            "certified_good",
+        ),
+        DecisionOption(
+            "opt_panda_pricing_predatory",
+            "VIP Monopoly Pricing (Rs. 350/ticket, only 35 visitors -> Rs. 12,250 revenue, Rs. 8,000 costs, Rs. 4,250 profit, empty fair)",
+            8000,
+            "discretionary",
+            False,
+            "luxury_excess",
+        ),
+        DecisionOption(
+            "opt_panda_pricing_underpriced",
+            "Loss-Leader Bargain (Rs. 25/ticket, below cost of Rs. 40 -> 450 visitors, Rs. 11,250 revenue, Rs. 18,000 costs, -Rs. 6,750 net loss)",
+            18000,
+            "discretionary",
+            False,
+            "substandard",
+        ),
+        DecisionOption(
+            "opt_panda_pricing_mid_conservative",
+            "Modest Family Pass (Rs. 75/ticket -> 220 visitors, Rs. 16,500 revenue, Rs. 8,800 costs, Rs. 7,700 profit)",
+            8800,
+            "discretionary",
+            False,
+            "certified_good",
+        ),
+    ),
+    pass_criteria=PassCriteria(
+        min_competency_score=75,
+        max_budget_lkr=15000,
+        require_budget_feasibility=True,
+        must_include_option_ids=("opt_panda_pricing_sweet_spot",),
+        disallowed_option_ids=("opt_panda_pricing_predatory", "opt_panda_pricing_underpriced"),
+    ),
+    hints=(
+        "Compare total net charity profit across the options.",
+        "High prices frighten customers away, while prices below unit cost cause a net financial deficit.",
+    ),
+    remediation_scaffolding=RemediationScaffolding(
+        rule_explanation="Sustainable pricing balances unit cost recovery and customer willingness to pay, generating volume sales and maximized net charity profit.",
+        guiding_questions=(
+            "Why does selling 450 tickets at Rs. 25 result in an overall loss when unit cost is Rs. 40?",
+            "Which pricing model generates the highest net donation (Rs. 18,000) for the library?",
+        ),
+        suggested_focus="Select the Optimal Fair Entry & Token Combo for Rs. 12,000 operating budget.",
+    ),
+)
+
+_PANDA_L6 = LevelDefinition(
+    id="level_panda_6",
+    level_number=6,
+    title="Bao Bao's Charity Fair Finale",
+    subtitle="Integrated Financial Mastery & Charity Goal",
+    story_intro=(
+        "The school fair has concluded with immense joy and raised Rs. 35,000 in gross revenue! Bao Bao must now "
+        "execute the final treasurer duty: settle outstanding venue cleanup bills (Rs. 8,000 - 10,000), set aside a "
+        "seed reserve for next semester's fair (Rs. 4,000 - 6,000), donate the maximum possible amount to the Community "
+        "Learning Library (Rs. 18,000 - 21,000), and limit council celebration snacks to modest refreshments (under Rs. 3,000)."
+    ),
+    learning_objective=(
+        "Construct a balanced post-fair allocation budget fulfilling vendor obligations, council continuity, and the library charity goal."
+    ),
+    target_competency="goalAchievement",
+    interaction_type="budget_allocator",
+    starting_budget_lkr=35000,
+    allocation_categories=(
+        AllocationCategory("cat_panda_bills", "Outstanding Venue & Vendor Obligations", "essential_care", True, 8000, 10000, 500, 0),
+        AllocationCategory("cat_panda_seed_reserve", "Next Semester Student Fair Reserve", "emergency_reserve", True, 4000, 6000, 500, 0),
+        AllocationCategory("cat_panda_library_donation", "Community Learning Library Donation", "savings_goal", True, 18000, 21000, 500, 0),
+        AllocationCategory("cat_panda_council_party", "Volunteer Refreshments & Celebration Party", "discretionary", False, 0, 3000, 500, 0),
+    ),
+    pass_criteria=PassCriteria(
+        min_competency_score=75,
+        max_budget_lkr=35000,
+        require_budget_feasibility=True,
+        min_reserve_preserved_lkr=22000,
+        max_discretionary_ratio=0.15,
+    ),
+    hints=(
+        "Allocate at least Rs. 8,000 to outstanding venue bills and Rs. 4,000 to the student council seed reserve.",
+        "Donate at least Rs. 18,000 to the Community Library so the learning centre can open successfully.",
+        "Keep the volunteer celebration party modest (Rs. 2,000 - 3,000).",
+    ),
+    remediation_scaffolding=RemediationScaffolding(
+        rule_explanation="Complete financial stewardship honors all liabilities first, secures institutional continuity, and fulfills philanthropic goals with strict discretionary discipline.",
+        guiding_questions=(
+            "Are all legal venue and equipment obligations fully settled?",
+            "Does the combined library donation and seed reserve exceed Rs. 22,000?",
+        ),
+        suggested_focus="Allocate Rs. 9,000 to Venue Bills, Rs. 5,000 to Seed Reserve, Rs. 19,000 to Library Donation, and Rs. 2,000 to Volunteer Refreshments.",
+    ),
+)
+
 # Catalog index — add future missions here
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -845,10 +1190,12 @@ MISSION_CATALOG: dict[str, MissionDefinition] = {
         character_name="Bao Bao",
         character_id="char_panda_baobao",
         primary_competency="spendingDiscipline",
-        total_levels=7,
+        total_levels=6,
         theme_color="#0a4d42",
-        description="Distinguish needs from wants, manage booth budgets.",
-        levels=(),
+        description="Treasurer Bao Bao organizes a school charity fair to fund a community library.",
+        levels=(_PANDA_L1, _PANDA_L2, _PANDA_L3, _PANDA_L4, _PANDA_L5, _PANDA_L6),
+        initial_vitality=60,
+        initial_happiness=55,
     ),
     "mission_turtle_emergency": MissionDefinition(
         id="mission_turtle_emergency",

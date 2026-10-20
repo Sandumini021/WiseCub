@@ -119,6 +119,12 @@ class CharacterStateOut(BaseModel):
     shelter_readiness: int | None = None
     winter_preparedness: int | None = None
     emotional_wellbeing: int | None = None
+    budget_health: int | None = None
+    fair_readiness: int | None = None
+    charity_goal_progress: int | None = None
+    vendor_relationships: int | None = None
+    customer_satisfaction: int | None = None
+    financial_risk_exposure: int | None = None
 
 
 class MissionProgressOut(BaseModel):

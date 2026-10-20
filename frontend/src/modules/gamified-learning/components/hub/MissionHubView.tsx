@@ -109,14 +109,22 @@ export const MissionHubView: React.FC<MissionHubViewProps> = ({
             .filter((m) => m.id !== 'mission_rescue_puppy')
             .map((mission) => {
               const isSquirrel = mission.id === 'mission_squirrel_savings';
+              const isPanda = mission.id === 'mission_panda_fair';
+              const isPlayable = isSquirrel || isPanda;
               return (
                 <div
                   key={mission.id}
-                  className={`storybook-mission-card ${isSquirrel ? 'playable-mission-card' : ''}`}
+                  className={`storybook-mission-card ${isPlayable ? 'playable-mission-card' : ''}`}
                   onClick={() => setPreviewMission(mission)}
                   role="button"
                   tabIndex={0}
-                  style={isSquirrel ? { border: '2px solid #f59e0b', boxShadow: '0 4px 14px rgba(245, 158, 11, 0.15)' } : undefined}
+                  style={
+                    isPanda
+                      ? { border: '2px solid #0a4d42', boxShadow: '0 4px 14px rgba(10, 77, 66, 0.15)' }
+                      : isSquirrel
+                      ? { border: '2px solid #f59e0b', boxShadow: '0 4px 14px rgba(245, 158, 11, 0.15)' }
+                      : undefined
+                  }
                 >
                   <div className="card-top-accent" style={{ backgroundColor: mission.themeColor }} />
                   <div className="card-inner-padding">
@@ -131,17 +139,17 @@ export const MissionHubView: React.FC<MissionHubViewProps> = ({
                         <span className="char-name">{mission.characterName}</span>
                         <span className="char-role">{mission.characterRole}</span>
                       </div>
-                      {isSquirrel && (
+                      {isPlayable && (
                         <span
                           style={{
                             marginLeft: 'auto',
-                            background: '#fef3c7',
-                            color: '#92400e',
+                            background: isPanda ? '#ecfdf5' : '#fef3c7',
+                            color: isPanda ? '#065f46' : '#92400e',
                             fontWeight: 700,
                             fontSize: '0.75rem',
                             padding: '0.2rem 0.5rem',
                             borderRadius: '999px',
-                            border: '1px solid #fde68a',
+                            border: `1px solid ${isPanda ? '#a7f3d0' : '#fde68a'}`,
                           }}
                         >
                           ✨ Ready to Play
@@ -154,21 +162,23 @@ export const MissionHubView: React.FC<MissionHubViewProps> = ({
 
                     <div className="mission-card-footer">
                       <span className="footer-levels">{mission.totalLevels} Story Levels</span>
-                      {isSquirrel ? (
+                      {isPlayable ? (
                         <button
                           type="button"
                           className="btn-confirm-decision"
                           style={{
                             padding: '0.35rem 0.8rem',
                             fontSize: '0.85rem',
-                            background: 'linear-gradient(135deg, #d97706, #b45309)',
+                            background: isPanda
+                              ? 'linear-gradient(135deg, #0a4d42, #10b981)'
+                              : 'linear-gradient(135deg, #d97706, #b45309)',
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
                             onSelectMission(mission.id);
                           }}
                         >
-                          🐿️ Play Now ➔
+                          {isPanda ? '🐼 Play Now ➔' : '🐿️ Play Now ➔'}
                         </button>
                       ) : (
                         <span className="btn-preview-link">Inspect Story ➔</span>
@@ -202,7 +212,13 @@ export const MissionHubView: React.FC<MissionHubViewProps> = ({
               <p><strong>Secondary Competencies:</strong> {previewMission.secondaryCompetencies.join(', ')}</p>
               <p><strong>Story Synopsis:</strong> {previewMission.description}</p>
               <div className="prototype-slice-notice">
-                {previewMission.id === 'mission_squirrel_savings' ? (
+                {previewMission.id === 'mission_panda_fair' ? (
+                  <span>
+                    🐼 <strong>Fully Playable Story Mission:</strong> Panda's School Fair features
+                    6 fully playable competency-driven levels with Bao Bao's charity fair preparation,
+                    wholesale vendor comparison, pricing simulation, and community library funding.
+                  </span>
+                ) : previewMission.id === 'mission_squirrel_savings' ? (
                   <span>
                     🐿️ <strong>Fully Playable Story Mission:</strong> Squirrel's Winter Savings features
                     6 fully playable competency-driven levels with Nutty's winter survival simulations,
@@ -219,7 +235,20 @@ export const MissionHubView: React.FC<MissionHubViewProps> = ({
             </div>
 
             <div className="analytics-footer">
-              {previewMission.id === 'mission_squirrel_savings' ? (
+              {previewMission.id === 'mission_panda_fair' ? (
+                <button
+                  type="button"
+                  className="btn-confirm-decision"
+                  style={{ background: 'linear-gradient(135deg, #0a4d42, #10b981)' }}
+                  onClick={() => {
+                    const id = previewMission.id;
+                    setPreviewMission(null);
+                    onSelectMission(id);
+                  }}
+                >
+                  ▶ Play Panda's School Fair (6 Levels)
+                </button>
+              ) : previewMission.id === 'mission_squirrel_savings' ? (
                 <button
                   type="button"
                   className="btn-confirm-decision"

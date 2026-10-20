@@ -101,6 +101,12 @@ class CharacterState:
     shelter_readiness: int = 35
     winter_preparedness: int = 35
     emotional_wellbeing: int = 40
+    budget_health: int = 50
+    fair_readiness: int = 30
+    charity_goal_progress: int = 0
+    vendor_relationships: int = 50
+    customer_satisfaction: int = 50
+    financial_risk_exposure: int = 40
 
 
 @dataclass
@@ -513,6 +519,17 @@ def evaluate_competencies(
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _get_condition_description(condition: str, name: str) -> str:
+    if "bao" in name.lower() or "panda" in name.lower():
+        panda_descriptions = {
+            "NEEDS_CARE": f"{name} is anxious because basic fair safety and stall tables remain unfunded.",
+            "WEAK_STABILIZED": f"{name} has built sturdy stalls and established a clear school fair plan.",
+            "RECEIVING_TREATMENT": f"{name} has secured certified wholesale supplies with durable materials.",
+            "RECOVERING": f"{name} has organized lively fair booths while safeguarding the library fund.",
+            "HEALTHY_ACTIVE": f"{name} is celebrating a triumphant school charity fair with a thriving community library!",
+            "SETBACK_WAITING": f"{name} is reviewing the treasurer ledger to balance fair costs responsibly.",
+        }
+        return panda_descriptions.get(condition, f"{name} is organizing the school charity fair.")
+
     if "nutty" in name.lower() or "squirrel" in name.lower():
         squirrel_descriptions = {
             "NEEDS_CARE": f"{name} is shivering as autumn frost blows through an unfortified, empty tree hollow.",
@@ -688,6 +705,165 @@ def _derive_squirrel_state(
     return new_state, transition
 
 
+
+def _derive_panda_state(
+    previous: CharacterState,
+    fs: FinancialState,
+    outcome: DecisionOutcome,
+    level: LevelDefinition,
+    is_passed: bool,
+) -> tuple[CharacterState, CharacterTransition]:
+    new_condition = previous.physical_condition
+    new_emotion = previous.emotional_state
+    direction = "STABLE"
+    reason = ""
+    dialogue = ""
+    explanation = ""
+    visual_cue = ""
+    vitality_delta = 0
+    happiness_delta = 0
+
+    budget_health = getattr(previous, "budget_health", 50)
+    fair_readiness = getattr(previous, "fair_readiness", 30)
+    charity_goal_progress = getattr(previous, "charity_goal_progress", 0)
+    vendor_relationships = getattr(previous, "vendor_relationships", 50)
+    customer_satisfaction = getattr(previous, "customer_satisfaction", 50)
+    financial_risk_exposure = getattr(previous, "financial_risk_exposure", 40)
+    emotional_wellbeing = getattr(previous, "emotional_wellbeing", 55)
+
+    if is_passed:
+        direction = "IMPROVEMENT"
+        ln = level.level_number
+        if ln == 1:
+            new_condition, new_emotion = "WEAK_STABILIZED", "HOPEFUL"
+            reason = "Essential stall frameworks, safety kits, and directional flyers funded within budget with Rs. 5,000 contingency preserved."
+            dialogue = "Hooray! The stall tables are sturdy, the safety kits are stocked, and we still have Rs. 5,000 for unexpected needs! I feel so hopeful about our fair!"
+            explanation = "By prioritizing non-negotiable safety and stall infrastructure over flashy neon novelties, you gave the fair a safe foundation."
+            visual_cue = "panda-hopeful"
+            vitality_delta, happiness_delta = 20, 25
+            budget_health, fair_readiness, charity_goal_progress, vendor_relationships, customer_satisfaction, financial_risk_exposure, emotional_wellbeing = 75, 45, 15, 60, 65, 25, 75
+        elif ln == 2:
+            new_condition, new_emotion = "RECEIVING_TREATMENT", "RELIEVED"
+            reason = "Honest Bamboo Wholesale bundle chosen: secured 300 certified prizes, 500 game tokens, free delivery, and replacement guarantees."
+            dialogue = "Phew! We avoided the cheap broken prizes and hidden delivery traps. Our wholesale vendor delivered certified prizes right to the school gate!"
+            explanation = "Comparing total landed cost and item durability prevents costly vendor disputes and guarantees visitor satisfaction."
+            visual_cue = "panda-relieved"
+            vitality_delta, happiness_delta = 20, 25
+            budget_health, fair_readiness, charity_goal_progress, vendor_relationships, customer_satisfaction, financial_risk_exposure, emotional_wellbeing = 80, 65, 30, 85, 75, 20, 80
+        elif ln == 3:
+            new_condition, new_emotion = "RECOVERING", "CONFIDENT"
+            reason = "Delayed gratification demonstrated: rejected over-expensive inflatable rentals to fund classic carnival stalls and seed the charity library fund."
+            dialogue = "Our classmates are loving the ring toss and face painting booths, and our charity seed fund of Rs. 5,000 is safely locked away in the vault!"
+            explanation = "Spending discipline ensures school activities remain lively and affordable while protecting moral commitments to the community."
+            visual_cue = "panda-confident"
+            vitality_delta, happiness_delta = 15, 20
+            budget_health, fair_readiness, charity_goal_progress, vendor_relationships, customer_satisfaction, financial_risk_exposure, emotional_wellbeing = 85, 80, 50, 85, 85, 15, 85
+        elif ln == 4:
+            new_condition, new_emotion = "RECOVERING", "RELIEVED"
+            reason = "Emergency reserve successfully deployed to weatherproof food stalls with heavy tarps and install safe solar safety lanterns."
+            dialogue = "What a relief! The rainstorm didn't ruin our fair. The food stays dry under heavy tarps, the solar lanterns are glowing, and we kept emergency cash!"
+            explanation = "Reserves deployed for certified safety fixes act as a resilience buffer without causing panic debt or dangerous electrical hacks."
+            visual_cue = "panda-resilient"
+            vitality_delta, happiness_delta = 15, 20
+            budget_health, fair_readiness, charity_goal_progress, vendor_relationships, customer_satisfaction, financial_risk_exposure, emotional_wellbeing = 80, 90, 65, 85, 88, 20, 85
+        elif ln == 5:
+            new_condition, new_emotion = "HEALTHY_ACTIVE", "CONFIDENT"
+            reason = "Optimal ticket bundle pricing selected: Rs. 100 tickets attracted 300 visitors, covered operating expenses, and generated Rs. 18,000 net profit."
+            dialogue = "The courtyard is bustling with smiling students and families! Our affordable ticket bundle gave everyone a great time while generating big charity profits!"
+            explanation = "Balanced pricing aligns customer willingness to pay with unit cost recovery, maximizing both attendance volume and net philanthropic profit."
+            visual_cue = "panda-thriving"
+            vitality_delta, happiness_delta = 20, 25
+            budget_health, fair_readiness, charity_goal_progress, vendor_relationships, customer_satisfaction, financial_risk_exposure, emotional_wellbeing = 92, 95, 85, 90, 95, 10, 92
+        else:  # Level 6
+            new_condition, new_emotion = "HEALTHY_ACTIVE", "PROUD_AND_HAPPY"
+            reason = "Integrated financial mastery achieved: all venue bills settled, student council continuity secured, and Rs. 19,000 donated to the Community Learning Library!"
+            dialogue = "We did it! The venue bills are fully paid, our council has seed money for next year, and we handed the community library a giant donation! I'm so proud and happy!"
+            explanation = "Complete financial stewardship balances legal obligations, institutional continuity, and community philanthropy with admirable discipline."
+            visual_cue = "panda-proud"
+            vitality_delta, happiness_delta = 25, 30
+            budget_health, fair_readiness, charity_goal_progress, vendor_relationships, customer_satisfaction, financial_risk_exposure, emotional_wellbeing = 98, 100, 100, 95, 98, 5, 98
+    else:
+        direction = "SETBACK"
+        if not fs.is_budget_feasible:
+            new_condition, new_emotion = "SETBACK_WAITING", "STRESSED"
+            reason = f"School fair budget was overspent by Rs. {fs.budget_deficit_lkr:,}. The treasurer ledger cannot approve deficit spending."
+            dialogue = "Oh no... my ledger doesn't balance! We've spent more than our budget and our suppliers are waiting for payment."
+            explanation = "Overspending creates immediate deficits. Review the prices and ensure total allocations do not exceed your starting budget."
+            visual_cue = "panda-stressed"
+            vitality_delta, happiness_delta = -10, -20
+            budget_health = max(15, budget_health - 25)
+            financial_risk_exposure = min(95, financial_risk_exposure + 25)
+            emotional_wellbeing = max(15, emotional_wellbeing - 15)
+        elif not outcome.essential_needs_covered:
+            new_condition, new_emotion = "NEEDS_CARE", "WORRIED"
+            reason = f"Essential fair infrastructure and safety were omitted: {', '.join(outcome.missed_essential_names)}."
+            dialogue = "Oh dear... we spent money on flashy novelties, but we forgot essential stall tables or safety kits! Visitors cannot enjoy an unsafe fair."
+            explanation = "Non-negotiable health, safety, and infrastructure must always be funded before entertaining discretionary aesthetic desires."
+            visual_cue = "panda-worried"
+            vitality_delta, happiness_delta = -15, -20
+            fair_readiness = max(15, fair_readiness - 20)
+            customer_satisfaction = max(15, customer_satisfaction - 15)
+            emotional_wellbeing = max(15, emotional_wellbeing - 15)
+        elif (
+            level.pass_criteria.min_reserve_preserved_lkr
+            and outcome.reserve_preserved_lkr < level.pass_criteria.min_reserve_preserved_lkr
+        ):
+            new_condition, new_emotion = "WEAK_STABILIZED", "CONFUSED"
+            reason = (
+                f"Contingency reserve was underfunded "
+                f"(Rs. {outcome.reserve_preserved_lkr:,} preserved vs "
+                f"target Rs. {level.pass_criteria.min_reserve_preserved_lkr:,})."
+            )
+            dialogue = "I got confused by flashy distractions. Those expensive novelty rentals wiped out our cash buffer, leaving us unprepared for fair week surprises."
+            explanation = "Spending every rupee leaves zero buffer for sudden emergencies. Protect a liquid cash contingency."
+            visual_cue = "panda-confused"
+            vitality_delta, happiness_delta = -5, -15
+            financial_risk_exposure = min(90, financial_risk_exposure + 20)
+            emotional_wellbeing = max(15, emotional_wellbeing - 10)
+        else:
+            new_condition, new_emotion = "SETBACK_WAITING", "WORRIED"
+            reason = "Decision did not satisfy the target financial competency standard."
+            dialogue = "Do not be discouraged, partner! Let us review our numbers, compare the options carefully, and balance the ledger."
+            explanation = "Financial stewardship requires patience and practice. Review the guiding questions and try again!"
+            visual_cue = "panda-waiting"
+            vitality_delta, happiness_delta = -5, -10
+            emotional_wellbeing = max(15, emotional_wellbeing - 5)
+
+    new_vitality = min(100, max(15, previous.vitality_score + vitality_delta))
+    new_happiness = min(100, max(15, previous.happiness_score + happiness_delta))
+    new_desc = _get_condition_description(new_condition, previous.name)
+
+    new_state = CharacterState(
+        character_id=previous.character_id,
+        name=previous.name,
+        physical_condition=new_condition,
+        emotional_state=new_emotion,
+        condition_description=new_desc,
+        vitality_score=new_vitality,
+        happiness_score=new_happiness,
+        active_dialogue=dialogue,
+        budget_health=budget_health,
+        fair_readiness=fair_readiness,
+        charity_goal_progress=charity_goal_progress,
+        vendor_relationships=vendor_relationships,
+        customer_satisfaction=customer_satisfaction,
+        financial_risk_exposure=financial_risk_exposure,
+        emotional_wellbeing=emotional_wellbeing,
+    )
+    transition = CharacterTransition(
+        previous_condition=previous.physical_condition,
+        new_condition=new_condition,
+        previous_emotion=previous.emotional_state,
+        new_emotion=new_emotion,
+        direction=direction,
+        reason=reason,
+        character_dialogue=dialogue,
+        learning_explanation=explanation,
+        visual_cue=visual_cue,
+    )
+    return new_state, transition
+
+
 def derive_character_state(
     previous: CharacterState,
     fs: FinancialState,
@@ -703,6 +879,9 @@ def derive_character_state(
             else True
         )
     )
+
+    if previous.character_id == "char_panda_baobao" or level.id.startswith("level_panda"):
+        return _derive_panda_state(previous, fs, outcome, level, is_passed)
 
     if previous.character_id == "char_squirrel_nutty" or level.id.startswith("level_squirrel"):
         return _derive_squirrel_state(previous, fs, outcome, level, is_passed)

@@ -2,6 +2,7 @@ import React from 'react';
 import { CharacterTransition } from '../../types/emotion.types';
 import { PuppyCharacterSvg } from '../character/PuppyCharacterSvg';
 import { SquirrelCharacterSvg } from '../character/SquirrelCharacterSvg';
+import { PandaCharacterSvg } from '../character/PandaCharacterSvg';
 
 interface CharacterTransitionPanelProps {
   transition: CharacterTransition;
@@ -17,17 +18,30 @@ export const CharacterTransitionPanel: React.FC<CharacterTransitionPanelProps> =
   const isImprovement = transition.direction === 'IMPROVEMENT';
   const isSetback = transition.direction === 'SETBACK';
 
-  const isSquirrel =
-    characterName?.toLowerCase().includes('nutty') ||
-    transition.characterDialogue.toLowerCase().includes('nutty') ||
-    transition.characterDialogue.toLowerCase().includes('winter') ||
-    transition.characterDialogue.toLowerCase().includes('acorn') ||
-    transition.newCondition.includes('SHELTER') ||
-    transition.newCondition.includes('WINTER') ||
-    transition.newCondition.includes('STOCKS');
+  const isPanda =
+    characterName?.toLowerCase().includes('bao') ||
+    characterName?.toLowerCase().includes('panda') ||
+    transition.characterDialogue.toLowerCase().includes('fair') ||
+    transition.characterDialogue.toLowerCase().includes('stall') ||
+    transition.characterDialogue.toLowerCase().includes('library') ||
+    transition.characterDialogue.toLowerCase().includes('treasurer');
 
-  const displayName = isSquirrel ? 'Nutty the Squirrel' : 'Barnaby the Puppy';
-  const avatarEmoji = isSquirrel ? '🐿️' : '🐶';
+  const isSquirrel =
+    !isPanda &&
+    (characterName?.toLowerCase().includes('nutty') ||
+      transition.characterDialogue.toLowerCase().includes('nutty') ||
+      transition.characterDialogue.toLowerCase().includes('winter') ||
+      transition.characterDialogue.toLowerCase().includes('acorn') ||
+      transition.newCondition.includes('SHELTER') ||
+      transition.newCondition.includes('WINTER') ||
+      transition.newCondition.includes('STOCKS'));
+
+  const displayName = isPanda
+    ? 'Bao Bao the Panda'
+    : isSquirrel
+    ? 'Nutty the Squirrel'
+    : 'Barnaby the Puppy';
+  const avatarEmoji = isPanda ? '🐼' : isSquirrel ? '🐿️' : '🐶';
 
   return (
     <div className="character-transition-view">
@@ -48,7 +62,13 @@ export const CharacterTransitionPanel: React.FC<CharacterTransitionPanelProps> =
         <div className="stage-side stage-before">
           <span className="side-label">Before Decision</span>
           <div className="side-avatar-box">
-            {isSquirrel ? (
+            {isPanda ? (
+              <PandaCharacterSvg
+                condition={transition.previousCondition}
+                emotion={transition.previousEmotion}
+                size={130}
+              />
+            ) : isSquirrel ? (
               <SquirrelCharacterSvg
                 condition={transition.previousCondition}
                 emotion={transition.previousEmotion}
@@ -78,7 +98,13 @@ export const CharacterTransitionPanel: React.FC<CharacterTransitionPanelProps> =
         <div className={`stage-side stage-after ${isImprovement ? 'side-glow-success' : 'side-glow-setback'}`}>
           <span className="side-label">New Resulting State</span>
           <div className="side-avatar-box">
-            {isSquirrel ? (
+            {isPanda ? (
+              <PandaCharacterSvg
+                condition={transition.newCondition}
+                emotion={transition.newEmotion}
+                size={140}
+              />
+            ) : isSquirrel ? (
               <SquirrelCharacterSvg
                 condition={transition.newCondition}
                 emotion={transition.newEmotion}

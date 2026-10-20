@@ -96,6 +96,12 @@ def _char_state_to_doc(cs: CharacterState) -> dict[str, Any]:
         "shelter_readiness": getattr(cs, "shelter_readiness", 35),
         "winter_preparedness": getattr(cs, "winter_preparedness", 35),
         "emotional_wellbeing": getattr(cs, "emotional_wellbeing", 40),
+        "budget_health": getattr(cs, "budget_health", 50),
+        "fair_readiness": getattr(cs, "fair_readiness", 30),
+        "charity_goal_progress": getattr(cs, "charity_goal_progress", 0),
+        "vendor_relationships": getattr(cs, "vendor_relationships", 50),
+        "customer_satisfaction": getattr(cs, "customer_satisfaction", 50),
+        "financial_risk_exposure": getattr(cs, "financial_risk_exposure", 40),
     }
 
 
@@ -114,6 +120,12 @@ def _char_state_from_doc(doc: dict[str, Any]) -> CharacterState:
         shelter_readiness=int(doc.get("shelter_readiness", 35)),
         winter_preparedness=int(doc.get("winter_preparedness", 35)),
         emotional_wellbeing=int(doc.get("emotional_wellbeing", 40)),
+        budget_health=int(doc.get("budget_health", 50)),
+        fair_readiness=int(doc.get("fair_readiness", 30)),
+        charity_goal_progress=int(doc.get("charity_goal_progress", 0)),
+        vendor_relationships=int(doc.get("vendor_relationships", 50)),
+        customer_satisfaction=int(doc.get("customer_satisfaction", 50)),
+        financial_risk_exposure=int(doc.get("financial_risk_exposure", 40)),
     )
 
 
@@ -132,6 +144,12 @@ def _char_state_out(cs: CharacterState) -> CharacterStateOut:
         shelter_readiness=getattr(cs, "shelter_readiness", 35),
         winter_preparedness=getattr(cs, "winter_preparedness", 35),
         emotional_wellbeing=getattr(cs, "emotional_wellbeing", 40),
+        budget_health=getattr(cs, "budget_health", 50),
+        fair_readiness=getattr(cs, "fair_readiness", 30),
+        charity_goal_progress=getattr(cs, "charity_goal_progress", 0),
+        vendor_relationships=getattr(cs, "vendor_relationships", 50),
+        customer_satisfaction=getattr(cs, "customer_satisfaction", 50),
+        financial_risk_exposure=getattr(cs, "financial_risk_exposure", 40),
     )
 
 
@@ -139,6 +157,24 @@ def _default_char_state(mission_id: str) -> CharacterState:
     mission = get_mission(mission_id)
     if not mission:
         raise HTTPException(status_code=404, detail="Mission not found.")
+    if mission_id == "mission_panda_fair":
+        return CharacterState(
+            character_id="char_panda_baobao",
+            name="Bao Bao",
+            physical_condition="WEAK_STABILIZED",
+            emotional_state="EXCITED",
+            condition_description="Bao Bao is eagerly preparing for the School Charity Fair, ready to balance the budget for the community library.",
+            vitality_score=mission.initial_vitality,
+            happiness_score=mission.initial_happiness,
+            active_dialogue="Welcome to the School Fair planning committee! Together, let's budget carefully, partner with honest vendors, and build our dream library!",
+            budget_health=60,
+            fair_readiness=30,
+            charity_goal_progress=0,
+            vendor_relationships=50,
+            customer_satisfaction=50,
+            financial_risk_exposure=35,
+            emotional_wellbeing=60,
+        )
     if mission_id == "mission_squirrel_savings":
         return CharacterState(
             character_id="char_squirrel_nutty",
@@ -235,6 +271,17 @@ def _build_progress_out(doc: dict[str, Any]) -> MissionProgressOut:
             vitality_score=int(cs_doc.get("vitality_score", 35)),
             happiness_score=int(cs_doc.get("happiness_score", 30)),
             active_dialogue=cs_doc.get("active_dialogue", ""),
+            food_supply=cs_doc.get("food_supply"),
+            savings_reserve=cs_doc.get("savings_reserve"),
+            shelter_readiness=cs_doc.get("shelter_readiness"),
+            winter_preparedness=cs_doc.get("winter_preparedness"),
+            emotional_wellbeing=cs_doc.get("emotional_wellbeing"),
+            budget_health=cs_doc.get("budget_health"),
+            fair_readiness=cs_doc.get("fair_readiness"),
+            charity_goal_progress=cs_doc.get("charity_goal_progress"),
+            vendor_relationships=cs_doc.get("vendor_relationships"),
+            customer_satisfaction=cs_doc.get("customer_satisfaction"),
+            financial_risk_exposure=cs_doc.get("financial_risk_exposure"),
         ),
         last_attempt_at_iso=doc.get("last_attempt_at_iso", doc.get("started_at", "")),
         is_mission_completed=bool(doc.get("is_mission_completed", False)),
