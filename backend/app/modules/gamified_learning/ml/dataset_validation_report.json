@@ -1,0 +1,27 @@
+{
+  "validation_passed": true,
+  "generated_at_utc": "2026-10-20T15:21:20.055099+00:00",
+  "total_records": 2500,
+  "total_unique_students": 300,
+  "target_label_distribution": {
+    "NEEDS_FOUNDATION_SUPPORT": 845,
+    "READY_FOR_STANDARD": 828,
+    "READY_FOR_ADVANCED": 827
+  },
+  "archetype_distribution": {
+    "STRUGGLING_LEARNER": 625,
+    "IMPULSIVE_SPENDER": 624,
+    "ADVANCED_ACHIEVER": 503,
+    "CAUTIOUS_IMPROVER": 748
+  },
+  "mission_distribution": {
+    "mission_squirrel_savings": 718,
+    "mission_panda_fair": 808,
+    "mission_rescue_puppy": 974
+  },
+  "pass_count": 2008,
+  "fail_count": 492,
+  "overall_pass_rate": 0.8032,
+  "errors": [],
+  "warnings": []
+}

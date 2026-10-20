@@ -1,4 +1,4 @@
-import type { JourneyOverview, JourneyMissionDetail } from '../types/journey.types';
+import type { JourneyOverview, JourneyMissionDetail, AdaptiveRecommendation } from '../types/journey.types';
 /**
  * Gamified-Learning API Service — WiseCub CDEMF
  *
@@ -513,4 +513,38 @@ export async function getJourneyMissionDetail(missionId: string): Promise<Journe
     characterState: raw.character_state,
     characterHistory: raw.character_history || [],
   };
+}
+
+
+/**
+ * Retrieve adaptive practice recommendation for the authenticated student.
+ */
+export async function getAdaptiveRecommendation(): Promise<AdaptiveRecommendation | null> {
+  try {
+    const raw = await apiGet<any>('/api/gamified/ml/adaptive-recommendation');
+    if (!raw) return null;
+    return {
+      childId: raw.child_id,
+      recommendedCategory: raw.recommended_category,
+      recommendedCompetency: raw.recommended_competency,
+      recommendedMissionId: raw.recommended_mission_id,
+      recommendedMissionTitle: raw.recommended_mission_title,
+      recommendedLevelNumber: raw.recommended_level_number,
+      recommendedLevelId: raw.recommended_level_id,
+      recommendedLevelTitle: raw.recommended_level_title,
+      recommendedInteractionType: raw.recommended_interaction_type,
+      recommendationTitle: raw.recommendation_title,
+      explanation: raw.explanation,
+      pedagogicalAction: raw.pedagogical_action,
+      isOptional: raw.is_optional,
+      predictionSource: raw.prediction_source,
+      fallbackUsed: raw.fallback_used,
+      fallbackReason: raw.fallback_reason,
+      modelVersion: raw.model_version,
+      canNavigate: raw.can_navigate ?? true,
+    };
+  } catch (err) {
+    console.warn('Could not load adaptive recommendation:', err);
+    return null;
+  }
 }
