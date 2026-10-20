@@ -3,33 +3,11 @@
 
 import { MissionDefinition } from '../../types/mission.types';
 import { RESCUE_PUPPY_MISSION } from './rescuePuppy';
+import { SQUIRREL_SAVINGS_MISSION } from './squirrelSavings';
 
 export const MISSION_CATALOG: MissionDefinition[] = [
   RESCUE_PUPPY_MISSION,
-  {
-    id: 'mission_squirrel_savings',
-    title: "Squirrel's Winter Savings",
-    characterName: 'Nutty',
-    characterRole: 'Forager preparing an acorn granary for harsh winter',
-    characterSpecies: 'Eurasian Red Squirrel',
-    primaryCompetency: 'savingBehavior',
-    secondaryCompetencies: ['budgetingSkill', 'spendingDiscipline', 'goalAchievement'],
-    description:
-      'Manage food resources and seasonal tokens over simulated weeks. Set savings goals, resist instant gratification feasts, and prepare for winter freezes.',
-    totalLevels: 8,
-    themeColor: '#c45f24',
-    initialCharacterState: {
-      characterId: 'char_squirrel_nutty',
-      name: 'Nutty the Squirrel',
-      physicalCondition: 'NEEDS_CARE',
-      emotionalState: 'WORRIED',
-      conditionDescription: 'Nutty’s winter pantry is nearly empty while the cold autumn winds blow.',
-      vitalityScore: 40,
-      happinessScore: 35,
-      activeDialogue: 'Chirp! Winter frost is coming early this year. If I do not save enough acorns in time, my family will be hungry!',
-    },
-    levels: [], // Framework placeholder: Puppy Rescue is fully playable first per instructions
-  },
+  SQUIRREL_SAVINGS_MISSION,
   {
     id: 'mission_panda_fair',
     title: "Panda's School Fair",

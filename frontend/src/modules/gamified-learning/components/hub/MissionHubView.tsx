@@ -108,13 +108,15 @@ export const MissionHubView: React.FC<MissionHubViewProps> = ({
           {catalog
             .filter((m) => m.id !== 'mission_rescue_puppy')
             .map((mission) => {
+              const isSquirrel = mission.id === 'mission_squirrel_savings';
               return (
                 <div
                   key={mission.id}
-                  className="storybook-mission-card"
+                  className={`storybook-mission-card ${isSquirrel ? 'playable-mission-card' : ''}`}
                   onClick={() => setPreviewMission(mission)}
                   role="button"
                   tabIndex={0}
+                  style={isSquirrel ? { border: '2px solid #f59e0b', boxShadow: '0 4px 14px rgba(245, 158, 11, 0.15)' } : undefined}
                 >
                   <div className="card-top-accent" style={{ backgroundColor: mission.themeColor }} />
                   <div className="card-inner-padding">
@@ -129,6 +131,22 @@ export const MissionHubView: React.FC<MissionHubViewProps> = ({
                         <span className="char-name">{mission.characterName}</span>
                         <span className="char-role">{mission.characterRole}</span>
                       </div>
+                      {isSquirrel && (
+                        <span
+                          style={{
+                            marginLeft: 'auto',
+                            background: '#fef3c7',
+                            color: '#92400e',
+                            fontWeight: 700,
+                            fontSize: '0.75rem',
+                            padding: '0.2rem 0.5rem',
+                            borderRadius: '999px',
+                            border: '1px solid #fde68a',
+                          }}
+                        >
+                          ✨ Ready to Play
+                        </span>
+                      )}
                     </div>
 
                     <h4 className="mission-card-title">{mission.title}</h4>
@@ -136,7 +154,25 @@ export const MissionHubView: React.FC<MissionHubViewProps> = ({
 
                     <div className="mission-card-footer">
                       <span className="footer-levels">{mission.totalLevels} Story Levels</span>
-                      <span className="btn-preview-link">Inspect Story ➔</span>
+                      {isSquirrel ? (
+                        <button
+                          type="button"
+                          className="btn-confirm-decision"
+                          style={{
+                            padding: '0.35rem 0.8rem',
+                            fontSize: '0.85rem',
+                            background: 'linear-gradient(135deg, #d97706, #b45309)',
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectMission(mission.id);
+                          }}
+                        >
+                          🐿️ Play Now ➔
+                        </button>
+                      ) : (
+                        <span className="btn-preview-link">Inspect Story ➔</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -166,23 +202,48 @@ export const MissionHubView: React.FC<MissionHubViewProps> = ({
               <p><strong>Secondary Competencies:</strong> {previewMission.secondaryCompetencies.join(', ')}</p>
               <p><strong>Story Synopsis:</strong> {previewMission.description}</p>
               <div className="prototype-slice-notice">
-                ℹ️ <strong>Research Increment Note:</strong> In this increment, the complete 8-level
-                vertical slice for <strong>Rescue the Injured Puppy</strong> is fully implemented with
-                decision tracking, dynamic character state machine, competency evaluation, and strict gates.
+                {previewMission.id === 'mission_squirrel_savings' ? (
+                  <span>
+                    🐿️ <strong>Fully Playable Story Mission:</strong> Squirrel's Winter Savings features
+                    6 fully playable competency-driven levels with Nutty's winter survival simulations,
+                    emotional state transitions, and individualized remediation.
+                  </span>
+                ) : (
+                  <span>
+                    ℹ️ <strong>Research Increment Note:</strong> In this increment, the complete 8-level
+                    vertical slice for <strong>Rescue the Injured Puppy</strong> is fully implemented with
+                    decision tracking, dynamic character state machine, competency evaluation, and strict gates.
+                  </span>
+                )}
               </div>
             </div>
 
             <div className="analytics-footer">
-              <button
-                type="button"
-                className="btn-confirm-decision"
-                onClick={() => {
-                  setPreviewMission(null);
-                  onSelectMission('mission_rescue_puppy');
-                }}
-              >
-                Play Active Flagship (Puppy Rescue)
-              </button>
+              {previewMission.id === 'mission_squirrel_savings' ? (
+                <button
+                  type="button"
+                  className="btn-confirm-decision"
+                  style={{ background: 'linear-gradient(135deg, #d97706, #b45309)' }}
+                  onClick={() => {
+                    const id = previewMission.id;
+                    setPreviewMission(null);
+                    onSelectMission(id);
+                  }}
+                >
+                  ▶ Play Squirrel's Winter Savings (6 Levels)
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn-confirm-decision"
+                  onClick={() => {
+                    setPreviewMission(null);
+                    onSelectMission('mission_rescue_puppy');
+                  }}
+                >
+                  Play Active Flagship (Puppy Rescue)
+                </button>
+              )}
               <button
                 type="button"
                 className="btn-secondary-action"

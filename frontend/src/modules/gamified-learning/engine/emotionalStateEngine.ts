@@ -184,6 +184,22 @@ export class EmotionalStateEngine {
         return `${name} is fully healed, jumping with joy in the sunny yard! Complete recovery achieved.`;
       case 'SETBACK_WAITING':
         return `${name} is patiently waiting for financial planning to balance needed care.`;
+      case 'SHELTER_UNPREPARED':
+        return `${name}'s winter storage is bare, drafty, and unfortified for the cold.`;
+      case 'BASIC_STOCKS_FORMED':
+        return `${name} has secured essential acorns and sealed drafty crevices.`;
+      case 'STORAGE_ORGANIZED':
+        return `${name}'s pantry shelves are organized with winter reserves.`;
+      case 'WINTER_RESERVES_ACTIVE':
+        return `${name} has established emergency savings and protected supplies.`;
+      case 'WEATHER_IMPACTED':
+        return `${name} faces weather damage and must draw upon emergency reserves.`;
+      case 'SHELTER_FORTIFIED':
+        return `${name}'s hollow is insulated and fortified against arctic winds.`;
+      case 'WINTER_READY':
+        return `${name} is warm, fully supplied, and completely prepared for winter!`;
+      default:
+        return `${name} is continuing their financial journey.`;
     }
   }
 }

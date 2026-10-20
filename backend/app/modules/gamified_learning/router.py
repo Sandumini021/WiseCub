@@ -91,6 +91,11 @@ def _char_state_to_doc(cs: CharacterState) -> dict[str, Any]:
         "vitality_score": cs.vitality_score,
         "happiness_score": cs.happiness_score,
         "active_dialogue": cs.active_dialogue,
+        "food_supply": getattr(cs, "food_supply", 40),
+        "savings_reserve": getattr(cs, "savings_reserve", 35),
+        "shelter_readiness": getattr(cs, "shelter_readiness", 35),
+        "winter_preparedness": getattr(cs, "winter_preparedness", 35),
+        "emotional_wellbeing": getattr(cs, "emotional_wellbeing", 40),
     }
 
 
@@ -104,6 +109,11 @@ def _char_state_from_doc(doc: dict[str, Any]) -> CharacterState:
         vitality_score=int(doc["vitality_score"]),
         happiness_score=int(doc["happiness_score"]),
         active_dialogue=doc.get("active_dialogue", ""),
+        food_supply=int(doc.get("food_supply", 40)),
+        savings_reserve=int(doc.get("savings_reserve", 35)),
+        shelter_readiness=int(doc.get("shelter_readiness", 35)),
+        winter_preparedness=int(doc.get("winter_preparedness", 35)),
+        emotional_wellbeing=int(doc.get("emotional_wellbeing", 40)),
     )
 
 
@@ -117,6 +127,11 @@ def _char_state_out(cs: CharacterState) -> CharacterStateOut:
         vitality_score=cs.vitality_score,
         happiness_score=cs.happiness_score,
         active_dialogue=cs.active_dialogue,
+        food_supply=getattr(cs, "food_supply", 40),
+        savings_reserve=getattr(cs, "savings_reserve", 35),
+        shelter_readiness=getattr(cs, "shelter_readiness", 35),
+        winter_preparedness=getattr(cs, "winter_preparedness", 35),
+        emotional_wellbeing=getattr(cs, "emotional_wellbeing", 40),
     )
 
 
@@ -124,6 +139,22 @@ def _default_char_state(mission_id: str) -> CharacterState:
     mission = get_mission(mission_id)
     if not mission:
         raise HTTPException(status_code=404, detail="Mission not found.")
+    if mission_id == "mission_squirrel_savings":
+        return CharacterState(
+            character_id="char_squirrel_nutty",
+            name="Nutty",
+            physical_condition="NEEDS_CARE",
+            emotional_state="WORRIED",
+            condition_description="Nutty’s winter pantry is nearly empty while cold autumn winds blow through the forest.",
+            vitality_score=mission.initial_vitality,
+            happiness_score=mission.initial_happiness,
+            active_dialogue="Chirp! Winter frost is coming early this year. If I do not save enough acorns in time, my family will be hungry!",
+            food_supply=35,
+            savings_reserve=25,
+            shelter_readiness=30,
+            winter_preparedness=30,
+            emotional_wellbeing=40,
+        )
     return CharacterState(
         character_id=mission.character_id,
         name=mission.character_name,

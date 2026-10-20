@@ -528,22 +528,316 @@ RESCUE_PUPPY_MISSION = MissionDefinition(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# MISSION 2 — Squirrel's Winter Savings (Nutty's Winter Survival Story)
+# ─────────────────────────────────────────────────────────────────────────────
+
+_SQUIRREL_L1 = LevelDefinition(
+    id="level_squirrel_1",
+    level_number=1,
+    title="Prepare for Winter",
+    subtitle="Needs vs. Wants",
+    story_intro=(
+        "Autumn winds are turning cold in the forest! Nutty has Rs. 5,000 in forest tokens. "
+        "Help Nutty fund winter survival necessities without wasting tokens on shiny extras."
+    ),
+    learning_objective=(
+        "Pick only essential food supplies and shelter repairs — keep remaining tokens safe in your pouch!"
+    ),
+    target_competency="spendingDiscipline",
+    interaction_type="needs_wants",
+    starting_budget_lkr=5000,
+    options=(
+        DecisionOption("opt_sq_essential_nuts", "Dried Oak Acorns & Seed Basket", 2200, "essential_food", True, "certified_good"),
+        DecisionOption("opt_sq_shelter_patch", "Moss & Pine Bark Shelter Seal", 1600, "shelter_repair", True, "certified_good"),
+        DecisionOption("opt_sq_glitter_feather", "Decorative Shimmer Feather Cap", 1500, "accessory", False, "luxury_excess"),
+        DecisionOption("opt_sq_maple_candy", "Sugary Candied Maple Treat", 800, "snacks", False, "luxury_excess"),
+    ),
+    pass_criteria=PassCriteria(
+        min_competency_score=75,
+        max_budget_lkr=5000,
+        require_budget_feasibility=True,
+        must_include_option_ids=("opt_sq_essential_nuts", "opt_sq_shelter_patch"),
+        disallowed_option_ids=("opt_sq_glitter_feather",),
+        min_reserve_preserved_lkr=500,
+    ),
+    hints=(
+        "Winter frost will freeze unsealed hollows. Prioritize the shelter seal and dried acorns first!",
+        "A feather cap looks fancy, but it cannot feed Nutty or stop the freezing wind.",
+    ),
+    remediation_scaffolding=RemediationScaffolding(
+        rule_explanation="Non-negotiable survival needs (food and shelter) must always be secured before discretionary wants (costumes, sweet treats).",
+        guiding_questions=(
+            "What happens to Nutty if you buy the feather cap but lack the acorns to survive?",
+            "How much emergency money remains when you only purchase essentials?",
+        ),
+        suggested_focus="Select the Acorn Basket (Rs. 2,200) and Shelter Seal (Rs. 1,600). Leave the feather cap and save the remaining Rs. 1,200.",
+    ),
+)
+
+_SQUIRREL_L2 = LevelDefinition(
+    id="level_squirrel_2",
+    level_number=2,
+    title="Save the Acorns",
+    subtitle="Saving Behavior & Goal Planning",
+    story_intro=(
+        "Nutty gathered Rs. 8,000 from seasonal foraging! Nutty must allocate these resources "
+        "to stock the winter pantry, weatherproof the granary, and build an emergency acorn reserve of at least Rs. 2,500."
+    ),
+    learning_objective=(
+        "Allocate Rs. 8,000 across categories to fund food and shelter while locking away at least Rs. 2,500 into emergency savings."
+    ),
+    target_competency="savingBehavior",
+    interaction_type="budget_allocator",
+    starting_budget_lkr=8000,
+    allocation_categories=(
+        AllocationCategory("cat_sq_winter_food", "Winter Food Pantry (Acorns & Seeds)", "food", True, 2500, 4000, 500, 0),
+        AllocationCategory("cat_sq_weatherproofing", "Granary Weatherproofing & Seal", "shelter", True, 1500, 2500, 500, 0),
+        AllocationCategory("cat_sq_emergency_reserve", "Emergency Acorn Reserve Fund", "savings", True, 2500, 4000, 500, 0),
+        AllocationCategory("cat_sq_decorations", "Carved Tree Hollow Ornaments", "discretionary", False, 0, 2000, 500, 0),
+    ),
+    pass_criteria=PassCriteria(
+        min_competency_score=75,
+        max_budget_lkr=8000,
+        require_budget_feasibility=True,
+        min_reserve_preserved_lkr=2500,
+    ),
+    hints=(
+        "Nutty needs at least Rs. 2,500 in food and Rs. 1,500 in weatherproofing to survive.",
+        "Ensure your Emergency Acorn Reserve has at least Rs. 2,500. Keep tree ornaments low or zero.",
+    ),
+    remediation_scaffolding=RemediationScaffolding(
+        rule_explanation="Pay yourself first! Setting aside savings before buying decorative novelties ensures you meet future survival targets.",
+        guiding_questions=(
+            "How much total money is available in forest tokens?",
+            "Did you allocate at least Rs. 2,500 to the emergency acorn reserve?",
+        ),
+        suggested_focus="Allocate Rs. 3,000 to Food, Rs. 1,500 to Weatherproofing, Rs. 3,000 to Emergency Reserve, and Rs. 500 to Ornaments.",
+    ),
+)
+
+_SQUIRREL_L3 = LevelDefinition(
+    id="level_squirrel_3",
+    level_number=3,
+    title="The Tempting Forest Festival",
+    subtitle="Delayed Gratification & Spending Discipline",
+    story_intro=(
+        "The 3-week Autumn Forest Festival is here! Tempting carnival stalls, games, and candy stand "
+        "between Nutty and the Rs. 7,500 needed to purchase a Thermal Winter Quilt & Heavy Granary Lock."
+    ),
+    learning_objective=(
+        "Save at least Rs. 7,500 across 3 weeks by resisting expensive impulse temptations and putting tokens into the winter bank."
+    ),
+    target_competency="spendingDiscipline",
+    interaction_type="multi_period_saving",
+    starting_budget_lkr=4500,
+    multi_period_config={
+        "periods": [
+            {
+                "period": 1,
+                "label": "Week 1",
+                "allowance_lkr": 4500,
+                "mandatory_cost_lkr": 1500,
+                "mandatory_cost_description": "Fresh forest forage & basic hollow maintenance",
+                "temptation_cost_lkr": 1200,
+                "temptation_title": "Carnival Acorn Toss Game",
+                "temptation_description": "Spend Rs. 1,200 playing carnival games with forest friends.",
+            },
+            {
+                "period": 2,
+                "label": "Week 2",
+                "allowance_lkr": 4500,
+                "mandatory_cost_lkr": 1500,
+                "mandatory_cost_description": "Fresh forest forage & basic hollow maintenance",
+                "temptation_cost_lkr": 1000,
+                "temptation_title": "Golden Berry Sugar Floss",
+                "temptation_description": "Spend Rs. 1,000 on sweet candied berries.",
+            },
+            {
+                "period": 3,
+                "label": "Week 3",
+                "allowance_lkr": 4500,
+                "mandatory_cost_lkr": 1500,
+                "mandatory_cost_description": "Fresh forest forage & basic hollow maintenance",
+                "temptation_cost_lkr": 1000,
+                "temptation_title": "Glowing Lantern Souvenir",
+                "temptation_description": "Spend Rs. 1,000 on a festive decorative lantern.",
+            },
+        ],
+        "target_goal_lkr": 7500,
+    },
+    pass_criteria=PassCriteria(
+        min_competency_score=75,
+        max_budget_lkr=13500,
+        require_budget_feasibility=True,
+        min_reserve_preserved_lkr=7500,
+    ),
+    hints=(
+        "To reach Rs. 7,500, you need to save an average of Rs. 2,500 each week.",
+        "Resisting the carnival games and treats unlocks the maximum saving power of Rs. 3,000 per week.",
+    ),
+    remediation_scaffolding=RemediationScaffolding(
+        rule_explanation="Delayed gratification means resisting immediate impulse spending so you can afford high-value security items that protect your future.",
+        guiding_questions=(
+            "How much total savings do you need for the Thermal Quilt & Granary Lock?",
+            "If you buy every festival treat, will you meet the Rs. 7,500 goal?",
+        ),
+        suggested_focus="Skip the temptations in Weeks 1 and 2, save Rs. 3,000 and Rs. 3,000, then in Week 3 save Rs. 2,000+ to exceed the Rs. 7,500 target.",
+    ),
+)
+
+_SQUIRREL_L4 = LevelDefinition(
+    id="level_squirrel_4",
+    level_number=4,
+    title="Unexpected Food Shortage",
+    subtitle="Emergency Preparedness & Resilience",
+    story_intro=(
+        "A torrential rainstorm battered the oak trees! Water seeped into Nutty's lower hollow, ruining stored seeds. "
+        "You have Rs. 7,000 in emergency reserves. Fix the leak and replace ruined food with certified supplies before mold spreads!"
+    ),
+    learning_objective=(
+        "Use emergency reserves to replace essential food and seal the leak. Avoid overpriced luxury treats or cheap moldy seeds."
+    ),
+    target_competency="emergencyPreparedness",
+    interaction_type="emergency_response",
+    starting_budget_lkr=7000,
+    existing_reserve_lkr=7000,
+    options=(
+        DecisionOption("opt_sq_emergency_seed_bulk", "Sealed Kiln-Dried Acorn Pack", 3500, "emergency_food", True, "certified_good"),
+        DecisionOption("opt_sq_tarp_seal_patch", "Waterproof Bark Tarpaulin", 1500, "emergency_repair", True, "certified_good"),
+        DecisionOption("opt_sq_luxury_imported_berries", "Imported Honey Glazed Berries", 3500, "luxury_food", False, "luxury_excess"),
+        DecisionOption("opt_sq_moldy_discount_seeds", "Discount Wet Floor Seeds", 1000, "substandard_food", False, "substandard"),
+    ),
+    pass_criteria=PassCriteria(
+        min_competency_score=75,
+        max_budget_lkr=7000,
+        require_budget_feasibility=True,
+        must_include_option_ids=("opt_sq_emergency_seed_bulk", "opt_sq_tarp_seal_patch"),
+        disallowed_option_ids=("opt_sq_luxury_imported_berries", "opt_sq_moldy_discount_seeds"),
+        min_reserve_preserved_lkr=1500,
+    ),
+    hints=(
+        "Buy the sealed kiln-dried acorns and waterproof tarp. Do not gamble with damp moldy floor seeds!",
+        "Save at least Rs. 1,500 in reserve for tomorrow's unpredictable weather.",
+    ),
+    remediation_scaffolding=RemediationScaffolding(
+        rule_explanation="Emergency funds exist to restore safety and replace essentials during unforeseen crises. Never waste emergency funds on luxury treats or hazardous cut-rate supplies.",
+        guiding_questions=(
+            "What health hazard happens if Nutty eats cheap moldy seeds from the wet forest floor?",
+            "How much emergency cash is left after purchasing the dried acorns and waterproof tarp?",
+        ),
+        suggested_focus="Select the Kiln-Dried Acorn Pack (Rs. 3,500) and Waterproof Tarpaulin (Rs. 1,500). Total spent is Rs. 5,000, preserving Rs. 2,000 in your reserve.",
+    ),
+)
+
+_SQUIRREL_L5 = LevelDefinition(
+    id="level_squirrel_5",
+    level_number=5,
+    title="The Coldest Winter Night",
+    subtitle="Complex Financial Trade-offs",
+    story_intro=(
+        "A severe Arctic freeze is approaching the forest tonight! Temperature will drop below freezing. "
+        "Nutty has Rs. 10,000, but cannot afford every possible purchase. Make a reasoned financial trade-off to keep Nutty alive and warm."
+    ),
+    learning_objective=(
+        "Select critical thermal moss and high-calorie walnuts within budget. Choose the sound financial rationale that explains your trade-off."
+    ),
+    target_competency="tradeoffReasoning",
+    interaction_type="tradeoff_justification",
+    starting_budget_lkr=10000,
+    options=(
+        DecisionOption("opt_sq_thick_moss_insulation", "High-Density Thermal Moss Lining", 4500, "thermal_safety", True, "certified_good"),
+        DecisionOption("opt_sq_protein_walnut_pack", "High-Calorie Walnut & Hazelnut Ration", 3500, "caloric_fuel", True, "certified_good"),
+        DecisionOption("opt_sq_hand_knitted_hammock", "Decorative Velvet Squirrel Hammock", 3000, "comfort_luxury", False, "luxury_excess"),
+        DecisionOption("opt_sq_extra_pinecones", "Fragrant Scented Pinecones", 1200, "cosmetic", False, "luxury_excess"),
+    ),
+    tradeoff_rationales=(
+        TradeoffRationale("rat_sq_safety_first", True, "Sound trade-off: Prioritized essential thermal insulation and caloric fuel to survive sub-zero freeze while keeping a Rs. 2,000 cash cushion."),
+        TradeoffRationale("rat_sq_luxury_comfort", False, "Flawed reasoning: Velvet hammock offers soft sleeping but fails to block freezing drafts or provide metabolic heat."),
+        TradeoffRationale("rat_sq_cheap_cosmetics", False, "Flawed reasoning: Scented pinecones are purely cosmetic and provide neither warmth nor nutrition during a freeze."),
+    ),
+    pass_criteria=PassCriteria(
+        min_competency_score=75,
+        max_budget_lkr=10000,
+        require_budget_feasibility=True,
+        must_include_option_ids=("opt_sq_thick_moss_insulation", "opt_sq_protein_walnut_pack"),
+        disallowed_option_ids=("opt_sq_hand_knitted_hammock",),
+        required_rationale_id="rat_sq_safety_first",
+        min_reserve_preserved_lkr=1500,
+    ),
+    hints=(
+        "Thermal moss blocks the sub-zero draft and calorie-dense nuts keep Nutty's metabolism warm.",
+        "Select 'rat_sq_safety_first' to justify prioritizing life-saving thermal protection over cosmetic bedding.",
+    ),
+    remediation_scaffolding=RemediationScaffolding(
+        rule_explanation="When scarcity forces difficult choices, prioritize core survival capabilities and explain your decision using clear risk reduction principles.",
+        guiding_questions=(
+            "Can a velvet hammock keep out sub-zero drafts if the walls lack thermal moss insulation?",
+            "Why is keeping a Rs. 2,000 cash cushion important even during severe weather?",
+        ),
+        suggested_focus="Select Thermal Moss (Rs. 4,500) + Walnut Ration (Rs. 3,500). Choose 'rat_sq_safety_first' as your rationale and preserve Rs. 2,000.",
+    ),
+)
+
+_SQUIRREL_L6 = LevelDefinition(
+    id="level_squirrel_6",
+    level_number=6,
+    title="Nutty's Winter Home",
+    subtitle="Integrated Financial Mastery",
+    story_intro=(
+        "Winter has arrived! Snow blankets the oak canopy. With Rs. 12,000 in total winter funds, "
+        "synthesize everything you learned: stock deep-winter food, fortify the hollow hearth, and establish a snowstorm contingency reserve."
+    ),
+    learning_objective=(
+        "Build a complete winter survival budget allocating all Rs. 12,000 across food, shelter, contingency, and modest celebrations."
+    ),
+    target_competency="budgetingSkill",
+    interaction_type="budget_allocator",
+    starting_budget_lkr=12000,
+    allocation_categories=(
+        AllocationCategory("cat_sq_deep_winter_food", "Deep-Winter Food Stocks (Acorns & Seeds)", "food", True, 4000, 6000, 500, 0),
+        AllocationCategory("cat_sq_hollow_fortification", "Winter Hearth & Hollow Fortification", "shelter", True, 3000, 4500, 500, 0),
+        AllocationCategory("cat_sq_snowstorm_contingency", "Mid-Winter Snowstorm Contingency Fund", "savings", True, 2500, 4000, 500, 0),
+        AllocationCategory("cat_sq_festive_celebration", "Forest Snow Celebration Favors", "discretionary", False, 0, 2000, 500, 0),
+    ),
+    pass_criteria=PassCriteria(
+        min_competency_score=75,
+        max_budget_lkr=12000,
+        require_budget_feasibility=True,
+        min_reserve_preserved_lkr=2500,
+    ),
+    hints=(
+        "Allocate at least Rs. 4,000 to food, Rs. 3,000 to hollow fortification, and Rs. 2,500 to the contingency fund.",
+        "Spend no more than Rs. 1,500 on celebration favors so core survival is 100% fortified.",
+    ),
+    remediation_scaffolding=RemediationScaffolding(
+        rule_explanation="A comprehensive financial plan balances essential living needs, capital maintenance, and liquid reserves, allowing modest celebrations only after security is guaranteed.",
+        guiding_questions=(
+            "Did you fund all three pillars: food, shelter, and emergency contingency?",
+            "Does total allocation equal the full Rs. 12,000 budget?",
+        ),
+        suggested_focus="Allocate Rs. 5,000 to Food, Rs. 3,500 to Hollow Fortification, Rs. 3,000 to Contingency, and Rs. 500 to Snow Celebration.",
+    ),
+)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Catalog index — add future missions here
 # ─────────────────────────────────────────────────────────────────────────────
 
 MISSION_CATALOG: dict[str, MissionDefinition] = {
     RESCUE_PUPPY_MISSION.id: RESCUE_PUPPY_MISSION,
-    # Future missions have empty level tuples as placeholders:
     "mission_squirrel_savings": MissionDefinition(
         id="mission_squirrel_savings",
         title="Squirrel's Winter Savings",
         character_name="Nutty",
         character_id="char_squirrel_nutty",
         primary_competency="savingBehavior",
-        total_levels=8,
+        total_levels=6,
         theme_color="#c45f24",
         description="Manage food resources and seasonal tokens over simulated weeks.",
-        levels=(),
+        levels=(_SQUIRREL_L1, _SQUIRREL_L2, _SQUIRREL_L3, _SQUIRREL_L4, _SQUIRREL_L5, _SQUIRREL_L6),
+        initial_vitality=40,
+        initial_happiness=35,
     ),
     "mission_panda_fair": MissionDefinition(
         id="mission_panda_fair",
