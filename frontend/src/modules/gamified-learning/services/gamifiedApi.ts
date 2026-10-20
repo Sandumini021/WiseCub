@@ -1,3 +1,4 @@
+import type { JourneyOverview, JourneyMissionDetail } from '../types/journey.types';
 /**
  * Gamified-Learning API Service — WiseCub CDEMF
  *
@@ -392,3 +393,124 @@ export function resetSessionId(): void {
 
 // ── Re-export ApiError so callers can detect auth failures ───────────────────
 export { ApiError };
+
+
+/**
+ * Retrieve aggregated My Money Journey overview across all CDEMF missions.
+ */
+export async function getJourneyOverview(): Promise<JourneyOverview> {
+  const raw = await apiGet<any>('/api/gamified/journey/overview');
+  return {
+    studentName: raw.student_name,
+    childId: raw.child_id,
+    overview: {
+      totalMissionsCompleted: raw.overview.total_missions_completed,
+      totalMissionsCount: raw.overview.total_missions_count,
+      totalLevelsCompleted: raw.overview.total_levels_completed,
+      totalLevelsCount: raw.overview.total_levels_count,
+      overallCompetencyScore: raw.overview.overall_competency_score,
+      earnedCoins: raw.overview.earned_coins,
+      masteryTier: raw.overview.mastery_tier,
+      activeMissionId: raw.overview.active_mission_id,
+      nextRecommendedLevel: raw.overview.next_recommended_level,
+    },
+    missions: (raw.missions || []).map((m: any) => ({
+      missionId: m.mission_id,
+      title: m.title,
+      characterName: m.character_name,
+      characterRole: m.character_role,
+      focusSkill: m.focus_skill,
+      themeColor: m.theme_color,
+      totalLevels: m.total_levels,
+      completedLevelsCount: m.completed_levels_count,
+      completedLevelNumbers: m.completed_level_numbers || [],
+      unlockedLevelNumber: m.unlocked_level_number,
+      progressPercent: m.progress_percent,
+      isCompleted: m.is_completed,
+      earnedCoins: m.earned_coins,
+      competencyStatus: m.competency_status,
+      characterState: m.character_state,
+    })),
+    financialSkillsProfile: (raw.financial_skills_profile || []).map((s: any) => ({
+      skillKey: s.skill_key,
+      name: s.name,
+      category: s.category,
+      score: s.score,
+      evidenceCount: s.evidence_count,
+      hasSufficientEvidence: s.has_sufficient_evidence,
+      status: s.status,
+      isStrength: s.is_strength,
+      needsPractice: s.needs_practice,
+      description: s.description,
+    })),
+    achievements: (raw.achievements || []).map((a: any) => ({
+      id: a.id,
+      title: a.title,
+      description: a.description,
+      icon: a.icon,
+      unlocked: a.unlocked,
+      unlockedAt: a.unlocked_at,
+      progressCurrent: a.progress_current,
+      progressTarget: a.progress_target,
+      unlockCondition: a.unlock_condition,
+    })),
+    emotionalImpactShowcase: (raw.emotional_impact_showcase || []).map((e: any) => ({
+      missionId: e.mission_id,
+      missionTitle: e.mission_title,
+      characterName: e.character_name,
+      levelNumber: e.level_number,
+      attemptNumber: e.attempt_number,
+      previousCondition: e.previous_condition,
+      newCondition: e.new_condition,
+      previousEmotion: e.previous_emotion,
+      newEmotion: e.new_emotion,
+      direction: e.direction,
+      reason: e.reason,
+      characterDialogue: e.character_dialogue,
+      learningExplanation: e.learning_explanation,
+      visualCue: e.visual_cue,
+      recordedAt: e.recorded_at,
+      improvedAfterRetry: e.improved_after_retry,
+    })),
+    learningTips: (raw.learning_tips || []).map((t: any) => ({
+      title: t.title,
+      description: t.description,
+      category: t.category,
+      actionMissionId: t.action_mission_id,
+      actionLevelNumber: t.action_level_number,
+      actionLabel: t.action_label,
+    })),
+  };
+}
+
+/**
+ * Retrieve detailed level-by-level progression for a single CDEMF mission.
+ */
+export async function getJourneyMissionDetail(missionId: string): Promise<JourneyMissionDetail> {
+  const raw = await apiGet<any>('/api/gamified/journey/mission-details/' + encodeURIComponent(missionId));
+  return {
+    missionId: raw.mission_id,
+    title: raw.title,
+    characterName: raw.character_name,
+    characterRole: raw.character_role,
+    focusSkill: raw.focus_skill,
+    themeColor: raw.theme_color,
+    totalLevels: raw.total_levels,
+    completedLevelsCount: raw.completed_levels_count,
+    progressPercent: raw.progress_percent,
+    isCompleted: raw.is_completed,
+    levels: (raw.levels || []).map((lvl: any) => ({
+      levelNumber: lvl.level_number,
+      levelId: lvl.level_id,
+      title: lvl.title,
+      focusDimension: lvl.focus_dimension,
+      interactionType: lvl.interaction_type,
+      status: lvl.status,
+      bestScore: lvl.best_score,
+      attemptsCount: lvl.attempts_count,
+    })),
+    recentAttempts: raw.recent_attempts || [],
+    characterState: raw.character_state,
+    characterHistory: raw.character_history || [],
+  };
+}
