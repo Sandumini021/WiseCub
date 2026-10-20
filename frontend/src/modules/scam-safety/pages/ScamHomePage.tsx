@@ -28,7 +28,21 @@ import {
   type Concept,
 } from "../data/smsScenarios";
 import { childId as getChildId } from "../../../pages/auth/demoSession";
-import { loadModuleState, saveModuleState } from "../../../services/apiClient";
+import {
+  getGuardianDetails,
+  saveGuardianDetails,
+  verifyGuardianEmail,
+  updateGuardianConsent,
+  triggerLevelSimulation,
+  triggerPassedLevelSimulation,
+  getSimulationStatuses,
+  getSafetyLearningMetrics,
+  type GuardianDetails,
+  type LevelSimulationStatus,
+  type SafetyLearningMetrics,
+  loadModuleState,
+  saveModuleState,
+} from "../../../services/apiClient";
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  TYPES
@@ -376,6 +390,54 @@ export function ScamHomePage() {
   );
   const [activeCategory, setActiveCategory] = useState<CategoryId | null>(null);
 
+  // ── Parent / Guardian contact, consent, & simulations ──────────────
+  const [guardian, setGuardian] = useState<GuardianDetails | null>(null);
+  const [guardianForm, setGuardianForm] = useState({
+    parent_name: "",
+    email: "",
+    relationship: "Parent",
+    consent_confirmed: false,
+    simulation_enabled: true,
+  });
+  const [simulations, setSimulations] = useState<Record<string, LevelSimulationStatus | null>>({});
+  const [learningMetrics, setLearningMetrics] = useState<SafetyLearningMetrics | null>(null);
+  const [guardianSaving, setGuardianSaving] = useState(false);
+  const [guardianMsg, setGuardianMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [isEditingGuardian, setIsEditingGuardian] = useState(false);
+  const [simulationMsg, setSimulationMsg] = useState<{
+    type: "success" | "warning" | "error" | "info";
+    text: string;
+  } | null>(null);
+  const [actionLoadingCategory, setActionLoadingCategory] = useState<string | null>(null);
+
+  const loadGuardianAndSimulations = useCallback((id: string) => {
+    if (!id) return;
+    void Promise.allSettled([
+      getGuardianDetails(id),
+      getSimulationStatuses(id),
+      getSafetyLearningMetrics(id),
+    ]).then(([guardRes, simRes, metricsRes]) => {
+      if (guardRes.status === "fulfilled" && guardRes.value) {
+        setGuardian(guardRes.value);
+        if (guardRes.value.configured) {
+          setGuardianForm({
+            parent_name: guardRes.value.parent_name,
+            email: guardRes.value.email,
+            relationship: guardRes.value.relationship || "Parent",
+            consent_confirmed: guardRes.value.consent_confirmed,
+            simulation_enabled: guardRes.value.simulation_enabled,
+          });
+        }
+      }
+      if (simRes.status === "fulfilled" && simRes.value?.by_category) {
+        setSimulations(simRes.value.by_category);
+      }
+      if (metricsRes.status === "fulfilled" && metricsRes.value) {
+        setLearningMetrics(metricsRes.value);
+      }
+    });
+  }, []);
+
   // ── Backend sync & Account Switching: load progress for current child ─
   useEffect(() => {
     let active = true;
@@ -398,6 +460,8 @@ export function ScamHomePage() {
           }
         })
         .catch(() => {});
+
+      loadGuardianAndSimulations(id);
     }
 
     syncForCurrentChild();
@@ -409,7 +473,120 @@ export function ScamHomePage() {
       window.removeEventListener("wisecub-session", syncForCurrentChild);
       window.removeEventListener("storage", syncForCurrentChild);
     };
-  }, []);
+  }, [loadGuardianAndSimulations]);
+
+  async function handleSaveGuardian(e: React.FormEvent) {
+    e.preventDefault();
+    const id = getChildId();
+    if (!id) return;
+    setGuardianSaving(true);
+    setGuardianMsg(null);
+    try {
+      const res = await saveGuardianDetails(id, guardianForm);
+      setGuardian(res);
+      setIsEditingGuardian(false);
+      setGuardianMsg({
+        type: "success",
+        text: "Guardian details saved successfully! Email is awaiting verification.",
+      });
+      loadGuardianAndSimulations(id);
+    } catch (err: unknown) {
+      setGuardianMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "Failed to save guardian details.",
+      });
+    } finally {
+      setGuardianSaving(false);
+    }
+  }
+
+  async function handleVerifyEmail() {
+    const id = getChildId();
+    if (!id) return;
+    setGuardianSaving(true);
+    setGuardianMsg(null);
+    try {
+      await verifyGuardianEmail(id, guardian?.verification_token_dev || "", true);
+      setGuardianMsg({
+        type: "success",
+        text: "Parent/Guardian email verified successfully (Dev Mode)!",
+      });
+      loadGuardianAndSimulations(id);
+    } catch (err: unknown) {
+      setGuardianMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "Verification failed.",
+      });
+    } finally {
+      setGuardianSaving(false);
+    }
+  }
+
+  async function handleToggleConsent() {
+    const id = getChildId();
+    if (!id || !guardian) return;
+    const nextConsent = !guardian.consent_confirmed;
+    setGuardianSaving(true);
+    try {
+      await updateGuardianConsent(id, {
+        consent_confirmed: nextConsent,
+        simulation_enabled: nextConsent ? guardian.simulation_enabled : false,
+      });
+      setGuardianMsg({
+        type: "success",
+        text: nextConsent ? "Consent confirmed." : "Consent withdrawn. Simulations disabled.",
+      });
+      loadGuardianAndSimulations(id);
+    } catch {
+      setGuardianMsg({ type: "error", text: "Could not update consent." });
+    } finally {
+      setGuardianSaving(false);
+    }
+  }
+
+  async function handleTriggerPassed(catId: CategoryId) {
+    const id = getChildId();
+    if (!id) return;
+    setActionLoadingCategory(catId);
+    setSimulationMsg(null);
+    try {
+      const res = await triggerPassedLevelSimulation(id, catId);
+      loadGuardianAndSimulations(id);
+      if (res.status === "sent") {
+        setSimulationMsg({
+          type: "success",
+          text: `Simulation email for Level ${res.level_number || catId} accepted by mail provider! Dispatched to ${res.parent_email || "guardian"}.`,
+        });
+      } else if (res.status === "not_configured") {
+        setSimulationMsg({
+          type: "warning",
+          text: `Simulation recorded for Level ${res.level_number || catId}, but SMTP email server is not configured in backend environment (.env). Real email was not dispatched.`,
+        });
+      } else if (res.status === "failed") {
+        setSimulationMsg({
+          type: "error",
+          text: `Simulation email delivery failed: ${res.detail || "Provider error"}.`,
+        });
+      } else if (res.status === "unverified") {
+        setSimulationMsg({
+          type: "warning",
+          text: "Please verify parent/guardian email address first before sending simulations.",
+        });
+      } else {
+        setSimulationMsg({
+          type: "info",
+          text: res.detail || `Simulation status: ${res.status}`,
+        });
+      }
+    } catch (err: unknown) {
+      setSimulationMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "Failed to trigger simulation email.",
+      });
+    } finally {
+      setActionLoadingCategory(null);
+    }
+  }
 
   // ── Phishing category lesson state ────────────────────────────────
   const [lessonSectionIndex, setLessonSectionIndex] = useState(0);
@@ -580,9 +757,51 @@ export function ScamHomePage() {
       setCategoryScores(updated.categoryScores);
       // Persist to backend — fire-and-forget, never blocks UI
       syncProgressToBackend(id, updated, saveModuleState);
+
+      // Trigger educational simulation for this level if passed (>= 80%)
+      if (isCategoryPassing(pct)) {
+        const attemptId = `attempt-${activeCategory}-${Date.now()}`;
+        void triggerLevelSimulation(id, {
+          category_id: activeCategory,
+          score: pct,
+          attempt_id: attemptId,
+        })
+          .then((res) => {
+            loadGuardianAndSimulations(id);
+            if (res.status === "sent") {
+              setSimulationMsg({
+                type: "success",
+                text: `Simulation email for Level ${res.level_number || activeCategory} accepted by provider! Sent to ${res.parent_email || "guardian"}.`,
+              });
+            } else if (res.status === "not_configured") {
+              setSimulationMsg({
+                type: "warning",
+                text: "Level passed (≥80%)! Simulation recorded, but SMTP email server is not configured in backend .env. Real email was not dispatched.",
+              });
+            } else if (res.status === "unverified") {
+              setSimulationMsg({
+                type: "warning",
+                text: "Level passed (≥80%)! Guardian email is awaiting verification before simulations can be emailed.",
+              });
+            } else if (res.status === "failed") {
+              setSimulationMsg({
+                type: "error",
+                text: `Level passed, but email delivery failed: ${res.detail || "Provider error"}. You can retry from the dashboard.`,
+              });
+            }
+          })
+          .catch((err: unknown) => {
+            setSimulationMsg({
+              type: "error",
+              text: err instanceof Error ? err.message : "Failed to trigger simulation.",
+            });
+          });
+      } else {
+        setSimulationMsg(null);
+      }
     }
     setView("cat-results");
-  }, [activeCategory, phishingCorrect, phishingTotal]);
+  }, [activeCategory, phishingCorrect, phishingTotal, loadGuardianAndSimulations]);
 
   const handlePhishingNext = useCallback(() => {
     if (phishingCurrentScenario === null) return;
@@ -633,7 +852,6 @@ export function ScamHomePage() {
         const updated = saveCategoryProgress(activeCategory, pct, id);
         setCompletedCategories(updated.completedCategories);
         setCategoryScores(updated.categoryScores);
-        // Persist to backend — fire-and-forget, never blocks UI
         syncProgressToBackend(id, updated, saveModuleState);
       }
     }
@@ -804,6 +1022,64 @@ export function ScamHomePage() {
           </aside>
         </section>
 
+        {/* Practice Simulated Inbox Quick Card */}
+        <section
+          style={{
+            background: "linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)",
+            border: "1.5px solid #bbf7d0",
+            borderRadius: "18px",
+            padding: "20px 24px",
+            marginBottom: "24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "16px",
+            boxShadow: "0 4px 16px rgba(16, 185, 129, 0.08)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <span style={{ fontSize: "2.4rem" }}>📬</span>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                <h2 style={{ margin: 0, fontSize: "1.15rem", color: "#065f46" }}>
+                  Practice Simulation Inbox
+                </h2>
+                <span
+                  style={{
+                    background: "#dcfce7",
+                    color: "#15803d",
+                    fontSize: "0.74rem",
+                    fontWeight: 700,
+                    padding: "2px 8px",
+                    borderRadius: "999px",
+                  }}
+                >
+                  Realistic & Safe
+                </span>
+              </div>
+              <p style={{ margin: 0, fontSize: "0.88rem", color: "#374151", maxWidth: "620px", lineHeight: 1.45 }}>
+                Test your skills against real-world educational emails in our safe simulation sandbox. Evaluate sender addresses, urgent deadlines, and links without risking your personal data.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/safety/inbox"
+            className="safety-btn-primary"
+            style={{
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "10px 20px",
+              fontSize: "0.92rem",
+              background: "#059669",
+            }}
+          >
+            Open Practice Inbox ✉️ →
+          </Link>
+        </section>
+
         {/* Six Lessons Container */}
         <section className="safety-lessons" aria-labelledby="lessons-title">
           <div className="safety-lessons-head">
@@ -881,6 +1157,490 @@ export function ScamHomePage() {
               );
             })}
           </ol>
+        </section>
+
+        {/* Parent / Guardian Contact, Consent, & 6-Level Simulation Section */}
+        <section className="safety-guardian-card" aria-labelledby="guardian-section-title">
+          <div className="safety-guardian-head">
+            <h2 id="guardian-section-title">
+              <span>👨‍👩‍👧</span> Parent / Guardian Details & Safety Simulations
+            </h2>
+            <div>
+              {guardian?.verification_status === "verified" && guardian.consent_confirmed && guardian.simulation_enabled && (
+                <span className="safety-badge verified">✓ Verified & Simulations Active</span>
+              )}
+              {guardian?.verification_status === "verified" && (!guardian.consent_confirmed || !guardian.simulation_enabled) && (
+                <span className="safety-badge disabled">⚠️ Simulations Disabled</span>
+              )}
+              {guardian?.verification_status === "pending" && (
+                <span className="safety-badge pending">⏳ Awaiting Email Verification</span>
+              )}
+              {(!guardian || guardian.verification_status === "unconfigured") && (
+                <span className="safety-badge unconfigured">ℹ️ Details Incomplete</span>
+              )}
+            </div>
+          </div>
+
+          <p className="safety-guardian-intro">
+            WiseCub partners with your family to practice online safety in the real world. Whenever you pass each of the 6 levels (scoring 80% or higher),
+            WiseCub automatically sends an approved educational scam simulation email to your verified parent or guardian so you can inspect red flags and practice spotting scams together!
+          </p>
+
+          {guardianMsg && (
+            <div
+              style={{
+                padding: "10px 14px",
+                borderRadius: "10px",
+                marginBottom: "14px",
+                fontSize: "0.88rem",
+                fontWeight: 600,
+                background: guardianMsg.type === "success" ? "#ecfdf5" : "#fef2f2",
+                color: guardianMsg.type === "success" ? "#065f46" : "#991b1b",
+                border: `1px solid ${guardianMsg.type === "success" ? "#a7f3d0" : "#fecaca"}`,
+              }}
+            >
+              {guardianMsg.text}
+            </div>
+          )}
+
+          {(!guardian?.configured || isEditingGuardian) ? (
+            <form onSubmit={handleSaveGuardian}>
+              <div className="safety-guardian-grid">
+                <div className="safety-input-group">
+                  <label htmlFor="parent-name">Parent / Guardian Full Name</label>
+                  <input
+                    id="parent-name"
+                    type="text"
+                    required
+                    placeholder="e.g. Jane Smith"
+                    value={guardianForm.parent_name}
+                    onChange={(e) => setGuardianForm({ ...guardianForm, parent_name: e.target.value })}
+                  />
+                </div>
+
+                <div className="safety-input-group">
+                  <label htmlFor="parent-email">Parent / Guardian Email Address</label>
+                  <input
+                    id="parent-email"
+                    type="email"
+                    required
+                    placeholder="e.g. parent@example.com"
+                    value={guardianForm.email}
+                    onChange={(e) => setGuardianForm({ ...guardianForm, email: e.target.value })}
+                  />
+                </div>
+
+                <div className="safety-input-group">
+                  <label htmlFor="parent-relationship">Relationship to Child (Optional)</label>
+                  <select
+                    id="parent-relationship"
+                    value={guardianForm.relationship}
+                    onChange={(e) => setGuardianForm({ ...guardianForm, relationship: e.target.value })}
+                  >
+                    <option value="Parent">Parent</option>
+                    <option value="Mother">Mother</option>
+                    <option value="Father">Father</option>
+                    <option value="Legal Guardian">Legal Guardian</option>
+                    <option value="Teacher">Teacher / Instructor</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <label className="safety-checkbox-wrap">
+                <input
+                  type="checkbox"
+                  checked={guardianForm.consent_confirmed}
+                  onChange={(e) => setGuardianForm({ ...guardianForm, consent_confirmed: e.target.checked })}
+                />
+                <span>
+                  <strong>Parent/Guardian Consent:</strong> I confirm I am the parent or legal guardian of this child, and I consent to WiseCub sending educational scam simulation emails to my email address upon completion of Scam Safety practical lessons.
+                </span>
+              </label>
+
+              <label className="safety-checkbox-wrap">
+                <input
+                  type="checkbox"
+                  checked={guardianForm.simulation_enabled}
+                  onChange={(e) => setGuardianForm({ ...guardianForm, simulation_enabled: e.target.checked })}
+                />
+                <span>
+                  <strong>Enable Simulation Emails:</strong> Send educational simulation emails when my child passes each of the six levels. (You can disable this at any time).
+                </span>
+              </label>
+
+              <div className="safety-guardian-btn-row">
+                <button
+                  type="submit"
+                  disabled={guardianSaving || !guardianForm.consent_confirmed}
+                  className="safety-btn-primary"
+                >
+                  {guardianSaving ? "Saving..." : guardian?.configured ? "Update Details" : "Save Guardian Details"}
+                </button>
+                {guardian?.configured && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingGuardian(false)}
+                    className="safety-btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
+          ) : (
+            <div>
+              <div style={{ background: "#f8fafc", padding: "14px 18px", borderRadius: "14px", border: "1px solid #e2e8f0", marginBottom: "14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+                  <div>
+                    <div style={{ fontSize: "0.82rem", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>Registered Guardian</div>
+                    <div style={{ fontSize: "1rem", fontWeight: 700, color: "#1e293b" }}>{guardian.parent_name} ({guardian.relationship})</div>
+                    <div style={{ fontSize: "0.9rem", color: "#475569" }}>{guardian.email}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "0.82rem", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>Consent & Status</div>
+                    <div style={{ fontSize: "0.9rem", color: "#1e293b" }}>
+                      Consent: {guardian.consent_confirmed ? "Confirmed ✓" : "Withdrawn"} | Status: {guardian.verification_status}
+                    </div>
+                    {guardian.verified_at && (
+                      <div style={{ fontSize: "0.78rem", color: "#059669" }}>Verified on {new Date(guardian.verified_at).toLocaleDateString()}</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="safety-guardian-btn-row">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingGuardian(true)}
+                  className="safety-btn-secondary"
+                >
+                  Edit Details
+                </button>
+
+                {guardian.verification_status === "pending" && (
+                  <button
+                    type="button"
+                    onClick={handleVerifyEmail}
+                    disabled={guardianSaving}
+                    className="safety-btn-primary"
+                    style={{ background: "#059669" }}
+                    title="Simulate parent email verification (for development & testing)"
+                  >
+                    {guardianSaving ? "Verifying..." : "Simulate Email Verification [Dev Mode]"}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleToggleConsent}
+                  disabled={guardianSaving}
+                  className={guardian.consent_confirmed && guardian.simulation_enabled ? "safety-btn-danger" : "safety-btn-secondary"}
+                >
+                  {guardian.consent_confirmed && guardian.simulation_enabled
+                    ? "Withdraw Consent / Disable Simulations"
+                    : "Re-enable Consent & Simulations"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 6-Level Simulation Tracker */}
+          <div className="safety-sim-tracker">
+            <h3 className="safety-sim-tracker-title">
+              <span>✉️</span> 6-Level Scam Simulation Status Tracker
+            </h3>
+            <p style={{ margin: "0 0 12px 0", fontSize: "0.84rem", color: "#64748b" }}>
+              Educational scam emails are triggered after passing each individual level (80%+). Real-time simulation status:
+            </p>
+
+            {simulationMsg && (
+              <div
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  marginBottom: "14px",
+                  fontSize: "0.88rem",
+                  fontWeight: 600,
+                  background:
+                    simulationMsg.type === "success"
+                      ? "#ecfdf5"
+                      : simulationMsg.type === "warning"
+                      ? "#fffbeb"
+                      : simulationMsg.type === "error"
+                      ? "#fef2f2"
+                      : "#eff6ff",
+                  color:
+                    simulationMsg.type === "success"
+                      ? "#065f46"
+                      : simulationMsg.type === "warning"
+                      ? "#92400e"
+                      : simulationMsg.type === "error"
+                      ? "#991b1b"
+                      : "#1e40af",
+                  border: `1px solid ${
+                    simulationMsg.type === "success"
+                      ? "#a7f3d0"
+                      : simulationMsg.type === "warning"
+                      ? "#fde68a"
+                      : simulationMsg.type === "error"
+                      ? "#fecaca"
+                      : "#bfdbfe"
+                  }`,
+                }}
+              >
+                {simulationMsg.text}
+              </div>
+            )}
+
+            <div className="safety-sim-grid">
+              {CATEGORY_META.map((cat, idx) => {
+                const isPassed = completedCategories.includes(cat.id);
+                const score = categoryScores[cat.id];
+                const sim = simulations[cat.id];
+
+                let statusBadgeClass = "not_passed";
+                let statusText = "Not passed yet";
+                let canRetry = false;
+                let canTriggerPassed = false;
+
+                const isEligibleToDispatch = Boolean(
+                  isPassed &&
+                  guardian?.configured &&
+                  guardian.verification_status === "verified" &&
+                  guardian.consent_confirmed &&
+                  guardian.simulation_enabled
+                );
+
+                if (sim) {
+                  if (sim.status === "sent") {
+                    statusBadgeClass = "sent";
+                    statusText = "Accepted by Provider ✓";
+                  } else if (sim.status === "not_configured") {
+                    statusBadgeClass = "not_configured";
+                    statusText = "SMTP Not Configured";
+                    canRetry = isEligibleToDispatch;
+                  } else if (sim.status === "failed") {
+                    statusBadgeClass = "failed";
+                    statusText = "Delivery Failed";
+                    canRetry = isEligibleToDispatch;
+                  } else if (sim.status === "unverified") {
+                    statusBadgeClass = "unverified";
+                    statusText = "Awaiting Verification";
+                  } else if (sim.status === "consent_required" || sim.status === "disabled") {
+                    statusBadgeClass = "unverified";
+                    statusText = "Consent Disabled";
+                  }
+                } else if (isPassed) {
+                  if (!guardian?.configured) {
+                    statusBadgeClass = "unverified";
+                    statusText = "Add Guardian";
+                  } else if (guardian.verification_status !== "verified") {
+                    statusBadgeClass = "unverified";
+                    statusText = "Awaiting Verification";
+                  } else if (!guardian.consent_confirmed || !guardian.simulation_enabled) {
+                    statusBadgeClass = "unverified";
+                    statusText = "Consent Disabled";
+                  } else {
+                    statusBadgeClass = "pending";
+                    statusText = "Pending Simulation";
+                    canTriggerPassed = true;
+                  }
+                }
+
+                return (
+                  <div key={cat.id} className="safety-sim-item">
+                    <div className="safety-sim-item-head">
+                      <span className="safety-sim-item-name">
+                        {cat.icon} Level {idx + 1}: {cat.label}
+                      </span>
+                      <span className={`safety-sim-item-status ${statusBadgeClass}`}>
+                        {statusText}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: "0.8rem", color: "#64748b", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "6px" }}>
+                      <span>Score: {score ? `${score}%` : "Not attempted"}</span>
+                      {canRetry && (
+                        <button
+                          type="button"
+                          className="safety-sim-btn"
+                          disabled={actionLoadingCategory === cat.id}
+                          onClick={() => handleTriggerPassed(cat.id)}
+                          title="Retry dispatching this simulation email to verified guardian"
+                        >
+                          {actionLoadingCategory === cat.id ? "Retrying..." : "Retry Dispatch ↻"}
+                        </button>
+                      )}
+                      {canTriggerPassed && (
+                        <button
+                          type="button"
+                          className="safety-sim-btn primary"
+                          disabled={actionLoadingCategory === cat.id}
+                          onClick={() => handleTriggerPassed(cat.id)}
+                          title="Send educational simulation email for this completed level"
+                        >
+                          {actionLoadingCategory === cat.id ? "Sending..." : "Send Simulation ✉️"}
+                        </button>
+                      )}
+                      {sim?.simulation_id && (
+                        <Link
+                          to={`/safety/simulation-feedback?id=${sim.simulation_id}`}
+                          style={{ color: "#4f46e5", fontWeight: 600, textDecoration: "none" }}
+                        >
+                          View Debrief →
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {guardian?.smtp_summary && !guardian.smtp_summary.configured && (
+              <div
+                style={{
+                  marginTop: "14px",
+                  padding: "10px 14px",
+                  background: "#f8fafc",
+                  borderRadius: "10px",
+                  border: "1px solid #e2e8f0",
+                  fontSize: "0.82rem",
+                  color: "#64748b",
+                  lineHeight: 1.45,
+                }}
+              >
+                ℹ️ <strong>Email Server Note:</strong> SMTP is currently not configured in backend <code>.env</code>. Educational simulations are safely tracked in the database and can be retried at any time once SMTP settings are provided.
+              </div>
+            )}
+          </div>
+
+          {/* Parent/Guardian Learning Analytics Panel */}
+          {learningMetrics && (
+            <div className="safety-analytics-card">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>
+                <h3 style={{ margin: 0, fontSize: "1.05rem", color: "#1e1b4b", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span>📊</span> Child Decision Analytics & Educational Progress
+                </h3>
+                <span style={{ fontSize: "0.78rem", color: "#64748b" }}>
+                  Independent metrics: Initial Decision, Link Clicks, and Follow-Up Mastery
+                </span>
+              </div>
+              <p style={{ margin: "0 0 16px 0", fontSize: "0.84rem", color: "#64748b", lineHeight: 1.45 }}>
+                WiseCub tracks realistic simulation behaviors separately from textbook quizzes. Review how your child identifies threats, responds to simulated links, and reinforces learning through debriefs.
+              </p>
+
+              <div className="safety-analytics-grid">
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num">{learningMetrics.total_simulations}</div>
+                  <div className="safety-metric-lbl">Total Simulations</div>
+                  <div className="safety-metric-hint">Delivered / Attempted</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: "#059669" }}>
+                    {learningMetrics.correctly_reported_count}
+                  </div>
+                  <div className="safety-metric-lbl">Safely Reported</div>
+                  <div className="safety-metric-hint">{learningMetrics.suspicious_recognition_rate}% recognition</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: learningMetrics.unsafe_clicks_count > 0 ? "#dc2626" : "#059669" }}>
+                    {learningMetrics.unsafe_clicks_count}
+                  </div>
+                  <div className="safety-metric-lbl">Unsafe Clicks</div>
+                  <div className="safety-metric-hint">Simulated links clicked</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: "#2563eb" }}>
+                    {learningMetrics.safe_avoidance_rate}%
+                  </div>
+                  <div className="safety-metric-lbl">Avoidance Rate</div>
+                  <div className="safety-metric-hint">Avoided unsafe clicks</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: "#7c3aed" }}>
+                    {learningMetrics.debrief_completion_rate}%
+                  </div>
+                  <div className="safety-metric-lbl">Debriefs Viewed</div>
+                  <div className="safety-metric-hint">{learningMetrics.debrief_completion_count} debriefs viewed</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: "#0284c7" }}>
+                    {learningMetrics.follow_up_completed_count > 0 ? `${learningMetrics.follow_up_accuracy}%` : "—"}
+                  </div>
+                  <div className="safety-metric-lbl">Follow-Up Score</div>
+                  <div className="safety-metric-hint">{learningMetrics.follow_up_correct_count} of {learningMetrics.follow_up_completed_count} correct</div>
+                </div>
+              </div>
+
+              {/* Per-Level Breakdown Table */}
+              <div style={{ marginTop: "18px", overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.84rem", textAlign: "left" }}>
+                  <thead>
+                    <tr style={{ background: "#f8fafc", borderBottom: "1.5px solid #e2e8f0", color: "#475569" }}>
+                      <th style={{ padding: "8px 12px" }}>Level</th>
+                      <th style={{ padding: "8px 12px" }}>Attempts</th>
+                      <th style={{ padding: "8px 12px" }}>Correctly Reported</th>
+                      <th style={{ padding: "8px 12px" }}>Unsafe Clicks</th>
+                      <th style={{ padding: "8px 12px" }}>Debrief Viewed</th>
+                      <th style={{ padding: "8px 12px" }}>Latest Decision Outcome</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {CATEGORY_META.map((cat, i) => {
+                      const lvl = learningMetrics.by_level[cat.id];
+                      const attempts = lvl?.attempts || 0;
+                      const reported = lvl?.correctly_reported || 0;
+                      const clicked = lvl?.unsafe_clicks || 0;
+                      const debriefs = lvl?.debrief_completed || 0;
+                      const latestOutcome = lvl?.latest_outcome;
+
+                      return (
+                        <tr key={cat.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                          <td style={{ padding: "8px 12px", fontWeight: 600, color: "#1e293b" }}>
+                            {cat.icon} Level {i + 1}: {cat.label}
+                          </td>
+                          <td style={{ padding: "8px 12px", color: "#475569" }}>{attempts}</td>
+                          <td style={{ padding: "8px 12px", color: "#059669", fontWeight: reported > 0 ? 700 : 400 }}>
+                            {reported}
+                          </td>
+                          <td style={{ padding: "8px 12px", color: clicked > 0 ? "#dc2626" : "#475569", fontWeight: clicked > 0 ? 700 : 400 }}>
+                            {clicked}
+                          </td>
+                          <td style={{ padding: "8px 12px", color: "#475569" }}>{debriefs}</td>
+                          <td style={{ padding: "8px 12px" }}>
+                            {latestOutcome === "safely_reported" ? (
+                              <span style={{ color: "#065f46", background: "#ecfdf5", padding: "2px 8px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 700 }}>
+                                Safely Reported ✓
+                              </span>
+                            ) : latestOutcome === "unsafe_link_clicked" ? (
+                              <span style={{ color: "#991b1b", background: "#fef2f2", padding: "2px 8px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 700 }}>
+                                Unsafe Click Recorded ⚠️
+                              </span>
+                            ) : latestOutcome === "marked_safe" ? (
+                              <span style={{ color: "#1e40af", background: "#eff6ff", padding: "2px 8px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 700 }}>
+                                Classified Safe
+                              </span>
+                            ) : attempts > 0 ? (
+                              <span style={{ color: "#b45309", background: "#fffbeb", padding: "2px 8px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 700 }}>
+                                Pending Review
+                              </span>
+                            ) : (
+                              <span style={{ color: "#94a3b8", fontSize: "0.78rem" }}>Not triggered yet</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Bottom 3-Card Grid */}
@@ -1873,6 +2633,58 @@ export function ScamHomePage() {
               </p>
             )}
           </div>
+
+          {/* Educational Simulation Feedback Banner */}
+          {simulationMsg && (
+            <div
+              style={{
+                padding: "12px 16px",
+                borderRadius: "14px",
+                marginBottom: "1.25rem",
+                fontSize: "0.92rem",
+                fontWeight: 600,
+                background:
+                  simulationMsg.type === "success"
+                    ? "#ecfdf5"
+                    : simulationMsg.type === "warning"
+                    ? "#fffbeb"
+                    : simulationMsg.type === "error"
+                    ? "#fef2f2"
+                    : "#eff6ff",
+                color:
+                  simulationMsg.type === "success"
+                    ? "#065f46"
+                    : simulationMsg.type === "warning"
+                    ? "#92400e"
+                    : simulationMsg.type === "error"
+                    ? "#991b1b"
+                    : "#1e40af",
+                border: `1.5px solid ${
+                  simulationMsg.type === "success"
+                    ? "#a7f3d0"
+                    : simulationMsg.type === "warning"
+                    ? "#fde68a"
+                    : simulationMsg.type === "error"
+                    ? "#fecaca"
+                    : "#bfdbfe"
+                }`,
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+              }}
+            >
+              <span style={{ fontSize: "1.2rem" }}>
+                {simulationMsg.type === "success"
+                  ? "✉️"
+                  : simulationMsg.type === "warning"
+                  ? "⚠️"
+                  : simulationMsg.type === "error"
+                  ? "❌"
+                  : "ℹ️"}
+              </span>
+              <span>{simulationMsg.text}</span>
+            </div>
+          )}
 
           {/* Concept breakdown */}
           <h2 style={{ fontSize: "1.1rem", fontWeight: "800", color: "#163a8a", margin: "0 0 0.65rem" }}>
