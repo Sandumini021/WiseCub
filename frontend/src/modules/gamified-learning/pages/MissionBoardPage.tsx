@@ -428,42 +428,15 @@ export function MissionBoardPage() {
             size={160}
           />
 
-          {/* Kid-Friendly Mission Briefing Card */}
-          <div className="level-intro-card">
-            <div className="intro-header-row">
-              <div className="intro-badges">
-                <span className="badge-chapter">
-                  ⭐ Chapter {activeLevel.levelNumber} of {currentMission.totalLevels}
-                </span>
-                <span className="badge-skill">
-                  🎯 Skill: {getFriendlySkillName(activeLevel.targetCompetency)}
-                </span>
-                <span className="badge-budget">
-                  💰 Budget: Rs. {activeLevel.startingBudgetLKR.toLocaleString()}
-                </span>
-              </div>
+          {/* Sleek Compact Mission Header */}
+          <div className="compact-mission-header">
+            <div className="header-meta-pills">
+              <span className="pill-chapter">Level {activeLevel.levelNumber} of {currentMission.totalLevels}</span>
+              <span className="pill-skill">🎯 {getFriendlySkillName(activeLevel.targetCompetency)}</span>
+              <span className="pill-budget">💰 Rs. {activeLevel.startingBudgetLKR.toLocaleString()}</span>
             </div>
-
-            <h2 className="intro-title">{activeLevel.title}</h2>
-            <p className="intro-subtitle">{activeLevel.subtitle}</p>
-
-            <div className="mission-brief-grid">
-              <div className="brief-card story-card">
-                <div className="brief-card-header">
-                  <span className="brief-icon">📖</span>
-                  <span className="brief-label">The Story</span>
-                </div>
-                <p className="brief-text">{activeLevel.storyIntro}</p>
-              </div>
-
-              <div className="brief-card goal-card">
-                <div className="brief-card-header">
-                  <span className="brief-icon">🎯</span>
-                  <span className="brief-label">Your Mission</span>
-                </div>
-                <p className="brief-text">{activeLevel.learningObjective}</p>
-              </div>
-            </div>
+            <h2 className="header-mission-title">{activeLevel.title}</h2>
+            <p className="header-mission-goal">🎯 {activeLevel.learningObjective}</p>
           </div>
 
           {/* Specialized Interactive Challenge by Type */}

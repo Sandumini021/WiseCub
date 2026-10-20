@@ -18,7 +18,7 @@ export const MultiPeriodSaving: React.FC<MultiPeriodSavingProps> = ({
   const periods = config.periods;
   const targetGoalLKR = config.targetGoalLKR;
 
-  // Track user choices for each week — start with 0 so the student actively plans savings
+  // Default to resistedTemptation: true so the student starts with maximum saving capability
   const [choices, setChoices] = useState<
     Record<number, { savedAmountLKR: number; resistedTemptation: boolean }>
   >(() => {
@@ -26,44 +26,42 @@ export const MultiPeriodSaving: React.FC<MultiPeriodSavingProps> = ({
     for (const p of periods) {
       init[p.period] = {
         savedAmountLKR: 0,
-        resistedTemptation: false,
+        resistedTemptation: true,
       };
     }
     return init;
   });
 
-  // Reset choices whenever the level changes
   useEffect(() => {
     const init: Record<number, { savedAmountLKR: number; resistedTemptation: boolean }> = {};
     for (const p of periods) {
       init[p.period] = {
         savedAmountLKR: 0,
-        resistedTemptation: false,
+        resistedTemptation: true,
       };
     }
     setChoices(init);
   }, [level.id]);
 
-  const toggleTemptation = (periodNum: number) => {
+  const setTemptation = (periodNum: number, resist: boolean) => {
     if (disabled) return;
     setChoices((prev) => {
       const curr = prev[periodNum];
       const pConfig = periods.find((p) => p.period === periodNum)!;
-      const nextResisted = !curr.resistedTemptation;
-      const maxPossible = nextResisted
+      const maxPossible = resist
         ? pConfig.allowanceLKR - pConfig.mandatoryCostLKR
         : pConfig.allowanceLKR - pConfig.mandatoryCostLKR - pConfig.temptationCostLKR;
       return {
         ...prev,
         [periodNum]: {
-          resistedTemptation: nextResisted,
-          savedAmountLKR: Math.max(0, Math.min(curr.savedAmountLKR, maxPossible)),
+          resistedTemptation: resist,
+          savedAmountLKR: Math.min(curr.savedAmountLKR, maxPossible),
         },
       };
     });
   };
 
-  const handleSavingsChange = (periodNum: number, value: number) => {
+  const setSavings = (periodNum: number, value: number) => {
     if (disabled) return;
     setChoices((prev) => ({
       ...prev,
@@ -74,13 +72,13 @@ export const MultiPeriodSaving: React.FC<MultiPeriodSavingProps> = ({
     }));
   };
 
-  // Calculate cumulative savings
   const totalSaved = Object.values(choices).reduce(
     (sum, c) => sum + c.savedAmountLKR,
     0
   );
   const goalProgressPercent = Math.min(100, Math.round((totalSaved / targetGoalLKR) * 100));
   const isGoalReached = totalSaved >= targetGoalLKR;
+  const remainingNeeded = Math.max(0, targetGoalLKR - totalSaved);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,101 +91,128 @@ export const MultiPeriodSaving: React.FC<MultiPeriodSavingProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="challenge-form">
-      {/* Goal Progress Banner */}
-      <div className={`goal-progress-banner ${isGoalReached ? 'goal-reached' : 'goal-pending'}`}>
-        <div className="goal-meta-row">
-          <span className="goal-title">🎯 Goal: {config.goalDescription}</span>
-          <span className="goal-figures">
-            Rs. {totalSaved.toLocaleString()} / Rs. {targetGoalLKR.toLocaleString()} ({goalProgressPercent}%)
+    <form onSubmit={handleSubmit} className="challenge-form clean-savings-challenge">
+      {/* Sleek Goal Bar */}
+      <div className={`clean-goal-bar ${isGoalReached ? 'goal-complete' : ''}`}>
+        <div className="goal-bar-info">
+          <span className="goal-label">🎯 Splint Goal: Rs. {targetGoalLKR.toLocaleString()}</span>
+          <span className="goal-numbers">
+            <strong>Rs. {totalSaved.toLocaleString()}</strong> / Rs. {targetGoalLKR.toLocaleString()} ({goalProgressPercent}%)
           </span>
         </div>
-        <div className="goal-meter-track">
-          <div
-            className="goal-meter-fill"
-            style={{ width: `${goalProgressPercent}%` }}
-          />
+        <div className="goal-track">
+          <div className="goal-fill" style={{ width: `${goalProgressPercent}%` }} />
         </div>
-        {!isGoalReached && (
-          <div className="goal-hint-text">
-            ⚠️ You need Rs. {(targetGoalLKR - totalSaved).toLocaleString()} more across the 3 weeks to fund the splint.
-          </div>
+        {!isGoalReached && remainingNeeded > 0 ? (
+          <span className="goal-subtext">Need Rs. {remainingNeeded.toLocaleString()} more across the 3 weeks.</span>
+        ) : (
+          <span className="goal-subtext goal-ok">🎉 Goal Reached! Barnaby can get his splint!</span>
         )}
       </div>
 
-      {/* Week by Week Cards */}
-      <div className="multi-period-weeks-grid">
+      {/* 3 Clean Weekly Cards */}
+      <div className="clean-weeks-grid">
         {periods.map((p) => {
-          const currentChoice = choices[p.period];
-          const maxSave = currentChoice.resistedTemptation
+          const current = choices[p.period];
+          const isResisted = current.resistedTemptation;
+          const maxSave = isResisted
             ? p.allowanceLKR - p.mandatoryCostLKR
             : p.allowanceLKR - p.mandatoryCostLKR - p.temptationCostLKR;
 
           return (
-            <div key={p.period} className="week-planning-card">
-              <div className="week-card-header">
-                <span className="week-badge">{p.label}</span>
-                <span className="week-income">Allowance: +Rs. {p.allowanceLKR.toLocaleString()}</span>
+            <div key={p.period} className="clean-week-card">
+              {/* Header */}
+              <div className="card-top-row">
+                <span className="week-tag">{p.label}</span>
+                <span className="income-tag">+Rs. {p.allowanceLKR.toLocaleString()}</span>
               </div>
 
-              {/* Mandatory Living Cost */}
-              <div className="mandatory-cost-item">
-                <span className="cost-desc">📦 Mandatory: {p.mandatoryCostDescription}</span>
-                <span className="cost-tag">-Rs. {p.mandatoryCostLKR.toLocaleString()}</span>
+              {/* Fixed Basics */}
+              <div className="line-item basic-item">
+                <span className="item-label">🐾 Basics (Food & Bed)</span>
+                <span className="item-cost">-Rs. {p.mandatoryCostLKR.toLocaleString()}</span>
               </div>
 
-              {/* Temptation Challenge */}
-              <div
-                className={`temptation-box ${currentChoice.resistedTemptation ? 'temptation-resisted' : 'temptation-bought'}`}
-              >
-                <div className="temptation-header">
-                  <span className="temptation-title">🍭 Temptation: {p.temptationTitle}</span>
-                  <span className="temptation-price">-Rs. {p.temptationCostLKR.toLocaleString()}</span>
+              {/* Temptation Toggle */}
+              <div className={`temptation-pill-card ${isResisted ? 'pill-resisted' : 'pill-bought'}`}>
+                <div className="temptation-title-row">
+                  <span className="temptation-name">🍭 {p.temptationTitle}</span>
+                  <span className="temptation-cost">-Rs. {p.temptationCostLKR.toLocaleString()}</span>
                 </div>
-                <p className="temptation-desc">{p.temptationDescription}</p>
-
-                <button
-                  type="button"
-                  className={`btn-temptation-toggle ${currentChoice.resistedTemptation ? 'btn-resisted' : 'btn-bought'}`}
-                  onClick={() => toggleTemptation(p.period)}
-                  disabled={disabled}
-                >
-                  {currentChoice.resistedTemptation
-                    ? '🛡️ Resisting Temptation (Keeps cash for splint)'
-                    : '💸 Buying Temptation (Spends cash)'}
-                </button>
+                <div className="temptation-toggle-pills">
+                  <button
+                    type="button"
+                    className={`pill-btn ${isResisted ? 'pill-active-green' : ''}`}
+                    onClick={() => setTemptation(p.period, true)}
+                    disabled={disabled}
+                  >
+                    🛡️ Skip (Save)
+                  </button>
+                  <button
+                    type="button"
+                    className={`pill-btn ${!isResisted ? 'pill-active-red' : ''}`}
+                    onClick={() => setTemptation(p.period, false)}
+                    disabled={disabled}
+                  >
+                    💸 Buy It
+                  </button>
+                </div>
               </div>
 
-              {/* Savings Slider */}
-              <div className="week-savings-control">
-                <div className="savings-control-label">
-                  <span>Weekly Bank Deposit:</span>
-                  <strong>Rs. {currentChoice.savedAmountLKR.toLocaleString()}</strong>
+              {/* Deposit Slider */}
+              <div className="deposit-box">
+                <div className="deposit-label-row">
+                  <span className="deposit-title">💰 Save This Week:</span>
+                  <span className="deposit-val">Rs. {current.savedAmountLKR.toLocaleString()}</span>
                 </div>
+
                 <input
                   type="range"
                   min={0}
                   max={maxSave}
                   step={500}
-                  value={currentChoice.savedAmountLKR}
-                  onChange={(e) => handleSavingsChange(p.period, Number(e.target.value))}
+                  value={current.savedAmountLKR}
+                  onChange={(e) => setSavings(p.period, Number(e.target.value))}
                   disabled={disabled}
-                  className="savings-slider"
+                  className="clean-slider"
                 />
-                <span className="max-save-note">Max available to save this week: Rs. {maxSave.toLocaleString()}</span>
+
+                <div className="deposit-quick-actions">
+                  <button
+                    type="button"
+                    className="btn-quick"
+                    onClick={() => setSavings(p.period, 0)}
+                    disabled={disabled}
+                  >
+                    Rs. 0
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-quick btn-quick-max"
+                    onClick={() => setSavings(p.period, maxSave)}
+                    disabled={disabled}
+                  >
+                    Save All (Rs. {maxSave.toLocaleString()})
+                  </button>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
 
+      {/* Submit Button */}
       <div className="challenge-submit-row">
         <button
           type="submit"
-          className="btn-confirm-decision"
+          className={`btn-confirm-decision ${isGoalReached ? 'btn-green-ready' : ''}`}
           disabled={disabled || totalSaved === 0}
         >
-          {totalSaved === 0 ? 'Plan Savings to Continue' : 'Lock 3-Week Savings Plan & Check Target'}
+          {isGoalReached
+            ? `🎉 Lock 3-Week Plan & Heal Barnaby (Rs. ${totalSaved.toLocaleString()}) ➔`
+            : totalSaved === 0
+            ? 'Set your weekly savings to continue'
+            : `Save Rs. ${targetGoalLKR.toLocaleString()} to pass (Current: Rs. ${totalSaved.toLocaleString()})`}
         </button>
       </div>
     </form>
