@@ -38,6 +38,7 @@ from app.modules.gamified_learning.engine import (
 )
 from app.modules.gamified_learning.models import (
     SCHEMA_VERSION,
+    AchievementBadgeOut,
     AdaptiveRecommendationOut,
     CharacterStateHistoryEntryOut,
     CharacterStateHistoryOut,
@@ -47,12 +48,20 @@ from app.modules.gamified_learning.models import (
     CompetencyHistoryOut,
     DecisionOutcomeOut,
     DimensionScoresOut,
+    EmotionalImpactRecordOut,
     EvaluationResultOut,
+    JourneyLevelDetailOut,
+    JourneyMissionDetailOut,
+    JourneyMissionSummaryOut,
+    JourneyOverviewOut,
+    JourneyOverviewStatsOut,
+    LearningTipOut,
     LevelStartOut,
     MissionCatalogOut,
     MissionProgressOut,
     MissionSummaryOut,
     SecondaryScoresOut,
+    SkillMetricOut,
     StartLevelIn,
     StartMissionIn,
     SubmitDecisionIn,
@@ -959,4 +968,568 @@ async def get_character_history(
         mission_id=mission_id,
         character_name=char_name,
         history=history,
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GET /api/gamified/journey/overview
+# ─────────────────────────────────────────────────────────────────────────────
+
+ACTIVE_MISSION_IDS = [
+    "mission_rescue_puppy",
+    "mission_squirrel_savings",
+    "mission_panda_fair",
+]
+
+
+@router.get("/api/gamified/journey/overview")
+async def get_journey_overview(request: Request) -> JourneyOverviewOut:
+    """Aggregated journey overview across all three CDEMF story missions.
+
+    Combines progress, competency assessments, achievements, character states,
+    and rule-based personalized remediation recommendations.
+    """
+    account = await current_account(request)
+    child_id: str = account["child_id"]
+    student_name: str = account.get("name") or account.get("username") or "Young Explorer"
+    db = require_db()
+
+    # 1. Fetch progress records for all 3 missions
+    progress_docs = (
+        await db.gamified_progress.find(
+            {"child_id": child_id},
+            {"_id": 0},
+        ).to_list(10)
+    )
+    progress_by_mission = {d["mission_id"]: d for d in progress_docs if d.get("mission_id") in ACTIVE_MISSION_IDS}
+
+    # 2. Build mission summaries
+    mission_summaries: list[JourneyMissionSummaryOut] = []
+    total_completed_levels = 0
+    total_missions_completed = 0
+    total_coins = 0
+    first_incomplete_mission_id: str | None = None
+    first_incomplete_level = 1
+
+    for mid in ACTIVE_MISSION_IDS:
+        mission = get_mission(mid)
+        if not mission:
+            continue
+
+        p_doc = progress_by_mission.get(mid)
+        if p_doc:
+            completed_levels: list[int] = [int(x) for x in p_doc.get("completed_level_numbers", [])]
+            unlocked_level: int = int(p_doc.get("unlocked_level_number", 1))
+            is_completed: bool = bool(p_doc.get("is_mission_completed", False))
+            coins: int = int(p_doc.get("earned_coins", 0))
+            raw_cs = p_doc.get("character_state")
+            cs = _char_state_from_doc(raw_cs) if raw_cs else _default_char_state(mid)
+        else:
+            completed_levels = []
+            unlocked_level = 1
+            is_completed = False
+            coins = 0
+            cs = _default_char_state(mid)
+
+        tot = mission.total_levels
+        comp_count = len(completed_levels)
+        total_completed_levels += comp_count
+        if is_completed:
+            total_missions_completed += 1
+        total_coins += coins
+
+        if not is_completed and first_incomplete_mission_id is None:
+            first_incomplete_mission_id = mid
+            first_incomplete_level = unlocked_level
+
+        pct = int(round((comp_count / tot) * 100)) if tot > 0 else 0
+
+        if is_completed:
+            comp_status = "Mastered"
+        elif comp_count >= (tot // 2):
+            comp_status = "Proficient"
+        elif comp_count > 0:
+            comp_status = "In Progress"
+        else:
+            comp_status = "Not Started"
+
+        mission_summaries.append(
+            JourneyMissionSummaryOut(
+                mission_id=mid,
+                title=mission.title,
+                character_name=mission.character_name,
+                character_role=getattr(mission, "character_role", "Story Companion"),
+                focus_skill=getattr(mission, "primary_competency", "Financial Literacy"),
+                theme_color=mission.theme_color,
+                total_levels=tot,
+                completed_levels_count=comp_count,
+                completed_level_numbers=completed_levels,
+                unlocked_level_number=unlocked_level,
+                progress_percent=pct,
+                is_completed=is_completed,
+                earned_coins=coins,
+                competency_status=comp_status,
+                character_state=_char_state_out(cs),
+            )
+        )
+
+    active_mid = first_incomplete_mission_id or "mission_rescue_puppy"
+    rec_level = first_incomplete_level
+
+    # 3. Fetch all competency assessments
+    assessments = (
+        await db.competency_assessments.find(
+            {"child_id": child_id},
+            {"_id": 0},
+        )
+        .sort("assessed_at", 1)
+        .to_list(1000)
+    )
+
+    # 4. Compute 7 financial skill metrics with strict evidence counts
+    def extract_scores(key_fn) -> list[int]:
+        res = []
+        for a in assessments:
+            val = key_fn(a)
+            if val is not None and isinstance(val, (int, float)):
+                res.append(int(val))
+        return res
+
+    skills_config = [
+        (
+            "budgeting",
+            "Budgeting",
+            "Core Financial Skill",
+            lambda a: a.get("budgeting_skill"),
+            "Allocating scarce funds across competing needs and sticking to realistic spending limits.",
+        ),
+        (
+            "saving",
+            "Saving Behavior",
+            "Core Financial Skill",
+            lambda a: a.get("saving_behavior"),
+            "Setting money aside consistently across multiple periods to build long-term security.",
+        ),
+        (
+            "spending",
+            "Spending Discipline",
+            "Core Financial Skill",
+            lambda a: a.get("spending_discipline"),
+            "Controlling impulse urges and choosing certified value over vanity splurges.",
+        ),
+        (
+            "needs_wants",
+            "Needs vs. Wants",
+            "Prioritization",
+            lambda a: (a.get("secondary_scores") or {}).get("prioritization"),
+            "Distinguishing non-negotiable survival essentials from optional lifestyle desires.",
+        ),
+        (
+            "financial_planning",
+            "Financial Planning",
+            "Goal Setting",
+            lambda a: a.get("goal_achievement"),
+            "Formulating multi-step strategies to achieve major milestones on schedule.",
+        ),
+        (
+            "price_comparison",
+            "Price Comparison & Value",
+            "Market Awareness",
+            lambda a: a.get("investment_awareness"),
+            "Analyzing unit costs, quality ratings, and vendor terms before committing funds.",
+        ),
+        (
+            "emergency_preparedness",
+            "Emergency Preparedness",
+            "Risk Management",
+            lambda a: (a.get("secondary_scores") or {}).get("emergency_preparedness"),
+            "Maintaining cash reserves for midnight vet fees, sudden blizzards, and surprise costs.",
+        ),
+    ]
+
+    skills_profile: list[SkillMetricOut] = []
+    lowest_skill_key: str | None = None
+    lowest_skill_score = 999
+
+    for s_key, s_name, s_cat, fn, s_desc in skills_config:
+        scores = extract_scores(fn)
+        evidence_count = len(scores)
+        if evidence_count > 0:
+            avg_score = int(round(sum(scores) / evidence_count))
+            has_evidence = True
+            if avg_score >= 85:
+                status = "mastered"
+            elif avg_score >= 65:
+                status = "proficient"
+            else:
+                status = "developing"
+            is_strength = avg_score >= 80
+            needs_practice = avg_score < 65
+
+            if avg_score < lowest_skill_score:
+                lowest_skill_score = avg_score
+                lowest_skill_key = s_key
+        else:
+            avg_score = None
+            has_evidence = False
+            status = "insufficient_evidence"
+            is_strength = False
+            needs_practice = False
+
+        skills_profile.append(
+            SkillMetricOut(
+                skill_key=s_key,
+                name=s_name,
+                category=s_cat,
+                score=avg_score,
+                evidence_count=evidence_count,
+                has_sufficient_evidence=has_evidence,
+                status=status,
+                is_strength=is_strength,
+                needs_practice=needs_practice,
+                description=s_desc,
+            )
+        )
+
+    # Overall competency score
+    overall_scores = [a.get("overall_score") for a in assessments if a.get("overall_score") is not None]
+    overall_competency = (
+        int(round(sum(overall_scores) / len(overall_scores))) if overall_scores else None
+    )
+
+    # 5. Mastery tier
+    if total_completed_levels >= 18:
+        mastery_tier = "Financial Champion"
+    elif total_completed_levels >= 10:
+        mastery_tier = "Money Smart"
+    elif total_completed_levels >= 4:
+        mastery_tier = "Apprentice"
+    else:
+        mastery_tier = "Explorer"
+
+    # 6. Fetch attempts for verified badge checking
+    attempts = (
+        await db.mission_attempts.find({"child_id": child_id}, {"_id": 0}).to_list(1000)
+    )
+
+    puppy_sum = next((m for m in mission_summaries if m.mission_id == "mission_rescue_puppy"), None)
+    squirrel_sum = next((m for m in mission_summaries if m.mission_id == "mission_squirrel_savings"), None)
+    panda_sum = next((m for m in mission_summaries if m.mission_id == "mission_panda_fair"), None)
+
+    puppy_comp = puppy_sum.completed_levels_count if puppy_sum else 0
+    squirrel_comp = squirrel_sum.completed_levels_count if squirrel_sum else 0
+    panda_comp = panda_sum.completed_levels_count if panda_sum else 0
+
+    has_retry_pass = any(
+        a.get("attempt_number", 1) >= 2 and a.get("passed") is True for a in attempts
+    )
+
+    attempted_mids = set(a.get("mission_id") for a in attempts if a.get("mission_id"))
+    for ms in mission_summaries:
+        if ms.completed_levels_count > 0:
+            attempted_mids.add(ms.mission_id)
+    distinct_active_count = len(attempted_mids.intersection(set(ACTIVE_MISSION_IDS)))
+
+    badges: list[AchievementBadgeOut] = [
+        AchievementBadgeOut(
+            id="badge_caring_budgeter",
+            title="Caring Budgeter",
+            description="Rescued Barnaby and navigated medical budgets with zero deficit.",
+            icon="🐶",
+            unlocked=((puppy_sum.is_completed if puppy_sum else False) or puppy_comp >= 4),
+            unlocked_at=None,
+            progress_current=min(puppy_comp, 4),
+            progress_target=4,
+            unlock_condition="Complete at least 4 budgeting levels in Puppy Rescue",
+        ),
+        AchievementBadgeOut(
+            id="badge_winter_savings_hero",
+            title="Winter Savings Hero",
+            description="Protected Nutty with emergency acorn reserves to survive the harsh blizzard.",
+            icon="🐿️",
+            unlocked=((squirrel_sum.is_completed if squirrel_sum else False) or squirrel_comp >= 3),
+            unlocked_at=None,
+            progress_current=min(squirrel_comp, 3),
+            progress_target=3,
+            unlock_condition="Complete at least 3 multi-period saving levels in Squirrel's Winter Savings",
+        ),
+        AchievementBadgeOut(
+            id="badge_smart_fair_planner",
+            title="Smart Fair Planner",
+            description="Balanced stall pricing, negotiation, and budget health for the charity fair.",
+            icon="🐼",
+            unlocked=((panda_sum.is_completed if panda_sum else False) or panda_comp >= 3),
+            unlocked_at=None,
+            progress_current=min(panda_comp, 3),
+            progress_target=3,
+            unlock_condition="Complete at least 3 spending discipline levels in Panda's School Fair",
+        ),
+        AchievementBadgeOut(
+            id="badge_money_skills_explorer",
+            title="Money Skills Explorer",
+            description="Explored all three financial pillars: budgeting, multi-period saving, and smart spending.",
+            icon="🧭",
+            unlocked=distinct_active_count >= 3,
+            unlocked_at=None,
+            progress_current=min(distinct_active_count, 3),
+            progress_target=3,
+            unlock_condition="Play at least 1 level across all three story missions",
+        ),
+        AchievementBadgeOut(
+            id="badge_resilient_learner",
+            title="Resilient Learner",
+            description="Overcame a financial setback by reviewing remediation feedback and passing on retry.",
+            icon="🌱",
+            unlocked=has_retry_pass,
+            unlocked_at=None,
+            progress_current=1 if has_retry_pass else 0,
+            progress_target=1,
+            unlock_condition="Turn a failed attempt into mastery by retrying with remediation guidance",
+        ),
+    ]
+
+    # 7. Character Emotional Impact Showcase
+    char_history_docs = (
+        await db.character_state_history.find(
+            {"child_id": child_id},
+            {"_id": 0},
+        )
+        .sort("recorded_at", -1)
+        .to_list(8)
+    )
+
+    impact_showcase: list[EmotionalImpactRecordOut] = []
+    for cd in char_history_docs:
+        c_mid = cd.get("mission_id", "")
+        m_def = get_mission(c_mid)
+        m_title = m_def.title if m_def else "Story Mission"
+        c_name = m_def.character_name if m_def else "Companion"
+        att_num = int(cd.get("attempt_number", 1))
+        direction = cd.get("transition_direction", "STABLE")
+
+        impact_showcase.append(
+            EmotionalImpactRecordOut(
+                mission_id=c_mid,
+                mission_title=m_title,
+                character_name=c_name,
+                level_number=int(cd.get("level_number", 1)),
+                attempt_number=att_num,
+                previous_condition=cd.get("physical_condition", "NEEDS_CARE"),
+                new_condition=cd.get("physical_condition", "RECOVERING"),
+                previous_emotion=cd.get("emotional_state", "WORRIED"),
+                new_emotion=cd.get("emotional_state", "HOPEFUL"),
+                direction=direction,
+                reason=cd.get("transition_reason", ""),
+                character_dialogue=cd.get("character_dialogue", cd.get("active_dialogue", "")),
+                learning_explanation=cd.get("learning_explanation", ""),
+                visual_cue=cd.get("visual_cue", ""),
+                recorded_at=cd.get("recorded_at", ""),
+                improved_after_retry=(att_num > 1 and direction == "POSITIVE"),
+            )
+        )
+
+    # 8. Pedagogical Rule-Based Learning Tips
+    learning_tips: list[LearningTipOut] = []
+
+    if lowest_skill_key == "emergency_preparedness" or (lowest_skill_key is None and puppy_comp < 7):
+        learning_tips.append(
+            LearningTipOut(
+                title="Build an Emergency Cushion",
+                description="Unforeseen shocks like midnight fever or winter freezes can wipe out budgets. Stash at least 15% in reserve funds before spending on extras.",
+                category="Risk Management",
+                action_mission_id="mission_rescue_puppy",
+                action_level_number=7,
+                action_label="Practice Emergency Care (Puppy L7)",
+            )
+        )
+    elif lowest_skill_key == "spending" or lowest_skill_key == "needs_wants":
+        learning_tips.append(
+            LearningTipOut(
+                title="Separate Needs from Tempting Wants",
+                description="Before making any purchase, ask yourself: 'Is this essential for survival or success, or is it a luxury extra?' Prioritize essentials first.",
+                category="Spending Discipline",
+                action_mission_id="mission_panda_fair",
+                action_level_number=2,
+                action_label="Practice Budget Splitting (Panda L2)",
+            )
+        )
+    elif lowest_skill_key == "price_comparison":
+        learning_tips.append(
+            LearningTipOut(
+                title="Compare Vendor Value, Not Just Price",
+                description="The lowest price is not always the best deal if quality fails. Always calculate unit costs and check certified guarantees.",
+                category="Market Awareness",
+                action_mission_id="mission_panda_fair",
+                action_level_number=3,
+                action_label="Compare Suppliers (Panda L3)",
+            )
+        )
+    elif lowest_skill_key == "saving":
+        learning_tips.append(
+            LearningTipOut(
+                title="Consistency Beats Big Splurges",
+                description="Setting aside acorns or coins each week compounds into security. Resist mid-week impulse temptations to keep your companion safe.",
+                category="Saving Habit",
+                action_mission_id="mission_squirrel_savings",
+                action_level_number=2,
+                action_label="Build Nutty's Reserves (Squirrel L2)",
+            )
+        )
+
+    if first_incomplete_mission_id:
+        target_m = get_mission(first_incomplete_mission_id)
+        if target_m:
+            learning_tips.append(
+                LearningTipOut(
+                    title=f"Continue: {target_m.title}",
+                    description=f"Level {first_incomplete_level} is ready for you! Help {target_m.character_name} make smart financial choices to progress the story.",
+                    category="Mission Progress",
+                    action_mission_id=first_incomplete_mission_id,
+                    action_level_number=first_incomplete_level,
+                    action_label=f"Play Level {first_incomplete_level}",
+                )
+            )
+
+    learning_tips.append(
+        LearningTipOut(
+            title="The 50/30/20 Story Rule",
+            description="Aim to spend 50% on essential needs, up to 30% on discretionary wants, and always save at least 20% for future emergencies and goals.",
+            category="Fintech Rule of Thumb",
+            action_mission_id=None,
+            action_level_number=None,
+            action_label="Explore Strategy",
+        )
+    )
+
+    overview_stats = JourneyOverviewStatsOut(
+        total_missions_completed=total_missions_completed,
+        total_missions_count=3,
+        total_levels_completed=total_completed_levels,
+        total_levels_count=20,
+        overall_competency_score=overall_competency,
+        earned_coins=total_coins,
+        mastery_tier=mastery_tier,
+        active_mission_id=active_mid,
+        next_recommended_level=rec_level,
+    )
+
+    return JourneyOverviewOut(
+        student_name=student_name,
+        child_id=child_id,
+        overview=overview_stats,
+        missions=mission_summaries,
+        financial_skills_profile=skills_profile,
+        achievements=badges,
+        emotional_impact_showcase=impact_showcase,
+        learning_tips=learning_tips,
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GET /api/gamified/journey/mission-details/{mission_id}
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/api/gamified/journey/mission-details/{mission_id}")
+async def get_journey_mission_detail(
+    request: Request, mission_id: str
+) -> JourneyMissionDetailOut:
+    """Detailed level-by-level inspection for any of the 3 CDEMF missions."""
+    account = await current_account(request)
+    child_id: str = account["child_id"]
+    db = require_db()
+
+    mission = get_mission(mission_id)
+    if not mission:
+        raise HTTPException(status_code=404, detail="Mission not found.")
+
+    p_doc = await db.gamified_progress.find_one(
+        {"child_id": child_id, "mission_id": mission_id},
+        {"_id": 0},
+    )
+
+    completed_levels = p_doc.get("completed_level_numbers", []) if p_doc else []
+    unlocked_lvl = p_doc.get("unlocked_level_number", 1) if p_doc else 1
+    is_completed = p_doc.get("is_mission_completed", False) if p_doc else False
+    attempts_by_level = p_doc.get("attempts_by_level", {}) if p_doc else {}
+
+    raw_cs = p_doc.get("character_state") if p_doc else None
+    cs = _char_state_from_doc(raw_cs) if raw_cs else _default_char_state(mission_id)
+
+    level_details: list[JourneyLevelDetailOut] = []
+    for lvl in mission.levels:
+        lnum = lvl.level_number
+        if lnum in completed_levels:
+            status = "COMPLETED"
+        elif lnum == unlocked_lvl:
+            status = "CURRENT"
+        else:
+            status = "LOCKED"
+
+        lvl_attempts = attempts_by_level.get(str(lnum), [])
+        scores = [int(a.get("score", 0)) for a in lvl_attempts if a.get("score") is not None]
+        best_score = max(scores) if scores else None
+
+        level_details.append(
+            JourneyLevelDetailOut(
+                level_number=lnum,
+                level_id=lvl.id,
+                title=lvl.title,
+                focus_dimension=getattr(lvl, "target_competency", "budgeting_skill"),
+                interaction_type=lvl.interaction_type,
+                status=status,
+                best_score=best_score,
+                attempts_count=len(lvl_attempts),
+            )
+        )
+
+    recent_attempts = (
+        await db.mission_attempts.find(
+            {"child_id": child_id, "mission_id": mission_id},
+            {"_id": 0},
+        )
+        .sort("recorded_at", -1)
+        .to_list(15)
+    )
+
+    char_history_docs = (
+        await db.character_state_history.find(
+            {"child_id": child_id, "mission_id": mission_id},
+            {"_id": 0},
+        )
+        .sort("recorded_at", 1)
+        .to_list(50)
+    )
+    char_history = [
+        CharacterStateHistoryEntryOut(
+            timestamp=d.get("recorded_at", ""),
+            level_number=int(d.get("level_number", 0)),
+            attempt_number=int(d.get("attempt_number", 1)),
+            physical_condition=d.get("physical_condition", "NEEDS_CARE"),
+            emotional_state=d.get("emotional_state", "WORRIED"),
+            vitality_score=int(d.get("vitality_score", 35)),
+            happiness_score=int(d.get("happiness_score", 30)),
+            transition_direction=d.get("transition_direction", "STABLE"),
+            transition_reason=d.get("transition_reason", ""),
+        )
+        for d in char_history_docs
+    ]
+
+    comp_count = len(completed_levels)
+    pct = int(round((comp_count / mission.total_levels) * 100)) if mission.total_levels > 0 else 0
+
+    return JourneyMissionDetailOut(
+        mission_id=mission_id,
+        title=mission.title,
+        character_name=mission.character_name,
+        character_role=getattr(mission, "character_role", "Story Companion"),
+        focus_skill=getattr(mission, "primary_competency", "Financial Literacy"),
+        theme_color=mission.theme_color,
+        total_levels=mission.total_levels,
+        completed_levels_count=comp_count,
+        progress_percent=pct,
+        is_completed=is_completed,
+        levels=level_details,
+        recent_attempts=recent_attempts,
+        character_state=_char_state_out(cs),
+        character_history=char_history,
     )

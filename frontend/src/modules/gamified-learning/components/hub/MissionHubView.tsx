@@ -9,6 +9,7 @@ interface MissionHubViewProps {
   puppyProgress: MissionProgress;
   onSelectMission: (missionId: string) => void;
   onOpenAnalytics: () => void;
+  onOpenJourney?: () => void;
 }
 
 export const MissionHubView: React.FC<MissionHubViewProps> = ({
@@ -17,6 +18,7 @@ export const MissionHubView: React.FC<MissionHubViewProps> = ({
   puppyProgress,
   onSelectMission,
   onOpenAnalytics,
+  onOpenJourney,
 }) => {
   const [previewMission, setPreviewMission] = useState<MissionDefinition | null>(null);
 
@@ -32,7 +34,23 @@ export const MissionHubView: React.FC<MissionHubViewProps> = ({
             decisions shape your animal companion’s condition and recovery in real-time.
           </p>
         </div>
-        <div className="hero-actions">
+        <div className="hero-actions" style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          {onOpenJourney && (
+            <button
+              type="button"
+              className="btn-analytics-pill"
+              style={{
+                background: '#0a4d42',
+                color: '#ffffff',
+                border: '1px solid #0a4d42',
+                fontWeight: 700,
+                boxShadow: '0 4px 12px rgba(10, 77, 66, 0.25)',
+              }}
+              onClick={onOpenJourney}
+            >
+              📈 My Money Journey
+            </button>
+          )}
           <button type="button" className="btn-analytics-pill" onClick={onOpenAnalytics}>
             📊 Research & Analytics
           </button>

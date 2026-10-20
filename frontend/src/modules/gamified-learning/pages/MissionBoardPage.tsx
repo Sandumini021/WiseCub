@@ -28,7 +28,9 @@ import { PuppyCharacterSvg } from '../components/character/PuppyCharacterSvg';
 import { SquirrelCharacterSvg } from '../components/character/SquirrelCharacterSvg';
 import { PandaCharacterSvg } from '../components/character/PandaCharacterSvg';
 
+import { MyMoneyJourneyDashboard } from '../components/journey/MyMoneyJourneyDashboard';
 import '../styles/gamified-learning.css';
+import '../styles/journey-dashboard.css';
 
 type PageViewMode =
   | 'HUB'
@@ -37,7 +39,8 @@ type PageViewMode =
   | 'TRANSITION'
   | 'EVALUATION'
   | 'RETRY'
-  | 'MISSION_COMPLETE';
+  | 'MISSION_COMPLETE'
+  | 'JOURNEY';
 
 function getFriendlySkillName(comp: string): string {
   switch (comp) {
@@ -56,9 +59,13 @@ function getFriendlySkillName(comp: string): string {
   }
 }
 
-export function MissionBoardPage() {
+export interface MissionBoardPageProps {
+  initialViewMode?: PageViewMode;
+}
+
+export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPageProps = {}) {
   const { child, authReady } = useDemoChild();
-  const [viewMode, setViewMode] = useState<PageViewMode>('HUB');
+  const [viewMode, setViewMode] = useState<PageViewMode>(initialViewMode);
   const [selectedMissionId, setSelectedMissionId] = useState<string>('mission_rescue_puppy');
   const [currentLevelNumber, setCurrentLevelNumber] = useState<number>(1);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState<boolean>(false);
@@ -343,6 +350,22 @@ export function MissionBoardPage() {
         </div>
       )}
 
+      {/* VIEW 0: MY MONEY JOURNEY DASHBOARD */}
+      {viewMode === 'JOURNEY' && (
+        <MyMoneyJourneyDashboard
+          onNavigateToMission={(mid, lvl) => {
+            setSelectedMissionId(mid);
+            if (lvl) {
+              setCurrentLevelNumber(lvl);
+              handleSelectLevelFromMap(lvl);
+            } else {
+              setViewMode('MAP');
+            }
+          }}
+          onBackToMissionsHub={() => setViewMode('HUB')}
+        />
+      )}
+
       {/* VIEW 1: STORY MISSION HUB */}
       {viewMode === 'HUB' && (
         <MissionHubView
@@ -351,6 +374,7 @@ export function MissionBoardPage() {
           puppyProgress={puppyProgress}
           onSelectMission={handleSelectMissionFromHub}
           onOpenAnalytics={() => setShowAnalyticsModal(true)}
+          onOpenJourney={() => setViewMode('JOURNEY')}
         />
       )}
 
@@ -369,6 +393,14 @@ export function MissionBoardPage() {
               <span className="coins-display">
                 <span className="coin-icon" role="img" aria-label="coins">🪙</span> Virtual Coins: {puppyProgress.earnedCoins}
               </span>
+              <button
+                type="button"
+                className="btn-analytics-pill"
+                style={{ background: '#0a4d42', color: '#ffffff', borderColor: '#0a4d42', fontWeight: 700 }}
+                onClick={() => setViewMode('JOURNEY')}
+              >
+                📈 My Money Journey
+              </button>
               <button
                 type="button"
                 className="btn-analytics-pill"
