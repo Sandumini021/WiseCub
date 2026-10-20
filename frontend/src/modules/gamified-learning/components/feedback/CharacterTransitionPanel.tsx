@@ -1,30 +1,59 @@
 import React from 'react';
 import { CharacterTransition } from '../../types/emotion.types';
 import { PuppyCharacterSvg } from '../character/PuppyCharacterSvg';
+import { SquirrelCharacterSvg } from '../character/SquirrelCharacterSvg';
+import { PandaCharacterSvg } from '../character/PandaCharacterSvg';
 
 interface CharacterTransitionPanelProps {
   transition: CharacterTransition;
   onContinue: () => void;
+  characterName?: string;
 }
 
 export const CharacterTransitionPanel: React.FC<CharacterTransitionPanelProps> = ({
   transition,
   onContinue,
+  characterName,
 }) => {
   const isImprovement = transition.direction === 'IMPROVEMENT';
   const isSetback = transition.direction === 'SETBACK';
+
+  const isPanda =
+    characterName?.toLowerCase().includes('bao') ||
+    characterName?.toLowerCase().includes('panda') ||
+    transition.characterDialogue.toLowerCase().includes('fair') ||
+    transition.characterDialogue.toLowerCase().includes('stall') ||
+    transition.characterDialogue.toLowerCase().includes('library') ||
+    transition.characterDialogue.toLowerCase().includes('treasurer');
+
+  const isSquirrel =
+    !isPanda &&
+    (characterName?.toLowerCase().includes('nutty') ||
+      transition.characterDialogue.toLowerCase().includes('nutty') ||
+      transition.characterDialogue.toLowerCase().includes('winter') ||
+      transition.characterDialogue.toLowerCase().includes('acorn') ||
+      transition.newCondition.includes('SHELTER') ||
+      transition.newCondition.includes('WINTER') ||
+      transition.newCondition.includes('STOCKS'));
+
+  const displayName = isPanda
+    ? 'Bao Bao the Panda'
+    : isSquirrel
+    ? 'Nutty the Squirrel'
+    : 'Barnaby the Puppy';
+  const avatarEmoji = isPanda ? '🐼' : isSquirrel ? '🐿️' : '🐶';
 
   return (
     <div className="character-transition-view">
       <div className="transition-header">
         <span className={`transition-banner-pill ${isImprovement ? 'pill-success' : isSetback ? 'pill-setback' : 'pill-stable'}`}>
           {isImprovement
-            ? '✨ Emotional & Physical Improvement!'
+            ? '✨ Emotional & Preparedness Improvement!'
             : isSetback
             ? '⚠️ Financial Setback Observed'
             : '⚖️ Condition Stable'}
         </span>
-        <h2 className="transition-title">Barnaby’s Condition Responds to Your Decision</h2>
+        <h2 className="transition-title">{displayName}’s Condition Responds to Your Decision</h2>
       </div>
 
       {/* Before and After Visual Comparison */}
@@ -33,14 +62,28 @@ export const CharacterTransitionPanel: React.FC<CharacterTransitionPanelProps> =
         <div className="stage-side stage-before">
           <span className="side-label">Before Decision</span>
           <div className="side-avatar-box">
-            <PuppyCharacterSvg
-              condition={transition.previousCondition}
-              emotion={transition.previousEmotion}
-              size={130}
-            />
+            {isPanda ? (
+              <PandaCharacterSvg
+                condition={transition.previousCondition}
+                emotion={transition.previousEmotion}
+                size={130}
+              />
+            ) : isSquirrel ? (
+              <SquirrelCharacterSvg
+                condition={transition.previousCondition}
+                emotion={transition.previousEmotion}
+                size={130}
+              />
+            ) : (
+              <PuppyCharacterSvg
+                condition={transition.previousCondition}
+                emotion={transition.previousEmotion}
+                size={130}
+              />
+            )}
           </div>
           <div className="side-state-tag">
-            <span>{transition.previousCondition}</span> · <em>{transition.previousEmotion}</em>
+            <span>{transition.previousCondition.replace(/_/g, ' ')}</span> · <em>{transition.previousEmotion.replace(/_/g, ' ')}</em>
           </div>
         </div>
 
@@ -55,23 +98,37 @@ export const CharacterTransitionPanel: React.FC<CharacterTransitionPanelProps> =
         <div className={`stage-side stage-after ${isImprovement ? 'side-glow-success' : 'side-glow-setback'}`}>
           <span className="side-label">New Resulting State</span>
           <div className="side-avatar-box">
-            <PuppyCharacterSvg
-              condition={transition.newCondition}
-              emotion={transition.newEmotion}
-              size={140}
-            />
+            {isPanda ? (
+              <PandaCharacterSvg
+                condition={transition.newCondition}
+                emotion={transition.newEmotion}
+                size={140}
+              />
+            ) : isSquirrel ? (
+              <SquirrelCharacterSvg
+                condition={transition.newCondition}
+                emotion={transition.newEmotion}
+                size={140}
+              />
+            ) : (
+              <PuppyCharacterSvg
+                condition={transition.newCondition}
+                emotion={transition.newEmotion}
+                size={140}
+              />
+            )}
           </div>
           <div className="side-state-tag">
-            <strong>{transition.newCondition}</strong> · <em>{transition.newEmotion}</em>
+            <strong>{transition.newCondition.replace(/_/g, ' ')}</strong> · <em>{transition.newEmotion.replace(/_/g, ' ')}</em>
           </div>
         </div>
       </div>
 
       {/* Character Speech Bubble */}
       <div className="transition-dialogue-card">
-        <div className="dialogue-avatar-mini">🐶</div>
+        <div className="dialogue-avatar-mini">{avatarEmoji}</div>
         <div className="dialogue-text-body">
-          <h4 className="dialogue-speaker">Barnaby the Puppy says:</h4>
+          <h4 className="dialogue-speaker">{displayName} says:</h4>
           <p className="dialogue-quote">"{transition.characterDialogue}"</p>
         </div>
       </div>

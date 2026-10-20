@@ -114,6 +114,17 @@ class CharacterStateOut(BaseModel):
     vitality_score: int
     happiness_score: int
     active_dialogue: str
+    food_supply: int | None = None
+    savings_reserve: int | None = None
+    shelter_readiness: int | None = None
+    winter_preparedness: int | None = None
+    emotional_wellbeing: int | None = None
+    budget_health: int | None = None
+    fair_readiness: int | None = None
+    charity_goal_progress: int | None = None
+    vendor_relationships: int | None = None
+    customer_satisfaction: int | None = None
+    financial_risk_exposure: int | None = None
 
 
 class MissionProgressOut(BaseModel):
@@ -248,3 +259,128 @@ class CharacterStateHistoryOut(BaseModel):
     mission_id: str
     character_name: str
     history: list[CharacterStateHistoryEntryOut]
+
+
+# ── Outbound: My Money Journey & Aggregated Analytics ────────────────────────
+
+class JourneyOverviewStatsOut(BaseModel):
+    total_missions_completed: int
+    total_missions_count: int = 3
+    total_levels_completed: int
+    total_levels_count: int = 20
+    overall_competency_score: int | None = None
+    earned_coins: int = 0
+    mastery_tier: str = "Explorer"
+    active_mission_id: str = "mission_rescue_puppy"
+    next_recommended_level: int = 1
+
+
+class JourneyMissionSummaryOut(BaseModel):
+    mission_id: str
+    title: str
+    character_name: str
+    character_role: str
+    focus_skill: str
+    theme_color: str
+    total_levels: int
+    completed_levels_count: int
+    completed_level_numbers: list[int]
+    unlocked_level_number: int
+    progress_percent: int
+    is_completed: bool
+    earned_coins: int
+    competency_status: str
+    character_state: CharacterStateOut
+
+
+class SkillMetricOut(BaseModel):
+    skill_key: str
+    name: str
+    category: str
+    score: int | None = None
+    evidence_count: int = 0
+    has_sufficient_evidence: bool = False
+    status: str
+    is_strength: bool = False
+    needs_practice: bool = False
+    description: str
+
+
+class AchievementBadgeOut(BaseModel):
+    id: str
+    title: str
+    description: str
+    icon: str
+    unlocked: bool
+    unlocked_at: str | None = None
+    progress_current: int
+    progress_target: int
+    unlock_condition: str
+
+
+class EmotionalImpactRecordOut(BaseModel):
+    mission_id: str
+    mission_title: str
+    character_name: str
+    level_number: int
+    attempt_number: int
+    previous_condition: str
+    new_condition: str
+    previous_emotion: str
+    new_emotion: str
+    direction: str
+    reason: str
+    character_dialogue: str
+    learning_explanation: str
+    visual_cue: str
+    recorded_at: str
+    improved_after_retry: bool = False
+
+
+class LearningTipOut(BaseModel):
+    title: str
+    description: str
+    category: str
+    action_mission_id: str | None = None
+    action_level_number: int | None = None
+    action_label: str = "Start Level"
+
+
+class JourneyOverviewOut(BaseModel):
+    student_name: str
+    child_id: str
+    overview: JourneyOverviewStatsOut
+    missions: list[JourneyMissionSummaryOut]
+    financial_skills_profile: list[SkillMetricOut]
+    achievements: list[AchievementBadgeOut]
+    emotional_impact_showcase: list[EmotionalImpactRecordOut]
+    learning_tips: list[LearningTipOut]
+
+
+class JourneyLevelDetailOut(BaseModel):
+    level_number: int
+    level_id: str
+    title: str
+    focus_dimension: str
+    interaction_type: str
+    status: str
+    best_score: int | None = None
+    attempts_count: int = 0
+
+
+class JourneyMissionDetailOut(BaseModel):
+    mission_id: str
+    title: str
+    character_name: str
+    character_role: str
+    focus_skill: str
+    theme_color: str
+    total_levels: int
+    completed_levels_count: int
+    progress_percent: int
+    is_completed: bool
+    levels: list[JourneyLevelDetailOut]
+    recent_attempts: list[dict[str, Any]]
+    character_state: CharacterStateOut
+    character_history: list[CharacterStateHistoryEntryOut]
+

@@ -6,7 +6,14 @@ export type CharacterPhysicalCondition =
   | 'RECEIVING_TREATMENT'
   | 'RECOVERING'
   | 'HEALTHY_ACTIVE'
-  | 'SETBACK_WAITING';
+  | 'SETBACK_WAITING'
+  | 'SHELTER_UNPREPARED'
+  | 'BASIC_STOCKS_FORMED'
+  | 'STORAGE_ORGANIZED'
+  | 'WINTER_RESERVES_ACTIVE'
+  | 'WEATHER_IMPACTED'
+  | 'SHELTER_FORTIFIED'
+  | 'WINTER_READY';
 
 export type CharacterEmotionalState =
   | 'ANXIOUS'
@@ -15,7 +22,14 @@ export type CharacterEmotionalState =
   | 'HOPEFUL'
   | 'RELIEVED'
   | 'CHEERFUL'
-  | 'JOYFUL_HEALTHY';
+  | 'JOYFUL_HEALTHY'
+  | 'TEMPTED'
+  | 'CONFIDENT'
+  | 'HAPPY_AND_SECURE'
+  | 'EXCITED'
+  | 'CONFUSED'
+  | 'STRESSED'
+  | 'PROUD_AND_HAPPY';
 
 export interface CharacterState {
   characterId: string;
@@ -26,6 +40,17 @@ export interface CharacterState {
   vitalityScore: number; // 0 - 100
   happinessScore: number; // 0 - 100
   activeDialogue: string;
+  foodSupply?: number;
+  savingsReserve?: number;
+  shelterReadiness?: number;
+  winterPreparedness?: number;
+  emotionalWellbeing?: number;
+  budgetHealth?: number;
+  fairReadiness?: number;
+  charityGoalProgress?: number;
+  vendorRelationships?: number;
+  customerSatisfaction?: number;
+  financialRiskExposure?: number;
 }
 
 export interface CharacterTransition {

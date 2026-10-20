@@ -16,17 +16,7 @@ import { StudentDashboardPage } from "../pages/student/StudentDashboardPage";
 import { TeacherDashboardPage, TeacherStubPage } from "../pages/teacher/TeacherDashboardPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
 
-function ProgressPage() {
-  return (
-    <section className="card">
-      <h1>My Progress</h1>
-      <p>
-        Habit scores and session reviews will appear here after you finish
-        lessons and trades. Nothing is ranked against other children.
-      </p>
-    </section>
-  );
-}
+
 
 export function AppRoutes() {
   return (
@@ -57,7 +47,7 @@ export function AppRoutes() {
         <Route path="/market/portfolio" element={<PortfolioPage />} />
         <Route path="/choices" element={<LevelsPage />} />
         <Route path="/missions" element={<MissionBoardPage />} />
-        <Route path="/progress" element={<ProgressPage />} />
+        <Route path="/progress" element={<MissionBoardPage initialViewMode="JOURNEY" />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
     </Routes>

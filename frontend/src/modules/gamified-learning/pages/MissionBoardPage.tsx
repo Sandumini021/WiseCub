@@ -25,8 +25,12 @@ import { CompetencyEvidenceModal } from '../components/feedback/CompetencyEviden
 import { RetrySupportPanel } from '../components/feedback/RetrySupportPanel';
 import { LearningAnalyticsModal } from '../components/analytics/LearningAnalyticsModal';
 import { PuppyCharacterSvg } from '../components/character/PuppyCharacterSvg';
+import { SquirrelCharacterSvg } from '../components/character/SquirrelCharacterSvg';
+import { PandaCharacterSvg } from '../components/character/PandaCharacterSvg';
 
+import { MyMoneyJourneyDashboard } from '../components/journey/MyMoneyJourneyDashboard';
 import '../styles/gamified-learning.css';
+import '../styles/journey-dashboard.css';
 
 type PageViewMode =
   | 'HUB'
@@ -35,7 +39,8 @@ type PageViewMode =
   | 'TRANSITION'
   | 'EVALUATION'
   | 'RETRY'
-  | 'MISSION_COMPLETE';
+  | 'MISSION_COMPLETE'
+  | 'JOURNEY';
 
 function getFriendlySkillName(comp: string): string {
   switch (comp) {
@@ -54,9 +59,13 @@ function getFriendlySkillName(comp: string): string {
   }
 }
 
-export function MissionBoardPage() {
+export interface MissionBoardPageProps {
+  initialViewMode?: PageViewMode;
+}
+
+export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPageProps = {}) {
   const { child, authReady } = useDemoChild();
-  const [viewMode, setViewMode] = useState<PageViewMode>('HUB');
+  const [viewMode, setViewMode] = useState<PageViewMode>(initialViewMode);
   const [selectedMissionId, setSelectedMissionId] = useState<string>('mission_rescue_puppy');
   const [currentLevelNumber, setCurrentLevelNumber] = useState<number>(1);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState<boolean>(false);
@@ -125,7 +134,9 @@ export function MissionBoardPage() {
     unlockedLevelNumber: 1,
     completedLevelNumbers: [],
     highestCompletedLevelNumber: 0,
-    characterState: { ...INITIAL_PUPPY_STATE },
+    characterState: currentMission.initialCharacterState
+      ? { ...currentMission.initialCharacterState }
+      : { ...INITIAL_PUPPY_STATE },
     attemptsByLevel: {},
     lastAttemptAtIso: new Date().toISOString(),
     isMissionCompleted: false,
@@ -335,8 +346,24 @@ export function MissionBoardPage() {
       {/* SUBMISSION SPINNER OVERLAY */}
       {submitting && (
         <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', color: '#1d4ed8', padding: '0.6rem 1rem', borderRadius: '8px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
-          <span>⏳ Persisting financial decision to MongoDB & evaluating Barnaby's recovery...</span>
+          <span>⏳ Persisting financial decision to MongoDB & evaluating {currentMission.characterName}'s condition...</span>
         </div>
+      )}
+
+      {/* VIEW 0: MY MONEY JOURNEY DASHBOARD */}
+      {viewMode === 'JOURNEY' && (
+        <MyMoneyJourneyDashboard
+          onNavigateToMission={(mid, lvl) => {
+            setSelectedMissionId(mid);
+            if (lvl) {
+              setCurrentLevelNumber(lvl);
+              handleSelectLevelFromMap(lvl);
+            } else {
+              setViewMode('MAP');
+            }
+          }}
+          onBackToMissionsHub={() => setViewMode('HUB')}
+        />
       )}
 
       {/* VIEW 1: STORY MISSION HUB */}
@@ -347,6 +374,7 @@ export function MissionBoardPage() {
           puppyProgress={puppyProgress}
           onSelectMission={handleSelectMissionFromHub}
           onOpenAnalytics={() => setShowAnalyticsModal(true)}
+          onOpenJourney={() => setViewMode('JOURNEY')}
         />
       )}
 
@@ -365,6 +393,14 @@ export function MissionBoardPage() {
               <span className="coins-display">
                 <span className="coin-icon" role="img" aria-label="coins">🪙</span> Virtual Coins: {puppyProgress.earnedCoins}
               </span>
+              <button
+                type="button"
+                className="btn-analytics-pill"
+                style={{ background: '#0a4d42', color: '#ffffff', borderColor: '#0a4d42', fontWeight: 700 }}
+                onClick={() => setViewMode('JOURNEY')}
+              >
+                📈 My Money Journey
+              </button>
               <button
                 type="button"
                 className="btn-analytics-pill"
@@ -428,42 +464,15 @@ export function MissionBoardPage() {
             size={160}
           />
 
-          {/* Kid-Friendly Mission Briefing Card */}
-          <div className="level-intro-card">
-            <div className="intro-header-row">
-              <div className="intro-badges">
-                <span className="badge-chapter">
-                  ⭐ Chapter {activeLevel.levelNumber} of {currentMission.totalLevels}
-                </span>
-                <span className="badge-skill">
-                  🎯 Skill: {getFriendlySkillName(activeLevel.targetCompetency)}
-                </span>
-                <span className="badge-budget">
-                  💰 Budget: Rs. {activeLevel.startingBudgetLKR.toLocaleString()}
-                </span>
-              </div>
+          {/* Sleek Compact Mission Header */}
+          <div className="compact-mission-header">
+            <div className="header-meta-pills">
+              <span className="pill-chapter">Level {activeLevel.levelNumber} of {currentMission.totalLevels}</span>
+              <span className="pill-skill">🎯 {getFriendlySkillName(activeLevel.targetCompetency)}</span>
+              <span className="pill-budget">💰 Rs. {activeLevel.startingBudgetLKR.toLocaleString()}</span>
             </div>
-
-            <h2 className="intro-title">{activeLevel.title}</h2>
-            <p className="intro-subtitle">{activeLevel.subtitle}</p>
-
-            <div className="mission-brief-grid">
-              <div className="brief-card story-card">
-                <div className="brief-card-header">
-                  <span className="brief-icon">📖</span>
-                  <span className="brief-label">The Story</span>
-                </div>
-                <p className="brief-text">{activeLevel.storyIntro}</p>
-              </div>
-
-              <div className="brief-card goal-card">
-                <div className="brief-card-header">
-                  <span className="brief-icon">🎯</span>
-                  <span className="brief-label">Your Mission</span>
-                </div>
-                <p className="brief-text">{activeLevel.learningObjective}</p>
-              </div>
-            </div>
+            <h2 className="header-mission-title">{activeLevel.title}</h2>
+            <p className="header-mission-goal">🎯 {activeLevel.learningObjective}</p>
           </div>
 
           {/* Specialized Interactive Challenge by Type */}
@@ -519,6 +528,7 @@ export function MissionBoardPage() {
       {viewMode === 'TRANSITION' && lastMasteryResult && (
         <CharacterTransitionPanel
           transition={lastMasteryResult.characterTransition}
+          characterName={currentMission.characterName}
           onContinue={() => setViewMode('EVALUATION')}
         />
       )}
@@ -550,21 +560,44 @@ export function MissionBoardPage() {
       {viewMode === 'MISSION_COMPLETE' && (
         <div className="mission-complete-card">
           <div className="completion-hero">
-            <PuppyCharacterSvg
-              condition="HEALTHY_ACTIVE"
-              emotion="JOYFUL_HEALTHY"
-              size={220}
-            />
-            <h1 className="completion-title">🎉 Barnaby is Fully Rescued & Adopted!</h1>
+            {selectedMissionId === 'mission_panda_fair' ? (
+              <PandaCharacterSvg
+                condition="HEALTHY_ACTIVE"
+                emotion="PROUD_AND_HAPPY"
+                size={220}
+              />
+            ) : selectedMissionId === 'mission_squirrel_savings' ? (
+              <SquirrelCharacterSvg
+                condition="HEALTHY_ACTIVE"
+                emotion="HAPPY_AND_SECURE"
+                size={220}
+              />
+            ) : (
+              <PuppyCharacterSvg
+                condition="HEALTHY_ACTIVE"
+                emotion="JOYFUL_HEALTHY"
+                size={220}
+              />
+            )}
+            <h1 className="completion-title">
+              {selectedMissionId === 'mission_panda_fair'
+                ? "🎉 The School Charity Fair is a Triumphant Success!"
+                : selectedMissionId === 'mission_squirrel_savings'
+                ? "🎉 Nutty's Winter Sanctuary is Fully Prepared!"
+                : '🎉 Barnaby is Fully Rescued & Adopted!'}
+            </h1>
             <p className="completion-subtitle">
-              Through all 8 financial story chapters, your responsible budgeting, savings discipline,
-              and emergency preparedness nurtured Barnaby back to vibrant, joyful health!
+              {selectedMissionId === 'mission_panda_fair'
+                ? "Through all 6 financial story chapters, your responsible budgeting, vendor price comparisons, and disciplined stewardship funded the Community Learning Library and left seed reserves for next year!"
+                : selectedMissionId === 'mission_squirrel_savings'
+                ? "Through all 6 financial story chapters, your responsible budgeting, savings discipline, and emergency resilience secured Nutty's warm home, full pantry, and happy winter survival!"
+                : 'Through all 8 financial story chapters, your responsible budgeting, savings discipline, and emergency preparedness nurtured Barnaby back to vibrant, joyful health!'}
             </p>
           </div>
 
           <div className="completion-stats-grid">
             <div className="comp-stat-card">
-              <span className="comp-stat-num">8 / 8</span>
+              <span className="comp-stat-num">{currentMission.totalLevels} / {currentMission.totalLevels}</span>
               <span className="comp-stat-label">Levels Cleared</span>
             </div>
             <div className="comp-stat-card">
