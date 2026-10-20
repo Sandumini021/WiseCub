@@ -1,0 +1,187 @@
+{
+  "evaluation_timestamp_utc": "2026-10-20T16:04:30Z",
+  "model_version": "v1.0.0",
+  "model_architecture": "HistGradientBoostingClassifier",
+  "random_seed": 42,
+  "dataset_split": {
+    "train_records": 1755,
+    "train_students": 210,
+    "val_records": 372,
+    "val_students": 45,
+    "test_records": 373,
+    "test_students": 45
+  },
+  "features": {
+    "all_allowed": [
+      "mission_id",
+      "level_id",
+      "interaction_type",
+      "level_number",
+      "starting_budget_lkr",
+      "attempt_number",
+      "is_retry",
+      "step_index",
+      "hist_completed_levels_count",
+      "hist_prior_attempts_count",
+      "hist_retry_rate",
+      "hist_remediation_count",
+      "hist_avg_budgeting_score",
+      "hist_avg_spending_score",
+      "hist_avg_saving_score",
+      "hist_avg_investment_score",
+      "hist_avg_planning_score",
+      "hist_avg_emergency_prep_score",
+      "hist_overall_score_avg",
+      "hist_consecutive_fails",
+      "hist_consecutive_passes"
+    ],
+    "categorical": [
+      "mission_id",
+      "level_id",
+      "interaction_type"
+    ],
+    "numerical": [
+      "level_number",
+      "starting_budget_lkr",
+      "attempt_number",
+      "is_retry",
+      "step_index",
+      "hist_completed_levels_count",
+      "hist_prior_attempts_count",
+      "hist_retry_rate",
+      "hist_remediation_count",
+      "hist_avg_budgeting_score",
+      "hist_avg_spending_score",
+      "hist_avg_saving_score",
+      "hist_avg_investment_score",
+      "hist_avg_planning_score",
+      "hist_avg_emergency_prep_score",
+      "hist_overall_score_avg",
+      "hist_consecutive_fails",
+      "hist_consecutive_passes"
+    ],
+    "count": 21
+  },
+  "target_labels": [
+    "NEEDS_FOUNDATION_SUPPORT",
+    "READY_FOR_STANDARD",
+    "READY_FOR_ADVANCED"
+  ],
+  "test_metrics": {
+    "accuracy": 0.622,
+    "balanced_accuracy": 0.6131,
+    "macro_precision": 0.6054,
+    "macro_recall": 0.6131,
+    "macro_f1": 0.6007,
+    "confusion_matrix": [
+      [
+        50,
+        34,
+        28
+      ],
+      [
+        40,
+        63,
+        27
+      ],
+      [
+        2,
+        10,
+        119
+      ]
+    ],
+    "classification_report": {
+      "NEEDS_FOUNDATION_SUPPORT": {
+        "precision": 0.5434782608695652,
+        "recall": 0.44642857142857145,
+        "f1-score": 0.49019607843137253,
+        "support": 112.0
+      },
+      "READY_FOR_STANDARD": {
+        "precision": 0.5887850467289719,
+        "recall": 0.4846153846153846,
+        "f1-score": 0.5316455696202531,
+        "support": 130.0
+      },
+      "READY_FOR_ADVANCED": {
+        "precision": 0.6839080459770115,
+        "recall": 0.9083969465648855,
+        "f1-score": 0.780327868852459,
+        "support": 131.0
+      },
+      "accuracy": 0.6219839142091153,
+      "macro avg": {
+        "precision": 0.6053904511918495,
+        "recall": 0.6131469675362805,
+        "f1-score": 0.6007231723013615,
+        "support": 373.0
+      },
+      "weighted avg": {
+        "precision": 0.6085886737671478,
+        "recall": 0.6219839142091153,
+        "f1-score": 0.6065384333903988,
+        "support": 373.0
+      }
+    }
+  },
+  "educational_risks": {
+    "foundation_support_recall": 0.4464,
+    "actual_foundation_misclassified_as_advanced": 28,
+    "actual_standard_misclassified_as_advanced": 27,
+    "support_actual_total": 112,
+    "confidence_correct_mean": 0.7301,
+    "confidence_incorrect_mean": 0.6294
+  },
+  "subgroups": {
+    "by_mission": {
+      "mission_rescue_puppy": {
+        "records": 134,
+        "accuracy": 0.6716,
+        "macro_f1": 0.6481
+      },
+      "mission_squirrel_savings": {
+        "records": 90,
+        "accuracy": 0.6778,
+        "macro_f1": 0.6267
+      },
+      "mission_panda_fair": {
+        "records": 149,
+        "accuracy": 0.5436,
+        "macro_f1": 0.523
+      }
+    },
+    "by_level_depth": {
+      "early_levels_1_to_3": {
+        "records": 221,
+        "accuracy": 0.5882,
+        "macro_f1": 0.5848
+      },
+      "late_levels_4_to_8": {
+        "records": 152,
+        "accuracy": 0.6711,
+        "macro_f1": 0.6049
+      }
+    },
+    "by_learner_history": {
+      "cold_start_records": {
+        "records": 93,
+        "accuracy": 0.5161,
+        "macro_f1": 0.4834
+      },
+      "established_history_records": {
+        "records": 280,
+        "accuracy": 0.6571,
+        "macro_f1": 0.6207
+      }
+    }
+  },
+  "fallback_policy": {
+    "confidence_threshold": 0.5,
+    "min_prior_attempts": 2,
+    "fallback_triggered_count": 97,
+    "fallback_triggered_rate": 0.2601,
+    "accepted_predictions_count": 276,
+    "accepted_predictions_accuracy": 0.663,
+    "accepted_predictions_macro_f1": 0.6258
+  }
+}

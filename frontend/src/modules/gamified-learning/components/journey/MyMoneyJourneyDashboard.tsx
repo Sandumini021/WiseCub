@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { getJourneyOverview } from '../../services/gamifiedApi';
+import { getJourneyOverview, getAdaptiveRecommendation } from '../../services/gamifiedApi';
 import {
   JourneyOverview,
   JourneyMissionSummary,
   SkillMetric,
+  AdaptiveRecommendation,
 } from '../../types/journey.types';
 import { CharacterEmotionalState, CharacterPhysicalCondition } from '../../types/emotion.types';
 import { PuppyCharacterSvg } from '../character/PuppyCharacterSvg';
@@ -25,11 +26,27 @@ export const MyMoneyJourneyDashboard: React.FC<MyMoneyJourneyDashboardProps> = (
   const [error, setError] = useState<string | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<SkillMetric | null>(null);
   const [inspectMissionId, setInspectMissionId] = useState<string | null>(null);
+  const [recommendation, setRecommendation] = useState<AdaptiveRecommendation | null>(null);
+  const [recLoading, setRecLoading] = useState<boolean>(true);
 
   useEffect(() => {
     let mounted = true;
     setLoading(true);
     setError(null);
+
+    getAdaptiveRecommendation()
+      .then((rec) => {
+        if (mounted) {
+          setRecommendation(rec);
+          setRecLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (mounted) {
+          console.warn('Adaptive recommendation unavailable:', err);
+          setRecLoading(false);
+        }
+      });
 
     getJourneyOverview()
       .then((overview) => {
@@ -284,6 +301,78 @@ export const MyMoneyJourneyDashboard: React.FC<MyMoneyJourneyDashboardProps> = (
             );
           })}
         </div>
+      </section>
+
+      {/* SECTION B.5: RECOMMENDED FOR YOU (CDEMF ADAPTIVE AI) */}
+      <section className="dashboard-section adaptive-recommendation-section">
+        <div className="section-header-row">
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h2 className="section-heading">Recommended for You</h2>
+              <span className="adaptive-ai-pill">✨ Adaptive AI</span>
+            </div>
+            <p className="section-subheading">
+              Personalized practice suggestions synthesized from your recent competency evidence and story progress.
+            </p>
+          </div>
+        </div>
+
+        {recLoading ? (
+          <div className="adaptive-rec-loading-card">
+            <div className="journey-spinner" style={{ width: 24, height: 24 }} />
+            <span>Analyzing your financial gameplay patterns...</span>
+          </div>
+        ) : recommendation ? (
+          <div className={`adaptive-rec-card category-${recommendation.recommendedCategory.toLowerCase()}`}>
+            <div className="rec-card-main">
+              <div className="rec-badge-row">
+                <span className="rec-mission-badge">
+                  🎮 {recommendation.recommendedMissionTitle}
+                </span>
+                <span className={`rec-tier-badge tier-${recommendation.recommendedCategory.toLowerCase()}`}>
+                  {recommendation.recommendedCategory === 'FOUNDATION'
+                    ? '🌱 Foundation Practice'
+                    : recommendation.recommendedCategory === 'ADVANCED'
+                    ? '⚡ Advanced Challenge'
+                    : '🎯 Standard Practice'}
+                </span>
+                {recommendation.isOptional && (
+                  <span className="rec-optional-badge">⭐ Optional Bonus Challenge</span>
+                )}
+              </div>
+
+              <h3 className="rec-title">{recommendation.recommendationTitle}</h3>
+              <p className="rec-competency-tag">
+                Focus Skill: <strong>{recommendation.recommendedCompetency}</strong> (Level {recommendation.recommendedLevelNumber})
+              </p>
+              <p className="rec-explanation">"{recommendation.explanation}"</p>
+            </div>
+
+            <div className="rec-action-col">
+              <button
+                type="button"
+                className="btn-practice-now"
+                onClick={() =>
+                  onNavigateToMission(
+                    recommendation.recommendedMissionId,
+                    recommendation.recommendedLevelNumber
+                  )
+                }
+              >
+                {recommendation.recommendedCategory === 'FOUNDATION'
+                  ? 'Review Practice'
+                  : recommendation.recommendedCategory === 'ADVANCED'
+                  ? 'Try Challenge'
+                  : 'Practice Now'} →
+              </button>
+              <span className="rec-action-hint">{recommendation.pedagogicalAction}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="adaptive-rec-fallback-card">
+            <p>Ready to continue your financial adventure? Pick any mission card above to keep learning!</p>
+          </div>
+        )}
       </section>
 
       {/* SECTION C: FINANCIAL SKILLS PROFILE */}

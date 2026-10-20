@@ -384,3 +384,48 @@ class JourneyMissionDetailOut(BaseModel):
     character_state: CharacterStateOut
     character_history: list[CharacterStateHistoryEntryOut]
 
+
+
+# ── Outbound: ML Prediction & Adaptive Recommendation (Checkpoint D) ─────────
+
+class MLSupportPredictionOut(BaseModel):
+    child_id: str
+    predicted_support_need: str
+    confidence: float
+    model_version: str
+    prediction_source: str
+    fallback_used: bool
+    fallback_reason: str | None = None
+    class_probabilities: dict[str, float]
+
+
+class RecommendationSafetyAuditOut(BaseModel):
+    cdemf_mastery_confirmed: bool
+    ml_raw_prediction: str
+    ml_confidence: float
+    disagreement_detected: bool
+    disagreement_override_applied: bool
+    unlocked_level_verified: bool
+    override_reason: str | None = None
+
+
+class AdaptiveMissionRecommendationOut(BaseModel):
+    child_id: str
+    recommended_category: str
+    recommended_competency: str
+    recommended_mission_id: str
+    recommended_mission_title: str
+    recommended_level_number: int
+    recommended_level_id: str
+    recommended_level_title: str
+    recommended_interaction_type: str
+    recommendation_title: str
+    explanation: str
+    pedagogical_action: str
+    is_optional: bool
+    prediction_source: str
+    fallback_used: bool
+    fallback_reason: str | None = None
+    model_version: str
+    can_navigate: bool = True
+    safety_audit: RecommendationSafetyAuditOut

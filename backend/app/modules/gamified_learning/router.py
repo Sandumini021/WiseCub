@@ -1533,3 +1533,74 @@ async def get_journey_mission_detail(
         character_state=_char_state_out(cs),
         character_history=char_history,
     )
+
+
+# ── ML Support Prediction & Adaptive Recommendation (Checkpoint D) ───────────
+
+from app.modules.gamified_learning.models import (
+    MLSupportPredictionOut,
+    AdaptiveMissionRecommendationOut,
+    RecommendationSafetyAuditOut,
+)
+from app.modules.gamified_learning.ml.service import (
+    get_student_ml_prediction,
+    get_student_adaptive_recommendation,
+)
+
+
+@router.get("/api/gamified/ml/prediction", response_model=MLSupportPredictionOut)
+async def get_ml_support_prediction(request: Request) -> MLSupportPredictionOut:
+    """
+    Authenticated endpoint returning the student's forward instructional support
+    prediction derived from real MongoDB gameplay history.
+    """
+    account = await current_account(request)
+    child_id: str = account["child_id"]
+    db = require_db()
+
+    pred_data = await get_student_ml_prediction(db, child_id)
+    return MLSupportPredictionOut(**pred_data)
+
+
+@router.get("/api/gamified/ml/adaptive-recommendation", response_model=AdaptiveMissionRecommendationOut)
+async def get_adaptive_recommendation(request: Request) -> AdaptiveMissionRecommendationOut:
+    """
+    Authenticated endpoint returning student-tailored, safe adaptive practice
+    recommendations synthesized from ML predictions, CDEMF safety gates,
+    and actual unlocked mission content.
+    """
+    account = await current_account(request)
+    child_id: str = account["child_id"]
+    db = require_db()
+
+    rec_result = await get_student_adaptive_recommendation(db, child_id)
+
+    return AdaptiveMissionRecommendationOut(
+        child_id=child_id,
+        recommended_category=rec_result.recommended_category,
+        recommended_competency=rec_result.recommended_competency,
+        recommended_mission_id=rec_result.recommended_mission_id,
+        recommended_mission_title=rec_result.recommended_mission_title,
+        recommended_level_number=rec_result.recommended_level_number,
+        recommended_level_id=rec_result.recommended_level_id,
+        recommended_level_title=rec_result.recommended_level_title,
+        recommended_interaction_type=rec_result.recommended_interaction_type,
+        recommendation_title=rec_result.recommendation_title,
+        explanation=rec_result.explanation,
+        pedagogical_action=rec_result.pedagogical_action,
+        is_optional=rec_result.is_optional,
+        prediction_source=rec_result.prediction_source,
+        fallback_used=rec_result.fallback_used,
+        fallback_reason=rec_result.fallback_reason,
+        model_version=rec_result.model_version,
+        can_navigate=rec_result.safety_audit.unlocked_level_verified,
+        safety_audit=RecommendationSafetyAuditOut(
+            cdemf_mastery_confirmed=rec_result.safety_audit.cdemf_mastery_confirmed,
+            ml_raw_prediction=rec_result.safety_audit.ml_raw_prediction,
+            ml_confidence=rec_result.safety_audit.ml_confidence,
+            disagreement_detected=rec_result.safety_audit.disagreement_detected,
+            disagreement_override_applied=rec_result.safety_audit.disagreement_override_applied,
+            unlocked_level_verified=rec_result.safety_audit.unlocked_level_verified,
+            override_reason=rec_result.safety_audit.override_reason,
+        ),
+    )
