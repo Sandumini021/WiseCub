@@ -131,3 +131,25 @@ export interface JourneyMissionDetail {
     transition_reason: string;
   }>;
 }
+
+
+export interface AdaptiveRecommendation {
+  childId: string;
+  recommendedCategory: 'FOUNDATION' | 'STANDARD' | 'ADVANCED';
+  recommendedCompetency: string;
+  recommendedMissionId: string;
+  recommendedMissionTitle: string;
+  recommendedLevelNumber: number;
+  recommendedLevelId: string;
+  recommendedLevelTitle: string;
+  recommendedInteractionType: string;
+  recommendationTitle: string;
+  explanation: string;
+  pedagogicalAction: string;
+  isOptional: boolean;
+  predictionSource: string;
+  fallbackUsed: boolean;
+  fallbackReason: string | null;
+  modelVersion: string;
+  canNavigate: boolean;
+}
