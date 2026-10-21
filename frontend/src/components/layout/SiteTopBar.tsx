@@ -1,18 +1,21 @@
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useLang } from "../../i18n/useLang";
 import { ChildAvatar } from "../../pages/auth/ChildAvatar";
 import { clearDemoChild, useDemoChild } from "../../pages/auth/demoSession";
 import { homePathForRole } from "../../pages/auth/roles";
+import { LanguageSelect } from "./LanguageSelect";
 
 const STUDENT_TABS = [
-  { to: "/student/dashboard", label: "Home", icon: "⌂", match: ["/home", "/student/dashboard"] },
-  { to: "/missions", label: "Learn", icon: "▣" },
-  { to: "/market", label: "Market", icon: "▤" },
-  { to: "/safety", label: "Stay Safe", icon: "◈" },
-  { to: "/choices", label: "Life Choices", icon: "◎" },
-  { to: "/tax", label: "Tax Lab", icon: "▣" },
+  { to: "/student/dashboard", key: "nav.home" as const, icon: "⌂", match: ["/home", "/student/dashboard"] },
+  { to: "/missions", key: "nav.learn" as const, icon: "▣" },
+  { to: "/market", key: "nav.market" as const, icon: "▤" },
+  { to: "/safety", key: "nav.safety" as const, icon: "◈" },
+  { to: "/choices", key: "nav.choices" as const, icon: "◎" },
+  { to: "/tax", key: "nav.tax" as const, icon: "▣" },
 ] as const;
 
 export function SiteTopBar() {
+  const { t } = useLang();
   const { child } = useDemoChild();
   const location = useLocation();
   const navigate = useNavigate();
@@ -60,14 +63,12 @@ export function SiteTopBar() {
               }}
             >
               <span aria-hidden="true">{tab.icon}</span>
-              {tab.label}
+              {t(tab.key)}
             </NavLink>
           ))}
         </nav>
         <div className="dash-top-right">
-          <span className="dash-en" title="English first. Sinhala comes later.">
-            EN
-          </span>
+          <LanguageSelect />
           {displayName ? (
             <>
               <Link className="dash-user" to="/profile" title={displayName}>
@@ -75,16 +76,16 @@ export function SiteTopBar() {
                 <span>{displayName}</span>
               </Link>
               <button className="dash-signout" type="button" onClick={onSignOut}>
-                Sign out
+                {t("common.signOut")}
               </button>
             </>
           ) : (
             <div className="dash-auth">
               <Link className="dash-login" to="/login">
-                Login
+                {t("common.login")}
               </Link>
               <Link className="dash-signup" to="/signup">
-                Sign up
+                {t("common.signup")}
               </Link>
             </div>
           )}

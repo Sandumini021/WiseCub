@@ -1,18 +1,21 @@
 import { useMemo, useState } from "react";
 import { RequireRole } from "../../components/auth/RequireRole";
 import { RoleShell } from "../../components/layout/RoleShell";
+import { useLang } from "../../i18n/useLang";
 import { useDemoChild } from "../auth/demoSession";
 import { makeJoinCode, readTeacherDesk, saveTeacherDesk, type DeskClass } from "./teacherPreview";
 import "../../styles/role-workbench.css";
 
-const LINKS = [
-  { to: "/teacher/dashboard", label: "Home" },
-  { to: "/teacher/classes", label: "Classes" },
-  { to: "/teacher/students", label: "Students" },
-  { to: "/teacher/quizzes", label: "Quizzes" },
-  { to: "/teacher/assignments", label: "Tasks" },
-  { to: "/teacher/reports", label: "Reports" },
-];
+function teacherLinks(t: (path: string) => string) {
+  return [
+    { to: "/teacher/dashboard", label: t("nav.home") },
+    { to: "/teacher/classes", label: t("nav.classes") },
+    { to: "/teacher/students", label: t("nav.students") },
+    { to: "/teacher/quizzes", label: t("nav.quizzes") },
+    { to: "/teacher/assignments", label: t("nav.tasks") },
+    { to: "/teacher/reports", label: t("nav.reports") },
+  ];
+}
 
 type View = "home" | "classes" | "students" | "quizzes" | "assignments" | "reports";
 
@@ -21,6 +24,7 @@ function firstName(full?: string) {
 }
 
 export function TeacherDesk({ view }: { view: View }) {
+  const { t } = useLang();
   const { child } = useDemoChild();
   const [desk, setDesk] = useState(readTeacherDesk);
   const [classId, setClassId] = useState(desk.classes[0]?.id ?? "");
@@ -36,12 +40,12 @@ export function TeacherDesk({ view }: { view: View }) {
 
   const stats = useMemo(
     () => [
-      { n: desk.classes.length, l: "Classes" },
-      { n: desk.students.length, l: "Learners" },
-      { n: Math.round(desk.students.reduce((s, r) => s + r.lessons, 0) / Math.max(desk.students.length, 1)), l: "Avg lessons" },
-      { n: desk.students.filter((r) => r.wait < 50).length, l: "Need a nudge" },
+      { n: desk.classes.length, l: t("teacher.classes") },
+      { n: desk.students.length, l: t("teacher.learners") },
+      { n: Math.round(desk.students.reduce((s, r) => s + r.lessons, 0) / Math.max(desk.students.length, 1)), l: t("teacher.avg") },
+      { n: desk.students.filter((r) => r.wait < 50).length, l: t("teacher.nudge") },
     ],
-    [desk],
+    [desk, t],
   );
 
   function persist(next: typeof desk) {
@@ -73,12 +77,12 @@ export function TeacherDesk({ view }: { view: View }) {
 
   return (
     <RequireRole role="teacher">
-    <RoleShell title="Teacher desk" banner="Classroom preview on this device. You cannot open another teacher’s class from here." links={LINKS}>
+    <RoleShell title={t("teacher.title")} banner={t("teacher.banner")} links={teacherLinks(t)}>
       <section className="rb-hero">
         <div>
-          <p>Teacher desk</p>
-          <h1>Hi, {firstName(child?.name)}</h1>
-          <p>Watch habits, not profit. This board is a local classroom preview.</p>
+          <p>{t("teacher.title")}</p>
+          <h1>{t("teacher.hi", { name: firstName(child?.name) })}</h1>
+          <p>{t("teacher.lead")}</p>
         </div>
         <div className="rb-stats">
           {stats.map((item) => (

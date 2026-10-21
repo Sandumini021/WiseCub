@@ -19,8 +19,11 @@ export type CoachCard = {
 
 const DISMISS_KEY = "wisecub.marketCoachDismissed";
 
-function pick(lang: CubLang, copy: { en: string; si: string }) {
-  return copy[lang];
+function pick(lang: CubLang, copy: { en: string; si: string; sg?: string }) {
+  if (lang === "sg") {
+    return copy.sg ?? copy.en;
+  }
+  return lang === "si" ? copy.si : copy.en;
 }
 
 export function readDismissed(): string[] {

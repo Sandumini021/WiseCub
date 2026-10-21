@@ -1,9 +1,16 @@
 import { Link } from "react-router-dom";
+import { LanguageSelect } from "../components/layout/LanguageSelect";
+import { useLang } from "../i18n/useLang";
 import "../styles/splash.css";
 
 export function SplashPage() {
+  const { t } = useLang();
   return (
-    <Link className="splash" id="main" to="/login" aria-label="WiseCub. Tap anywhere to continue to login.">
+    <div className="splash-wrap">
+    <div className="splash-lang">
+      <LanguageSelect />
+    </div>
+    <Link className="splash" id="main" to="/login" aria-label={t("splash.continue")}>
       <span className="splash-star splash-star-a" aria-hidden="true">
         ✦
       </span>
@@ -27,7 +34,8 @@ export function SplashPage() {
       <span className="splash-cta" aria-hidden="true">
         →
       </span>
-      <span className="visually-hidden">Continue to login</span>
+      <span className="visually-hidden">{t("splash.continue")}</span>
     </Link>
+    </div>
   );
 }

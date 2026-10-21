@@ -29,7 +29,8 @@ export function CubFace({
     setBroken(false);
   }, [expression]);
   const src = broken ? CUB_EXPRESSION_FALLBACK : expressionSrc(expression);
-  const alt = CUB_EXPRESSION_ALT[expression]?.[lang] ?? name;
+  const row = CUB_EXPRESSION_ALT[expression];
+  const alt = (lang === "si" ? row?.si : row?.en) ?? name;
 
   return (
     <figure className={`cub-face-block${speaking ? " is-speaking" : ""}`} style={{ ["--cub-size" as string]: `${size}px` }}>

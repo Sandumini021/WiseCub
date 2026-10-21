@@ -1,10 +1,12 @@
 import { ChildAvatar } from "../auth/ChildAvatar";
 import { PRACTICE_AVATARS } from "../auth/avatars";
 import { persistAvatar, useDemoChild } from "../auth/demoSession";
-import en from "../../locales/en.json";
+import { LanguageSelect } from "../../components/layout/LanguageSelect";
+import { useLang } from "../../i18n/useLang";
 import "../../styles/signup.css";
 
 export function ProfilePage() {
+  const { t } = useLang();
   const { child } = useDemoChild();
   const name = child?.name?.trim() || "Guest";
   const isStudent = (child?.role ?? "student") === "student";
@@ -18,9 +20,10 @@ export function ProfilePage() {
 
   return (
     <>
-      <h1>{en.profile.title}</h1>
+      <h1>{t("profile.title")}</h1>
+      <LanguageSelect />
       <p>
-        {child?.username ? `@${child.username}` : en.profile.intro} · demo {child?.role ?? "student"}
+        {child?.username ? `@${child.username}` : t("profile.intro")} · demo {child?.role ?? "student"}
       </p>
       <ChildAvatar className="profile-face" avatarId={child?.avatarId} name={name} />
       <p>
