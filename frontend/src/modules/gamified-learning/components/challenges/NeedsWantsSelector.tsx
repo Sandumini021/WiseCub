@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LevelDefinition } from '../../types/mission.types';
 
 interface NeedsWantsSelectorProps {
@@ -14,6 +14,10 @@ export const NeedsWantsSelector: React.FC<NeedsWantsSelectorProps> = ({
 }) => {
   const options = level.options || [];
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [level.id]);
 
   const toggleOption = (id: string) => {
     if (disabled) return;
@@ -78,7 +82,7 @@ export const NeedsWantsSelector: React.FC<NeedsWantsSelectorProps> = ({
             >
               <div className="option-card-header">
                 <span className={`option-category-badge ${opt.isEssential ? 'badge-essential' : 'badge-discretionary'}`}>
-                  {opt.isEssential ? '⭐ Indispensable Need' : '🎈 Optional Want'}
+                  {opt.isEssential ? '⭐ Essential Need' : '🎈 Optional Want'}
                 </span>
                 <span className="option-price-tag">Rs. {opt.costLKR.toLocaleString()}</span>
               </div>

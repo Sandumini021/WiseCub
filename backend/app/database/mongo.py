@@ -58,6 +58,18 @@ async def connect() -> None:
         )
         await db.market_events.create_index([("child_id", 1), ("at", 1)])
         await db.market_events.create_index([("child_id", 1), ("session_id", 1)])
+
+        # Scam safety guardian consent and simulation indexes
+        await db.guardian_consent.create_index("child_id", unique=True)
+        await db.safety_simulations.create_index(
+            [("child_id", 1), ("category_id", 1), ("attempt_id", 1)],
+            unique=True,
+        )
+        await db.safety_simulations.create_index("simulation_id", unique=True)
+
+        # Gamified-learning collections
+        from app.modules.gamified_learning.indexes import ensure_gamified_indexes
+        await ensure_gamified_indexes(db)
     except PyMongoError:
         # API still starts. /health reports database as down until Mongo is running.
         pass

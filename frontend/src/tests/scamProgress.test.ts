@@ -8,8 +8,12 @@ import {
   getNextCategory,
   loadScamProgress,
   saveCategoryProgress,
+  mergeProgress,
+  syncProgressFromBackend,
+  syncProgressToBackend,
   SCAM_SCORES_STORAGE_KEY,
   type CategoryId,
+  type ScamProgress,
 } from "../modules/scam-safety/services/scamProgress.ts";
 
 // Mock localStorage for Node test runner
@@ -260,4 +264,410 @@ describe("WiseCub Scam Safety - Scam Text Messages Level", () => {
     assert.equal(getCategoryStatus("qr", reloaded.completedCategories), "available", "QR remains unlocked after storage reload");
   });
 });
+
+describe("WiseCub Scam Safety - Fake QR-code Offers Level (qr)", () => {
+  beforeEach(() => {
+    mockStorage.clear();
+  });
+
+  it("QR Level Content: Contains 7 lesson sections and 8 scenarios with correct answer distribution", async () => {
+    const { getLessonSectionsForCategory, getScenariosForCategory } = await import(
+      "../modules/scam-safety/data/smsScenarios.ts"
+    );
+
+    const sections = getLessonSectionsForCategory("qr");
+    assert.equal(sections.length, 7, "QR lesson must contain 7 sections");
+    const headings = sections.map((s) => s.heading);
+    assert.ok(headings.some((h) => h.includes("Quishing")), "Should cover Quishing");
+    assert.ok(headings.some((h) => h.includes("Sticker")), "Should cover sticker trick");
+    assert.ok(headings.some((h) => h.includes("Preview")), "Should cover checking preview link");
+
+    const scenarios = getScenariosForCategory("qr");
+    assert.equal(scenarios.length, 8, "Must contain 8 QR scenarios");
+    let suspiciousCount = 0;
+    let safeCount = 0;
+
+    for (const sc of scenarios) {
+      assert.ok(sc.id >= 301 && sc.id <= 308, `Invalid scenario ID: ${sc.id}`);
+      assert.ok(sc.body.length > 0, "Scenario must have body");
+      assert.ok(sc.warningSigns.length >= 2, "Must provide warning signs");
+      assert.ok(sc.explanation.length > 0, "Must provide explanation");
+      assert.ok(sc.tip.length > 0, "Must provide tip");
+
+      if (sc.correctAnswer === "Suspicious") suspiciousCount++;
+      if (sc.correctAnswer === "Looks Safe") safeCount++;
+    }
+
+    assert.equal(suspiciousCount, 5, "Must have 5 suspicious QR scenarios");
+    assert.equal(safeCount, 3, "Must have 3 safe QR scenarios");
+  });
+
+  it("QR Level Unlocking: Passing QR with >= 80% unlocks Prize scams (prize)", () => {
+    saveCategoryProgress("phishing", 80);
+    saveCategoryProgress("sms", 80);
+
+    // Score 70% on QR
+    const pFail = saveCategoryProgress("qr", 70);
+    assert.equal(getCategoryStatus("prize", pFail.completedCategories), "locked");
+
+    // Score 80% on QR
+    const pPass = saveCategoryProgress("qr", 80);
+    assert.equal(getCategoryStatus("qr", pPass.completedCategories), "completed");
+    assert.equal(getCategoryStatus("prize", pPass.completedCategories), "available");
+  });
+});
+
+describe("WiseCub Scam Safety - Prize and Giveaway Scams Level (prize)", () => {
+  beforeEach(() => {
+    mockStorage.clear();
+  });
+
+  it("Prize Level Content: Contains 7 lesson sections and 8 scenarios with correct answer distribution", async () => {
+    const { getLessonSectionsForCategory, getScenariosForCategory } = await import(
+      "../modules/scam-safety/data/smsScenarios.ts"
+    );
+
+    const sections = getLessonSectionsForCategory("prize");
+    assert.equal(sections.length, 7, "Prize lesson must contain 7 sections");
+    const headings = sections.map((s) => s.heading);
+    assert.ok(headings.some((h) => h.includes("Wheel") || h.includes("Mystery")), "Should cover spin wheel/mystery box");
+    assert.ok(headings.some((h) => h.includes("Shipping Fee") || h.includes("Advance")), "Should cover advance fees");
+
+    const scenarios = getScenariosForCategory("prize");
+    assert.equal(scenarios.length, 8, "Must contain 8 prize scenarios");
+    let suspiciousCount = 0;
+    let safeCount = 0;
+
+    for (const sc of scenarios) {
+      assert.ok(sc.id >= 401 && sc.id <= 408, `Invalid scenario ID: ${sc.id}`);
+      assert.ok(sc.body.length > 0, "Scenario must have body");
+      assert.ok(sc.warningSigns.length >= 2, "Must provide warning signs");
+      assert.ok(sc.explanation.length > 0, "Must provide explanation");
+      assert.ok(sc.tip.length > 0, "Must provide tip");
+
+      if (sc.correctAnswer === "Suspicious") suspiciousCount++;
+      if (sc.correctAnswer === "Looks Safe") safeCount++;
+    }
+
+    assert.equal(suspiciousCount, 5, "Must have 5 suspicious prize scenarios");
+    assert.equal(safeCount, 3, "Must have 3 safe prize scenarios");
+  });
+
+  it("Prize Level Unlocking: Passing Prize with >= 80% unlocks Impersonation scams (impersonation)", () => {
+    saveCategoryProgress("phishing", 80);
+    saveCategoryProgress("sms", 80);
+    saveCategoryProgress("qr", 80);
+
+    const pFail = saveCategoryProgress("prize", 60);
+    assert.equal(getCategoryStatus("impersonation", pFail.completedCategories), "locked");
+
+    const pPass = saveCategoryProgress("prize", 80);
+    assert.equal(getCategoryStatus("prize", pPass.completedCategories), "completed");
+    assert.equal(getCategoryStatus("impersonation", pPass.completedCategories), "available");
+  });
+});
+
+describe("WiseCub Scam Safety - Impersonation Scams Level (impersonation)", () => {
+  beforeEach(() => {
+    mockStorage.clear();
+  });
+
+  it("Impersonation Level Content: Contains 7 lesson sections and 8 scenarios with correct answer distribution", async () => {
+    const { getLessonSectionsForCategory, getScenariosForCategory } = await import(
+      "../modules/scam-safety/data/smsScenarios.ts"
+    );
+
+    const sections = getLessonSectionsForCategory("impersonation");
+    assert.equal(sections.length, 7, "Impersonation lesson must contain 7 sections");
+    const headings = sections.map((s) => s.heading);
+    assert.ok(headings.some((h) => h.includes("Game Moderators") || h.includes("Admin")), "Should cover fake mods/admins");
+    assert.ok(headings.some((h) => h.includes("Cloned")), "Should cover cloned profiles");
+
+    const scenarios = getScenariosForCategory("impersonation");
+    assert.equal(scenarios.length, 8, "Must contain 8 impersonation scenarios");
+    let suspiciousCount = 0;
+    let safeCount = 0;
+
+    for (const sc of scenarios) {
+      assert.ok(sc.id >= 501 && sc.id <= 508, `Invalid scenario ID: ${sc.id}`);
+      assert.ok(sc.body.length > 0, "Scenario must have body");
+      assert.ok(sc.warningSigns.length >= 2, "Must provide warning signs");
+      assert.ok(sc.explanation.length > 0, "Must provide explanation");
+      assert.ok(sc.tip.length > 0, "Must provide tip");
+
+      if (sc.correctAnswer === "Suspicious") suspiciousCount++;
+      if (sc.correctAnswer === "Looks Safe") safeCount++;
+    }
+
+    assert.equal(suspiciousCount, 5, "Must have 5 suspicious impersonation scenarios");
+    assert.equal(safeCount, 3, "Must have 3 safe impersonation scenarios");
+  });
+
+  it("Impersonation Level Unlocking: Passing Impersonation with >= 80% unlocks Financial scams (financial)", () => {
+    saveCategoryProgress("phishing", 80);
+    saveCategoryProgress("sms", 80);
+    saveCategoryProgress("qr", 80);
+    saveCategoryProgress("prize", 80);
+
+    const pFail = saveCategoryProgress("impersonation", 75);
+    assert.equal(getCategoryStatus("financial", pFail.completedCategories), "locked");
+
+    const pPass = saveCategoryProgress("impersonation", 85);
+    assert.equal(getCategoryStatus("impersonation", pPass.completedCategories), "completed");
+    assert.equal(getCategoryStatus("financial", pPass.completedCategories), "available");
+  });
+});
+
+describe("WiseCub Scam Safety - Deceptive Financial Offers Level (financial)", () => {
+  beforeEach(() => {
+    mockStorage.clear();
+  });
+
+  it("Financial Level Content: Contains 7 lesson sections and 8 scenarios with correct answer distribution", async () => {
+    const { getLessonSectionsForCategory, getScenariosForCategory } = await import(
+      "../modules/scam-safety/data/smsScenarios.ts"
+    );
+
+    const sections = getLessonSectionsForCategory("financial");
+    assert.equal(sections.length, 7, "Financial lesson must contain 7 sections");
+    const headings = sections.map((s) => s.heading);
+    assert.ok(headings.some((h) => h.includes("Doubler")), "Should cover money doublers");
+    assert.ok(headings.some((h) => h.includes("Pyramid")), "Should cover pyramid schemes");
+
+    const scenarios = getScenariosForCategory("financial");
+    assert.equal(scenarios.length, 8, "Must contain 8 financial scenarios");
+    let suspiciousCount = 0;
+    let safeCount = 0;
+
+    for (const sc of scenarios) {
+      assert.ok(sc.id >= 601 && sc.id <= 608, `Invalid scenario ID: ${sc.id}`);
+      assert.ok(sc.body.length > 0, "Scenario must have body");
+      assert.ok(sc.warningSigns.length >= 2, "Must provide warning signs");
+      assert.ok(sc.explanation.length > 0, "Must provide explanation");
+      assert.ok(sc.tip.length > 0, "Must provide tip");
+
+      if (sc.correctAnswer === "Suspicious") suspiciousCount++;
+      if (sc.correctAnswer === "Looks Safe") safeCount++;
+    }
+
+    assert.equal(suspiciousCount, 5, "Must have 5 suspicious financial scenarios");
+    assert.equal(safeCount, 3, "Must have 3 safe financial scenarios");
+  });
+
+  it("End-to-End Progression: Completing all 6 categories unlocks entire journey", () => {
+    const cats: CategoryId[] = ["phishing", "sms", "qr", "prize", "impersonation", "financial"];
+    for (const c of cats) {
+      const p = saveCategoryProgress(c, 100);
+      assert.ok(p.completedCategories.includes(c));
+    }
+    const finalState = loadScamProgress();
+    assert.equal(finalState.completedCategories.length, 6);
+    assert.ok(cats.every((c) => finalState.completedCategories.includes(c)));
+  });
+});
+
+describe("WiseCub Scam Safety - Backend State Persistence & Merge Logic", () => {
+  beforeEach(() => {
+    mockStorage.clear();
+  });
+
+  it("mergeProgress: combines completedCategories as a union in correct order", () => {
+    const local: ScamProgress = {
+      completedCategories: ["phishing", "sms"],
+      categoryScores: { phishing: 80, sms: 85 },
+      lastUpdated: "2026-10-01T10:00:00.000Z",
+    };
+    const remote: ScamProgress = {
+      completedCategories: ["sms", "qr"],
+      categoryScores: { sms: 90, qr: 85 },
+      lastUpdated: "2026-10-02T10:00:00.000Z",
+    };
+
+    const merged = mergeProgress(local, remote);
+    assert.deepEqual(merged.completedCategories, ["phishing", "sms", "qr"]);
+    assert.equal(merged.categoryScores.phishing, 80);
+    assert.equal(merged.categoryScores.sms, 90, "Keeps the higher score for sms");
+    assert.equal(merged.categoryScores.qr, 85);
+    assert.equal(merged.lastUpdated, "2026-10-02T10:00:00.000Z");
+  });
+
+  it("mergeProgress: never removes previously earned completed categories", () => {
+    const local: ScamProgress = {
+      completedCategories: ["phishing", "sms", "qr"],
+      categoryScores: { phishing: 100, sms: 80, qr: 85 },
+      lastUpdated: "2026-10-02T10:00:00.000Z",
+    };
+    const emptyRemote: ScamProgress = {
+      completedCategories: [],
+      categoryScores: {},
+      lastUpdated: "2026-10-01T10:00:00.000Z",
+    };
+
+    const merged = mergeProgress(local, emptyRemote);
+    assert.deepEqual(merged.completedCategories, ["phishing", "sms", "qr"]);
+    assert.equal(merged.categoryScores.phishing, 100);
+  });
+
+  it("syncProgressFromBackend: merges remote state into localStorage and returns merged state", async () => {
+    saveCategoryProgress("phishing", 80, "child-123");
+
+    const mockLoadState = async (childId: string, module: string) => {
+      assert.equal(childId, "child-123");
+      assert.equal(module, "safety");
+      return {
+        child_id: "child-123",
+        module: "safety",
+        data: {
+          completedCategories: ["phishing", "sms"],
+          categoryScores: { phishing: 100, sms: 85 },
+          lastUpdated: new Date().toISOString(),
+        },
+      };
+    };
+
+    const res = await syncProgressFromBackend("child-123", mockLoadState);
+    assert.deepEqual(res.completedCategories, ["phishing", "sms"]);
+    assert.equal(res.categoryScores.phishing, 100);
+    assert.equal(res.categoryScores.sms, 85);
+
+    // Verify child-scoped localStorage was updated
+    const local = loadScamProgress("child-123");
+    assert.deepEqual(local.completedCategories, ["phishing", "sms"]);
+    assert.equal(local.categoryScores.phishing, 100);
+  });
+
+  it("syncProgressFromBackend: safely falls back to local progress if backend returns error", async () => {
+    saveCategoryProgress("phishing", 85, "child-123");
+
+    const mockFailingLoad = async () => {
+      throw new Error("Network error");
+    };
+
+    const res = await syncProgressFromBackend("child-123", mockFailingLoad);
+    assert.deepEqual(res.completedCategories, ["phishing"]);
+    assert.equal(res.categoryScores.phishing, 85);
+  });
+
+  it("New account with no backend progress (404) starts at Level 1 with all later categories locked", async () => {
+    // New account child-new has no prior local progress and backend returns 404
+    const mock404Load = async () => {
+      throw new Error("HTTP 404 Not Found");
+    };
+
+    const res = await syncProgressFromBackend("child-new", mock404Load);
+    assert.deepEqual(res.completedCategories, [], "New account must have 0 completed categories");
+    assert.deepEqual(res.categoryScores, {}, "New account must have no scores");
+
+    // Level status check: phishing is available, all others locked
+    assert.equal(getCategoryStatus("phishing", res.completedCategories), "available");
+    assert.equal(getCategoryStatus("sms", res.completedCategories), "locked");
+    assert.equal(getCategoryStatus("qr", res.completedCategories), "locked");
+    assert.equal(getCategoryStatus("prize", res.completedCategories), "locked");
+  });
+
+  it("Legacy unowned progress does NOT leak into a new registered account", async () => {
+    // Simulate legacy/unowned progress left in browser by older testing
+    mockStorage.setItem(
+      "wisecub.scamSafety.progress",
+      JSON.stringify({
+        completedCategories: ["phishing", "sms", "qr", "prize"],
+        categoryScores: { phishing: 100, sms: 100, qr: 100, prize: 100 },
+        lastUpdated: new Date().toISOString(),
+      })
+    );
+
+    // New child account registers
+    const mock404 = async () => {
+      throw new Error("HTTP 404");
+    };
+
+    const res = await syncProgressFromBackend("new-registered-child-999", mock404);
+    assert.deepEqual(res.completedCategories, [], "Must NOT inherit unowned legacy progress");
+    assert.equal(getCategoryStatus("sms", res.completedCategories), "locked");
+  });
+
+  it("Account switching: Account A progress and Account B progress remain strictly isolated", async () => {
+    // Account A completes levels 1 and 2
+    saveCategoryProgress("phishing", 90, "account-A");
+    saveCategoryProgress("sms", 85, "account-A");
+
+    const progressA = loadScamProgress("account-A");
+    assert.deepEqual(progressA.completedCategories, ["phishing", "sms"]);
+
+    // Account B signs up on the same browser (clean slate)
+    const progressB = loadScamProgress("account-B");
+    assert.deepEqual(progressB.completedCategories, [], "Account B must start fresh");
+    assert.equal(getCategoryStatus("sms", progressB.completedCategories), "locked");
+
+    // Account B completes only Level 1
+    saveCategoryProgress("phishing", 80, "account-B");
+    const updatedB = loadScamProgress("account-B");
+    assert.deepEqual(updatedB.completedCategories, ["phishing"]);
+
+    // Verify Account A is completely unchanged
+    const reloadedA = loadScamProgress("account-A");
+    assert.deepEqual(reloadedA.completedCategories, ["phishing", "sms"]);
+    assert.equal(reloadedA.categoryScores.sms, 85);
+  });
+
+  it("Guest progress does not leak into a registered account", () => {
+    // Guest plays and earns progress
+    saveCategoryProgress("phishing", 95, "guest-session-uuid-1");
+    saveCategoryProgress("sms", 90, "guest-session-uuid-1");
+
+    // Registered user signs up with new account ID
+    const registered = loadScamProgress("registered-child-user-2");
+    assert.deepEqual(registered.completedCategories, []);
+    assert.equal(getCategoryStatus("phishing", registered.completedCategories), "available");
+    assert.equal(getCategoryStatus("sms", registered.completedCategories), "locked");
+  });
+
+  it("syncProgressToBackend: calls saveModuleState with safety module and correct payload", () => {
+    let calledChildId = "";
+    let calledModule = "";
+    let calledData: unknown = null;
+
+    const mockSaveState = async (childId: string, module: string, data: unknown) => {
+      calledChildId = childId;
+      calledModule = module;
+      calledData = data;
+      return { ok: true };
+    };
+
+    const progress: ScamProgress = {
+      completedCategories: ["phishing"],
+      categoryScores: { phishing: 80 },
+      lastUpdated: new Date().toISOString(),
+    };
+
+    syncProgressToBackend("child-456", progress, mockSaveState);
+
+    assert.equal(calledChildId, "child-456");
+    assert.equal(calledModule, "safety");
+    assert.deepEqual(calledData, {
+      completedCategories: ["phishing"],
+      categoryScores: { phishing: 80 },
+      lastUpdated: progress.lastUpdated,
+    });
+  });
+
+  it("syncProgressToBackend: silently swallows errors so UI is never blocked", () => {
+    const mockFailingSave = async () => {
+      throw new Error("Network failure");
+    };
+
+    const progress: ScamProgress = {
+      completedCategories: ["phishing"],
+      categoryScores: { phishing: 80 },
+      lastUpdated: new Date().toISOString(),
+    };
+
+    assert.doesNotThrow(() => {
+      syncProgressToBackend("child-456", progress, mockFailingSave);
+    });
+  });
+});
+
+
+
 

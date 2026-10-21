@@ -3,57 +3,13 @@
 
 import { MissionDefinition } from '../../types/mission.types';
 import { RESCUE_PUPPY_MISSION } from './rescuePuppy';
+import { SQUIRREL_SAVINGS_MISSION } from './squirrelSavings';
+import { PANDA_FAIR_MISSION } from './pandaFair';
 
 export const MISSION_CATALOG: MissionDefinition[] = [
   RESCUE_PUPPY_MISSION,
-  {
-    id: 'mission_squirrel_savings',
-    title: "Squirrel's Winter Savings",
-    characterName: 'Nutty',
-    characterRole: 'Forager preparing an acorn granary for harsh winter',
-    characterSpecies: 'Eurasian Red Squirrel',
-    primaryCompetency: 'savingBehavior',
-    secondaryCompetencies: ['budgetingSkill', 'spendingDiscipline', 'goalAchievement'],
-    description:
-      'Manage food resources and seasonal tokens over simulated weeks. Set savings goals, resist instant gratification feasts, and prepare for winter freezes.',
-    totalLevels: 8,
-    themeColor: '#c45f24',
-    initialCharacterState: {
-      characterId: 'char_squirrel_nutty',
-      name: 'Nutty the Squirrel',
-      physicalCondition: 'NEEDS_CARE',
-      emotionalState: 'WORRIED',
-      conditionDescription: 'Nutty’s winter pantry is nearly empty while the cold autumn winds blow.',
-      vitalityScore: 40,
-      happinessScore: 35,
-      activeDialogue: 'Chirp! Winter frost is coming early this year. If I do not save enough acorns in time, my family will be hungry!',
-    },
-    levels: [], // Framework placeholder: Puppy Rescue is fully playable first per instructions
-  },
-  {
-    id: 'mission_panda_fair',
-    title: "Panda's School Fair",
-    characterName: 'Bao Bao',
-    characterRole: 'Student committee treasurer organizing school charity fair',
-    characterSpecies: 'Giant Panda',
-    primaryCompetency: 'spendingDiscipline',
-    secondaryCompetencies: ['budgetingSkill', 'investmentAwareness', 'tradeoffReasoning'],
-    description:
-      'Distinguish needs from wants, negotiate vendor discounts, and manage booth budgets to create a joyous, financially successful school fair.',
-    totalLevels: 7,
-    themeColor: '#0a4d42',
-    initialCharacterState: {
-      characterId: 'char_panda_baobao',
-      name: 'Bao Bao',
-      physicalCondition: 'NEEDS_CARE',
-      emotionalState: 'WORRIED',
-      conditionDescription: 'Bao Bao is holding a stack of chaotic receipts for the school fair booths.',
-      vitalityScore: 50,
-      happinessScore: 40,
-      activeDialogue: 'Oh my! Everyone wants expensive carnival games, but our school committee budget is strictly limited!',
-    },
-    levels: [],
-  },
+  SQUIRREL_SAVINGS_MISSION,
+  PANDA_FAIR_MISSION,
   {
     id: 'mission_turtle_emergency',
     title: "Turtle's Emergency Fund",

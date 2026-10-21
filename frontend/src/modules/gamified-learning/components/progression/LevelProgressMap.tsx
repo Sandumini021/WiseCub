@@ -39,10 +39,13 @@ export const LevelProgressMap: React.FC<LevelProgressMapProps> = ({
           if (isCompleted) {
             statusClass = 'node-completed';
             statusLabel = 'Completed';
+          } else if (!isUnlocked) {
+            statusClass = 'node-locked';
+            statusLabel = 'Locked';
           } else if (isCurrent) {
             statusClass = 'node-active';
             statusLabel = 'In Progress';
-          } else if (isUnlocked) {
+          } else {
             statusClass = 'node-unlocked';
             statusLabel = 'Available';
           }
@@ -58,7 +61,7 @@ export const LevelProgressMap: React.FC<LevelProgressMapProps> = ({
           return (
             <div
               key={lvl.id}
-              className={`level-node-card ${statusClass} ${isCurrent ? 'current-pulse' : ''}`}
+              className={`level-node-card ${statusClass} ${isCurrent && isUnlocked ? 'current-pulse' : ''}`}
               onClick={handleClick}
               role="button"
               tabIndex={isUnlocked ? 0 : -1}
