@@ -13,10 +13,12 @@ import { MarketLessonPage } from "../modules/stock-market/pages/MarketLessonPage
 import { TradeConfirmationPage } from "../modules/stock-market/pages/TradeConfirmationPage";
 import { CreateAccountPage } from "../pages/auth/CreateAccountPage";
 import { DemoLoginPage } from "../pages/auth/DemoLoginPage";
-import { GuardianDashboardPage, GuardianStubPage } from "../pages/guardian/GuardianDashboardPage";
+import { GuardianDesk } from "../pages/guardian/GuardianDesk.tsx";
+import { GuardianDashboardPage } from "../pages/guardian/GuardianDashboardPage";
 import { SplashPage } from "../pages/SplashPage";
 import { StudentDashboardPage } from "../pages/student/StudentDashboardPage";
-import { TeacherDashboardPage, TeacherStubPage } from "../pages/teacher/TeacherDashboardPage";
+import { TeacherDesk } from "../pages/teacher/TeacherDesk.tsx";
+import { TeacherDashboardPage } from "../pages/teacher/TeacherDashboardPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
 import { TaxShell } from "../modules/tax-learning/pages/TaxShell";
 import {
@@ -39,16 +41,16 @@ export function AppRoutes() {
       <Route path="/home" element={<StudentDashboardPage />} />
       <Route path="/student/dashboard" element={<StudentDashboardPage />} />
       <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
-      <Route path="/teacher/classes" element={<TeacherStubPage title="Classes" />} />
-      <Route path="/teacher/students" element={<TeacherStubPage title="Students" />} />
-      <Route path="/teacher/quizzes" element={<TeacherStubPage title="Quizzes" />} />
-      <Route path="/teacher/assignments" element={<TeacherStubPage title="Assignments" />} />
-      <Route path="/teacher/reports" element={<TeacherStubPage title="Reports" />} />
+      <Route path="/teacher/classes" element={<TeacherDesk view="classes" />} />
+      <Route path="/teacher/students" element={<TeacherDesk view="students" />} />
+      <Route path="/teacher/quizzes" element={<TeacherDesk view="quizzes" />} />
+      <Route path="/teacher/assignments" element={<TeacherDesk view="assignments" />} />
+      <Route path="/teacher/reports" element={<TeacherDesk view="reports" />} />
       <Route path="/guardian/dashboard" element={<GuardianDashboardPage />} />
-      <Route path="/guardian/children" element={<GuardianStubPage title="Linked children" />} />
-      <Route path="/guardian/progress" element={<GuardianStubPage title="Progress" />} />
-      <Route path="/guardian/quizzes" element={<GuardianStubPage title="Quiz results" />} />
-      <Route path="/guardian/tips" element={<GuardianStubPage title="Recommendations" />} />
+      <Route path="/guardian/children" element={<GuardianDesk view="children" />} />
+      <Route path="/guardian/progress" element={<GuardianDesk view="progress" />} />
+      <Route path="/guardian/quizzes" element={<GuardianDesk view="quizzes" />} />
+      <Route path="/guardian/tips" element={<GuardianDesk view="tips" />} />
       <Route path="/tax" element={<TaxShell />}>
         <Route index element={<TaxHomePage />} />
         <Route path="learn" element={<TaxLearnPage />} />
