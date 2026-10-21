@@ -18,6 +18,7 @@ from typing import Any
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.core.config import settings
+from app.database.folders import choice_scenarios
 from app.database.mongo import connect, disconnect, get_db
 from app.modules.decision_making.models import ScenarioDocument, now_utc_iso
 
@@ -40,7 +41,7 @@ async def seed_scenarios(db: AsyncIOMotorDatabase, force_update: bool = False) -
 
     for item in raw_list:
         level_id = int(item["levelId"])
-        existing = await db.decision_making_scenarios.find_one({"level_id": level_id})
+        existing = await choice_scenarios(db).find_one({"level_id": level_id})
 
         now = now_utc_iso()
         doc_data = {
@@ -91,7 +92,7 @@ async def seed_scenarios(db: AsyncIOMotorDatabase, force_update: bool = False) -
             doc_data["created_at"] = now
 
         validated = ScenarioDocument.model_validate(doc_data)
-        await db.decision_making_scenarios.update_one(
+        await choice_scenarios(db).update_one(
             {"level_id": level_id},
             {"$set": validated.model_dump()},
             upsert=True,
@@ -117,7 +118,7 @@ async def main() -> None:
         count = await seed_scenarios(db, force_update=True)
         print(f"Successfully seeded {count} Choice Town scenarios into MongoDB.")
 
-        total = await db.decision_making_scenarios.count_documents({})
+        total = await choice_scenarios(db).count_documents({})
         print(f"Total scenarios in collection: {total}")
     finally:
         await disconnect()

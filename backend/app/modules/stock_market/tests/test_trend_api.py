@@ -8,7 +8,7 @@ def test_assets_endpoint_does_not_need_mongo():
     response = client.get("/api/market/assets")
     assert response.status_code == 200
     body = response.json()
-    assert body["kind"] == "market_index"
+    assert body["kind"] in {"market_index", "classroom_charts"}
     assert "assets" in body
 
 

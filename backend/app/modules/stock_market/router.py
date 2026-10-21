@@ -2,6 +2,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.database.folders import module_state_coll
 from app.database.mongo import get_db
 from app.modules.stock_market.allocation import portfolio_allocation
 from app.modules.stock_market.coaching import coaching_for
@@ -45,10 +46,13 @@ def snapshot_from_book(data: dict[str, Any] | None) -> dict[str, Any] | None:
 
 @router.get("/api/market/assets")
 async def market_assets() -> dict[str, Any]:
+    assets = list_assets()
+    kinds = sorted({str(item.get("kind") or "market_index") for item in assets})
     return {
-        "assets": list_assets(),
-        "kind": "market_index",
-        "note": "These are historical indexes, not WiseCub practice companies.",
+        "assets": assets,
+        "kind": "classroom_charts",
+        "kinds": kinds,
+        "note": "Historical indexes and S&P 500 company files. Not WiseCub pretend tickers. Virtual money only.",
     }
 
 
@@ -67,17 +71,20 @@ async def market_analysis(symbol: str) -> dict[str, Any]:
     except TrendModelMissing as exc:
         raise HTTPException(
             status_code=503,
-            detail="Trend model files are missing. Run stock_market.ml.preprocess then .train.",
+            detail="Trend model files are missing. Run stock_market.ml.preprocess then .train (indexes), or sp500_preprocess then sp500_train.",
         ) from exc
     except KeyError as exc:
-        raise HTTPException(status_code=404, detail=f"Unknown classroom index {exc.args[0]}.") from exc
+        raise HTTPException(status_code=404, detail=f"Unknown classroom chart {exc.args[0]}.") from exc
 
 
 @router.post("/api/market/events")
 async def save_market_event(body: MarketEventIn) -> dict[str, Any]:
     db = require_db()
     event = MarketEvent.from_in(body)
-    stored = await insert_event(db, event)
+    try:
+        stored = await insert_event(db, event)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Could not store market event: {exc}") from exc
     return {"ok": True, "at": event.at, "type": event.type, "folder": stored["folder"]}
 
 
@@ -90,8 +97,14 @@ async def read_market_behaviour(
     query: dict[str, Any] = {"child_id": child_id}
     if session_id:
         query["session_id"] = session_id
-    events = await events_collection(db).find(query, {"_id": 0}).sort("at", 1).to_list(5000)
-    state = await db.module_state.find_one(
+    stream = events_collection(db)
+    if stream is None:
+        raise HTTPException(status_code=503, detail="Market event folder is not available.")
+    try:
+        events = await stream.find(query, {"_id": 0}).sort("at", 1).to_list(5000)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Could not read market behaviour: {exc}") from exc
+    state = await module_state_coll(db).find_one(
         {"child_id": child_id, "module": "market"},
         {"_id": 0},
     )

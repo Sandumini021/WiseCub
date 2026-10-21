@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
+from app.database.folders import MODULE_STATE_FOLDER, module_state_coll
 from app.database.mongo import get_db, ping_db
 from app.modules.accounts.router import current_account
 from app.modules.accounts.security import public_account
@@ -51,6 +52,16 @@ def require_db():
     if db is None:
         raise HTTPException(status_code=503, detail="MongoDB is not connected.")
     return db
+
+
+@router.get("/")
+async def root() -> dict[str, str]:
+    return {
+        "service": "wisecub",
+        "health": "/health",
+        "docs": "/docs",
+        "market_assets": "/api/market/assets",
+    }
 
 
 @router.get("/health")
@@ -149,11 +160,21 @@ async def save_state(child_id: str, module: str, body: StateIn) -> dict[str, Any
         "data": body.data,
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
-    await db.module_state.update_one(
+    await module_state_coll(db).update_one(
         {"child_id": child_id, "module": module},
         {"$set": doc},
         upsert=True,
     )
+    folder = MODULE_STATE_FOLDER.get(module)
+    if folder:
+        try:
+            await db[folder].update_one(
+                {"child_id": child_id, "module": module},
+                {"$set": doc},
+                upsert=True,
+            )
+        except Exception:
+            pass
     return {"ok": True, "child_id": child_id, "module": module}
 
 
@@ -162,10 +183,21 @@ async def read_state(child_id: str, module: str) -> dict[str, Any]:
     if module not in ALLOWED_MODULES:
         raise HTTPException(status_code=400, detail="Unknown module.")
     db = require_db()
-    doc = await db.module_state.find_one(
-        {"child_id": child_id, "module": module},
-        {"_id": 0},
-    )
+    folder = MODULE_STATE_FOLDER.get(module)
+    doc = None
+    if folder:
+        try:
+            doc = await db[folder].find_one(
+                {"child_id": child_id, "module": module},
+                {"_id": 0},
+            )
+        except Exception:
+            doc = None
+    if not doc:
+        doc = await module_state_coll(db).find_one(
+            {"child_id": child_id, "module": module},
+            {"_id": 0},
+        )
     if not doc:
         raise HTTPException(status_code=404, detail="No saved state yet.")
     return doc

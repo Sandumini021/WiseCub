@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from app.database.folders import missions_attempts, missions_competency, missions_progress
 from app.modules.gamified_learning.catalog import (
     MISSION_CATALOG,
     get_level,
@@ -44,7 +45,7 @@ async def extract_student_progress_context(
     Derives all 21 historical features identically to the training schema.
     """
     # 1. Load progress across missions
-    progress_cursor = db.gamified_progress.find({"child_id": child_id}, {"_id": 0})
+    progress_cursor = missions_progress(db).find({"child_id": child_id}, {"_id": 0})
     progress_docs = await progress_cursor.to_list(100) if hasattr(progress_cursor, "to_list") else []
 
     unlocked_levels_by_mission: dict[str, int] = {}
@@ -75,9 +76,9 @@ async def extract_student_progress_context(
     curr_lvl_num = unlocked_levels_by_mission.get(active_mid, 1)
 
     # 2. Load mission attempts chronologically
-    attempts_cursor = db.mission_attempts.find(
+    attempts_cursor = missions_attempts(db).find(
         {"child_id": child_id}, {"_id": 0}
-    ).sort("started_at", 1) if hasattr(db.mission_attempts, "find") else []
+    ).sort("started_at", 1) if hasattr(missions_attempts(db), "find") else []
     attempts = await attempts_cursor.to_list(1000) if hasattr(attempts_cursor, "to_list") else []
 
     hist_prior_attempts_count = len(attempts)
@@ -103,9 +104,9 @@ async def extract_student_progress_context(
     total_completed_levels = sum(len(lvl_list) for lvl_list in completed_levels_by_mission.values())
 
     # 3. Load competency assessments chronologically
-    assessments_cursor = db.competency_assessments.find(
+    assessments_cursor = missions_competency(db).find(
         {"child_id": child_id}, {"_id": 0}
-    ).sort("assessed_at", 1) if hasattr(db.competency_assessments, "find") else []
+    ).sort("assessed_at", 1) if hasattr(missions_competency(db), "find") else []
     assessments = await assessments_cursor.to_list(1000) if hasattr(assessments_cursor, "to_list") else []
 
     if assessments:

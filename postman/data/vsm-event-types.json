@@ -1,0 +1,107 @@
+[
+  {
+    "event_type": "company_viewed",
+    "expected_folder": "Virtual_Stock_Market.market_views",
+    "ticker": "SUNTEA",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "market_trend_viewed",
+    "expected_folder": "Virtual_Stock_Market.market_views",
+    "ticker": "LNKBNK",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "risk_explanation_viewed",
+    "expected_folder": "Virtual_Stock_Market.market_views",
+    "ticker": "CEYPOW",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "price_drop_observed",
+    "expected_folder": "Virtual_Stock_Market.market_views",
+    "ticker": "SUNTEA",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "portfolio_reviewed",
+    "expected_folder": "Virtual_Stock_Market.market_views",
+    "ticker": "SUNTEA",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "buy_order_placed",
+    "expected_folder": "Virtual_Stock_Market.market_orders",
+    "ticker": "SUNTEA",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "sell_order_placed",
+    "expected_folder": "Virtual_Stock_Market.market_orders",
+    "ticker": "SUNTEA",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "order_modified",
+    "expected_folder": "Virtual_Stock_Market.market_orders",
+    "ticker": "SUNTEA",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "order_cancelled",
+    "expected_folder": "Virtual_Stock_Market.market_orders",
+    "ticker": "HARBOR",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "trade_reason_submitted",
+    "expected_folder": "Virtual_Stock_Market.market_habits",
+    "ticker": "SUNTEA",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "coaching_shown",
+    "expected_folder": "Virtual_Stock_Market.market_habits",
+    "ticker": "SUNTEA",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "coaching_response",
+    "expected_folder": "Virtual_Stock_Market.market_habits",
+    "ticker": "SUNTEA",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "habit_popup_opened",
+    "expected_folder": "Virtual_Stock_Market.market_habits",
+    "ticker": "SUNTEA",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "habit_card_tapped",
+    "expected_folder": "Virtual_Stock_Market.market_habits",
+    "ticker": "SUNTEA",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  },
+  {
+    "event_type": "lesson_completed",
+    "expected_folder": "Virtual_Stock_Market.market_lessons",
+    "ticker": "SUNTEA",
+    "child_id": "postman-vsm-child",
+    "session_id": "postman-vsm-session-1"
+  }
+]

@@ -1,33 +1,40 @@
-# Classroom market-trend model
+# Classroom market-trend models
 
-Historical **indexes** (NYA, NSEI, HSI, …) from the Kaggle global financial markets archive (1965–2021).  
-This set has **no individual company stocks**. WiseCub practice names (SUNTEA, …) stay fictional and still trade with virtual rupees.
+Two historical price files. Child **taps / habits** stay in the rule engine (`engine.py`) and are not labels here.
 
-Child **trading behaviour** stays in the rule-based engine (`engine.py`). Those records are not labels for a clinical model.
+## 1. Global indexes (already trained)
 
-## Data
-
-Place `indexData.csv`, `indexInfo.csv`, and optionally `indexProcessed.csv` in one of:
-
-1. `WISECUB_MARKET_DATA_DIR`
-2. `backend/app/modules/stock_market/data/raw/`
-3. `%USERPROFILE%\Downloads\archive\`
-
-## Train (from `backend/`)
+Kaggle index archive (NYA, NSEI, HSI, …). Practice names map to indexes (SUNTEA→NSEI).
 
 ```bash
 python -m app.modules.stock_market.ml.preprocess
 python -m app.modules.stock_market.ml.train
 ```
 
+Artifacts: `ml/artifacts/trend_model.joblib`
+
+## 2. S&P 500 companies (this folder’s new CSVs)
+
+Originals (do not edit):
+
+- `data/raw/sp500_stocks.csv`
+- `data/raw/sp500_companies.csv`
+
+Cleaned copies: `data/processed/`
+
+```bash
+python -m app.modules.stock_market.ml.sp500_preprocess
+python -m app.modules.stock_market.ml.sp500_train
+```
+
+Artifacts: `ml/artifacts/sp500/trend_model.joblib` (loaded at request time, not retrained).
+
+Labels: 5-day return ≥ 1.2% upward, ≤ −1.2% downward, else sideways. Split is chronological (no shuffle).
+
 ## API
 
-- `GET /api/market/assets`
-- `GET /api/market/history/{symbol}`
-- `GET /api/market/analysis/{symbol}`
+- `GET /api/market/assets` — indexes + S&P names
+- `GET /api/market/history/{symbol}` — `AAPL` or `N225` / `SUNTEA`
+- `GET /api/market/analysis/{symbol}` — kid-facing trend + risk line
 
-Demo tickers map to indexes (SUNTEA→NSEI, LNKBNK→NYA, …). Predictions are uncertain classroom labels, not advice.
-
-## Behaviour model
-
-Not trained here. `GET /api/market/behaviour/{child_id}` remains rule-based. There is no validated child-behaviour dataset.
+Predictions are classroom guesses. They can be wrong. Virtual rupees only.

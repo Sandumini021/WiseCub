@@ -15,6 +15,8 @@ from uuid import uuid4
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.database.folders import choice_attempts, choice_progress, choice_scenarios
+
 from app.modules.decision_making.models import (
     AttemptDocument,
     MoneySnapshotModel,
@@ -85,14 +87,14 @@ def _map_scenario_doc(doc: dict[str, Any]) -> ScenarioOut:
 
 async def get_active_scenarios(db: AsyncIOMotorDatabase) -> list[ScenarioOut]:
     """Retrieve all active Choice Town scenarios sorted by level_id (1-10)."""
-    cursor = db.decision_making_scenarios.find({"active": True}, {"_id": 0}).sort("level_id", 1)
+    cursor = choice_scenarios(db).find({"active": True}, {"_id": 0}).sort("level_id", 1)
     docs = await cursor.to_list(length=20)
     return [_map_scenario_doc(doc) for doc in docs]
 
 
 async def get_scenario_by_level(db: AsyncIOMotorDatabase, level_id: int) -> ScenarioOut | None:
     """Retrieve a single active scenario by level_id."""
-    doc = await db.decision_making_scenarios.find_one({"level_id": level_id, "active": True}, {"_id": 0})
+    doc = await choice_scenarios(db).find_one({"level_id": level_id, "active": True}, {"_id": 0})
     if not doc:
         return None
     return _map_scenario_doc(doc)
@@ -122,7 +124,7 @@ async def get_child_progress(db: AsyncIOMotorDatabase, child_id: str) -> ChoiceT
     Fetch the authenticated child's progress document from MongoDB.
     Initializes a clean progress record (Level 1, 0 completed) if none exists.
     """
-    doc = await db.decision_making_progress.find_one({"child_id": child_id}, {"_id": 0})
+    doc = await choice_progress(db).find_one({"child_id": child_id}, {"_id": 0})
     if not doc:
         now = now_utc_iso()
         init_doc = {
@@ -133,7 +135,7 @@ async def get_child_progress(db: AsyncIOMotorDatabase, child_id: str) -> ChoiceT
             "updated_at": now,
             "schema_version": 1,
         }
-        await db.decision_making_progress.update_one(
+        await choice_progress(db).update_one(
             {"child_id": child_id},
             {"$set": init_doc},
             upsert=True,
@@ -164,11 +166,11 @@ async def save_child_decision(
     sessions[key] = updated_session
 
     # Update or insert active in-progress attempt record
-    active_attempt = await db.decision_making_attempts.find_one(
+    active_attempt = await choice_attempts(db).find_one(
         {"child_id": child_id, "level_id": level_id, "completion_status": "in_progress"}
     )
     if active_attempt:
-        await db.decision_making_attempts.update_one(
+        await choice_attempts(db).update_one(
             {"attempt_id": active_attempt["attempt_id"]},
             {"$set": {"selected_option_id": option_id, "updated_at": now}},
         )
@@ -182,10 +184,10 @@ async def save_child_decision(
             created_at=now,
             updated_at=now,
         )
-        await db.decision_making_attempts.insert_one(new_attempt.model_dump())
+        await choice_attempts(db).insert_one(new_attempt.model_dump())
 
     # Persist updated progress
-    await db.decision_making_progress.update_one(
+    await choice_progress(db).update_one(
         {"child_id": child_id},
         {
             "$set": {
@@ -224,7 +226,7 @@ async def save_child_reasoning(
     )
 
     # Update active attempt
-    await db.decision_making_attempts.update_one(
+    await choice_attempts(db).update_one(
         {"child_id": child_id, "level_id": level_id, "completion_status": "in_progress"},
         {
             "$set": {
@@ -240,7 +242,7 @@ async def save_child_reasoning(
     )
 
     # Persist in progress
-    await db.decision_making_progress.update_one(
+    await choice_progress(db).update_one(
         {"child_id": child_id},
         {
             "$set": {
@@ -274,7 +276,7 @@ async def complete_child_level(
     current_level = remaining[0] if remaining else TOTAL_LEVELS
 
     # Mark active attempt as completed
-    await db.decision_making_attempts.update_one(
+    await choice_attempts(db).update_one(
         {"child_id": child_id, "level_id": level_id, "completion_status": "in_progress"},
         {
             "$set": {
@@ -289,7 +291,7 @@ async def complete_child_level(
     session = progress.sessions.get(key, LevelSession())
     session_dict = session.model_copy(update={"completed": True}).model_dump(by_alias=True)
 
-    await db.decision_making_progress.update_one(
+    await choice_progress(db).update_one(
         {"child_id": child_id},
         {
             "$set": {
@@ -315,7 +317,7 @@ async def reset_child_progress(
     now = now_utc_iso()
 
     # Mark active in-progress attempts as abandoned
-    await db.decision_making_attempts.update_many(
+    await choice_attempts(db).update_many(
         {"child_id": child_id, "completion_status": "in_progress"},
         {"$set": {"completion_status": "abandoned", "updated_at": now}},
     )
@@ -329,7 +331,7 @@ async def reset_child_progress(
         "schema_version": 1,
     }
 
-    await db.decision_making_progress.update_one(
+    await choice_progress(db).update_one(
         {"child_id": child_id},
         {"$set": reset_doc},
         upsert=True,
@@ -347,7 +349,7 @@ async def get_child_completed_attempts(
     limit: int = 50,
 ) -> list[dict[str, Any]]:
     """Retrieve historical completed attempts for a child."""
-    cursor = db.decision_making_attempts.find(
+    cursor = choice_attempts(db).find(
         {"child_id": child_id, "completion_status": "completed"},
         {"_id": 0},
     ).sort("created_at", -1)
