@@ -50,7 +50,10 @@ export function CubChatPanel() {
   pendingRef.current = pendingPath;
 
   useEffect(() => {
-    setLang(readCubLanguage());
+    const refresh = () => setLang(readCubLanguage());
+    refresh();
+    window.addEventListener("wisecub-session", refresh);
+    return () => window.removeEventListener("wisecub-session", refresh);
   }, [child?.language]);
 
   useEffect(() => {
@@ -287,6 +290,9 @@ export function CubChatPanel() {
           </button>
           <button type="button" className={lang === "si" ? "is-on" : ""} onClick={() => changeLang("si")}>
             {cubUi(lang, "sinhala")}
+          </button>
+          <button type="button" className={lang === "sg" ? "is-on" : ""} onClick={() => changeLang("sg")}>
+            {cubUi(lang, "singlish")}
           </button>
         </div>
         <div className="cub-chat-log" ref={listRef} role="log" aria-live="polite">

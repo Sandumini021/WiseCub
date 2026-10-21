@@ -1,10 +1,14 @@
 import type { CubLang, CubReply, CubRole } from "./cubAssistantTypes";
 import { canOpenRoute, safeHome, shouldWarnBeforeLeave } from "./cubRoutes";
+import { PAGE_SG, SUGGEST_SG } from "./cubGuidanceSg";
 
-type Copy = { en: string; si: string };
+type Copy = { en: string; si: string; sg?: string };
 
 function pick(lang: CubLang, copy: Copy) {
-  return copy[lang];
+  if (lang === "sg") {
+    return copy.sg ?? copy.en;
+  }
+  return lang === "si" ? copy.si : copy.en;
 }
 
 const PAGE_TIPS: Record<string, Copy> = {
@@ -115,6 +119,9 @@ const PAGE_TIPS: Record<string, Copy> = {
 };
 
 export function greetingFor(path: string, lang: CubLang = "en"): string {
+  if (lang === "sg" && PAGE_SG[path]) {
+    return PAGE_SG[path];
+  }
   if (PAGE_TIPS[path]) {
     return pick(lang, PAGE_TIPS[path]);
   }
@@ -140,21 +147,27 @@ export function suggestionsFor(path: string, lang: CubLang = "en"): string[] {
   const enMarket = ["What is a share?", "Start lesson 1", "Is this real money?", "Go to Safety"];
   const siMarket = ["කොටසක් කියන්නේ මොකක්ද?", "පාඩම 1 අරඹන්න", "මේක ඇත්ත මුදල්ද?", "Safety එකට යන්න"];
   if (path === "/market" || path.startsWith("/market/lessons")) {
-    return lang === "si" ? siMarket : enMarket;
+    return lang === "si" ? siMarket : lang === "sg" ? SUGGEST_SG.market : enMarket;
   }
   if (path.startsWith("/teacher")) {
     return lang === "si"
       ? ["මේ පිටුව පහදන්න", "පන්තිවලට යන්න", "උදව්"]
-      : ["Explain this page", "Open classes", "Help"];
+      : lang === "sg"
+        ? SUGGEST_SG.teacher
+        : ["Explain this page", "Open classes", "Help"];
   }
   if (path.startsWith("/guardian")) {
     return lang === "si"
       ? ["මේ පිටුව පහදන්න", "දරුවන්ට යන්න", "උදව්"]
-      : ["Explain this page", "Linked children", "Help"];
+      : lang === "sg"
+        ? SUGGEST_SG.guardian
+        : ["Explain this page", "Linked children", "Help"];
   }
   return lang === "si"
     ? ["වෙළෙඳපොළට යන්න", "මේක ඇත්ත මුදල්ද?", "මේ පිටුව පහදන්න", "ගෙදරට යන්න"]
-    : ["Open the market", "Is this real money?", "Explain this page", "Go home"];
+    : lang === "sg"
+      ? SUGGEST_SG.home
+      : ["Open the market", "Is this real money?", "Explain this page", "Go home"];
 }
 
 function go(lang: CubLang, path: string, text: Copy, role: CubRole | undefined, fromPath: string): CubReply {

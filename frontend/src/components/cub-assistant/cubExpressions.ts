@@ -67,7 +67,14 @@ const PATTERN_EXPRESSION: Record<string, CubExpression> = {
   insufficient_research: "thinking",
 };
 
-type PatternCopy = { en: string; si: string };
+type PatternCopy = { en: string; si: string; sg?: string };
+
+function copyAt(copy: PatternCopy, lang: CubLang) {
+  if (lang === "sg") {
+    return copy.sg ?? copy.en;
+  }
+  return lang === "si" ? copy.si : copy.en;
+}
 
 const PATTERN_REVIEW: Record<string, PatternCopy> = {
   herd_behaviour: {
@@ -121,12 +128,12 @@ export function patternTitle(behaviour: string) {
 
 export function patternMessage(behaviour: string, level: string, lang: CubLang): string {
   if (level === "not_observed") {
-    return PATTERN_NOT_SEEN[lang];
+    return copyAt(PATTERN_NOT_SEEN, lang);
   }
   if (level !== "worth_reviewing") {
-    return PATTERN_NOT_SEEN[lang];
+    return copyAt(PATTERN_NOT_SEEN, lang);
   }
-  return (PATTERN_REVIEW[behaviour] ?? PATTERN_NOT_SEEN)[lang];
+  return copyAt(PATTERN_REVIEW[behaviour] ?? PATTERN_NOT_SEEN, lang);
 }
 
 export function defaultDecisionCub(options: {

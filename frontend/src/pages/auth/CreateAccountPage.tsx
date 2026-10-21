@@ -4,20 +4,19 @@ import { CubMascot } from "../../components/cub-assistant/CubMascot";
 import { ApiError, checkUsername } from "../../services/apiClient";
 import { ChildAvatar } from "./ChildAvatar";
 import { PRACTICE_AVATARS } from "./avatars";
-import { writeSignupProfile } from "./demoSession";
+import { readCubLanguage, writeCubLanguage, writeSignupProfile } from "./demoSession";
+import { LanguageSelect } from "../../components/layout/LanguageSelect";
+import { useLang } from "../../i18n/useLang";
 import { LANGUAGES, normalizeUsername, type AccountRole, homePathForRole } from "./roles";
 import "../../styles/signup.css";
 
 const AGES = ["12", "13", "14", "15", "16"];
 type Step = "role" | "details" | "avatar" | "done";
 
-const ROLES: Array<{ id: AccountRole; title: string; blurb: string }> = [
-  { id: "student", title: "Student", blurb: "Learn with Cub. Ages 12–16." },
-  { id: "teacher", title: "Teacher", blurb: "Create classes and follow progress." },
-  { id: "guardian", title: "Parent / Guardian", blurb: "See a linked child’s learning, not their login." },
-];
+const ROLES: AccountRole[] = ["student", "teacher", "guardian"];
 
 export function CreateAccountPage() {
+  const { t } = useLang();
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("role");
   const [role, setRole] = useState<AccountRole | null>(null);
@@ -25,7 +24,7 @@ export function CreateAccountPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [age, setAge] = useState("");
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState(() => readCubLanguage());
   const [classCode, setClassCode] = useState("");
   const [institution, setInstitution] = useState("");
   const [password, setPassword] = useState("");
@@ -39,15 +38,15 @@ export function CreateAccountPage() {
 
   function commonPasswordOk() {
     if (password.length < 6) {
-      setError("Choose a password with at least 6 characters.");
+      setError(t("signup.needPass"));
       return false;
     }
     if (password !== confirm) {
-      setError("Password and confirm password must match.");
+      setError(t("signup.passMatch"));
       return false;
     }
     if (!terms) {
-      setError("Please agree to the Terms of Service to continue.");
+      setError(t("signup.needTerms"));
       return false;
     }
     return true;
@@ -56,24 +55,24 @@ export function CreateAccountPage() {
   async function onDetails(event: FormEvent) {
     event.preventDefault();
     if (!role) {
-      setError("Pick Student, Teacher, or Parent/Guardian first.");
+      setError(t("signup.pickRole"));
       return;
     }
     if (!name.trim()) {
-      setError("Please enter your full name.");
+      setError(t("signup.needName"));
       return;
     }
     const user = normalizeUsername(username);
     if (user.length < 3) {
-      setError("Choose a username with at least 3 letters or numbers.");
+      setError(t("signup.needUser"));
       return;
     }
     if (role === "student" && !age) {
-      setError("Please select your age (12–16).");
+      setError(t("signup.needAge"));
       return;
     }
     if (role !== "student" && (!email.trim() || !email.includes("@"))) {
-      setError("Teachers and guardians need an email for this demo account.");
+      setError(t("signup.needEmail"));
       return;
     }
     if (!commonPasswordOk()) {
@@ -83,7 +82,7 @@ export function CreateAccountPage() {
       const check = await checkUsername(user);
       if (check.taken) {
         setSuggestions(check.suggestions);
-        setError("That username is already in use. Try one of these:");
+        setError(t("signup.userTaken"));
         return;
       }
     } catch {
@@ -126,9 +125,7 @@ export function CreateAccountPage() {
         setError(err.message);
         return;
       }
-      setError(
-        "Could not create the account. Check the API is running on port 8000, then refresh. If this page URL is not localhost, open http://localhost:5173 instead.",
-      );
+      setError(t("signup.createFail"));
     }
   }
 
@@ -143,6 +140,9 @@ export function CreateAccountPage() {
 
   return (
     <div className="signup-screen">
+      <div className="signup-lang">
+        <LanguageSelect />
+      </div>
       <div className="signup-card">
         <aside className="signup-hero" aria-hidden="true">
           <div className="signup-brand">
@@ -153,57 +153,57 @@ export function CreateAccountPage() {
               Wise<span>Cub</span>
             </p>
           </div>
-          <h1>Create Your Account</h1>
-          <p className="signup-hero-lead">Pick how you will use WiseCub. Demo accounts only.</p>
+          <h1>{t("signup.title")}</h1>
+          <p className="signup-hero-lead">{t("signup.lead")}</p>
           <div className="signup-cub-stage">
             <span className="signup-float signup-bulb">💡</span>
             <span className="signup-float signup-chart">📈</span>
             <span className="signup-float signup-plane">✈️</span>
             <CubMascot size={210} />
             <div className="signup-books">
-              <span className="signup-book is-green">Learn</span>
-              <span className="signup-book is-gold">Invest</span>
-              <span className="signup-book is-blue">Save</span>
-              <span className="signup-book is-purple">Stay Safe</span>
+              <span className="signup-book is-green">{t("signup.learn")}</span>
+              <span className="signup-book is-gold">{t("signup.invest")}</span>
+              <span className="signup-book is-blue">{t("signup.save")}</span>
+              <span className="signup-book is-purple">{t("signup.staySafe")}</span>
             </div>
           </div>
           <blockquote>
-            “Small steps today, bigger dreams tomorrow!”
+            “{t("signup.quote")}”
             <cite>— WiseCub</cite>
           </blockquote>
         </aside>
 
         <section className="signup-pane" id="main">
-          <p className="signup-demo-flag">Practice accounts. Passwords are hashed on the server. Not a bank.</p>
-          <ol className="signup-steps" aria-label="Account setup steps">
+          <p className="signup-demo-flag">{t("signup.practice")}</p>
+          <ol className="signup-steps" aria-label={t("signup.title")}>
             <li className={stepIndex === 0 ? "is-current" : "is-done"}>
               <span>1</span>
-              Role
+              {t("signup.stepRole")}
             </li>
             <li className={stepIndex === 1 ? "is-current" : stepIndex > 1 ? "is-done" : ""}>
               <span>2</span>
-              Details
+              {t("signup.stepDetails")}
             </li>
             <li className={stepIndex === 2 ? "is-current" : stepIndex > 2 ? "is-done" : ""}>
               <span>3</span>
-              {role === "student" ? "Avatar" : "Done"}
+              {role === "student" ? t("signup.stepAvatar") : t("signup.stepDone")}
             </li>
           </ol>
 
           {step === "role" ? (
             <div className="signup-form">
-              <h2>Who is this account for?</h2>
-              <p className="signup-sub">This chooses your form and your dashboard.</p>
+              <h2>{t("signup.who")}</h2>
+              <p className="signup-sub">{t("signup.whoHint")}</p>
               <div className="signup-roles">
-                {ROLES.map((item) => (
+                {ROLES.map((id) => (
                   <button
-                    key={item.id}
+                    key={id}
                     type="button"
-                    className={`signup-role${role === item.id ? " is-on" : ""}`}
-                    onClick={() => setRole(item.id)}
+                    className={`signup-role${role === id ? " is-on" : ""}`}
+                    onClick={() => setRole(id)}
                   >
-                    <strong>{item.title}</strong>
-                    <span>{item.blurb}</span>
+                    <strong>{t(`signup.${id}`)}</strong>
+                    <span>{t(`signup.${id}Blurb`)}</span>
                   </button>
                 ))}
               </div>
@@ -213,41 +213,45 @@ export function CreateAccountPage() {
                 type="button"
                 onClick={() => {
                   if (!role) {
-                    setError("Please choose Student, Teacher, or Parent/Guardian.");
+                    setError(t("signup.pickRole"));
                     return;
                   }
                   setError(null);
                   setStep("details");
                 }}
               >
-                Next →
+                {t("signup.next")}
               </button>
               <p className="signup-login">
-                Already have an account? <Link to="/login">Login</Link>
+                {t("signup.haveAccount")} <Link to="/login">{t("common.login")}</Link>
               </p>
             </div>
           ) : null}
 
           {step === "details" ? (
             <form className="signup-form" onSubmit={(event) => void onDetails(event)}>
-              <h2>{role === "teacher" ? "Teacher details" : role === "guardian" ? "Guardian details" : "Student details"}</h2>
+              <h2>
+                {role === "teacher"
+                  ? t("signup.teacherDetails")
+                  : role === "guardian"
+                    ? t("signup.guardianDetails")
+                    : t("signup.studentDetails")}
+              </h2>
               <p className="signup-sub">
-                {role === "student"
-                  ? "No email needed. Cub will know you by your username."
-                  : "Teacher and guardian accounts are demo / unverified in this increment."}
+                {role === "student" ? t("signup.studentHint") : t("signup.adultHint")}
               </p>
 
               <div className="signup-grid">
                 <label className="signup-field">
                   <span>
-                    Full Name <em>*</em>
+                    {t("signup.fullName")} <em>*</em>
                   </span>
                   <span className="signup-control">
                     <UserIcon />
                     <input
                       value={name}
                       onChange={(event) => setName(event.target.value)}
-                      placeholder="Enter your full name"
+                      placeholder={t("signup.namePh")}
                       autoComplete="name"
                     />
                   </span>
@@ -255,14 +259,14 @@ export function CreateAccountPage() {
 
                 <label className="signup-field">
                   <span>
-                    Username <em>*</em>
+                    {t("signup.username")} <em>*</em>
                   </span>
                   <span className="signup-control">
                     <UserIcon />
                     <input
                       value={username}
                       onChange={(event) => setUsername(event.target.value)}
-                      placeholder="e.g. nimal24"
+                      placeholder={t("signup.userPh")}
                       autoComplete="username"
                     />
                   </span>
@@ -271,12 +275,12 @@ export function CreateAccountPage() {
                 {role === "student" ? (
                   <label className="signup-field">
                     <span>
-                      Age <em>*</em>
+                      {t("signup.age")} <em>*</em>
                     </span>
                     <span className="signup-control">
                       <CalIcon />
                       <select value={age} onChange={(event) => setAge(event.target.value)}>
-                        <option value="">Select your age (12 - 16)</option>
+                        <option value="">{t("signup.agePick")}</option>
                         {AGES.map((value) => (
                           <option key={value} value={value}>
                             {value}
@@ -288,7 +292,7 @@ export function CreateAccountPage() {
                 ) : (
                   <label className="signup-field">
                     <span>
-                      Email <em>*</em>
+                      {t("signup.email")} <em>*</em>
                     </span>
                     <span className="signup-control">
                       <MailIcon />
@@ -296,7 +300,7 @@ export function CreateAccountPage() {
                         type="email"
                         value={email}
                         onChange={(event) => setEmail(event.target.value)}
-                        placeholder="Work or family email"
+                        placeholder={t("signup.emailPh")}
                         autoComplete="email"
                       />
                     </span>
@@ -304,9 +308,18 @@ export function CreateAccountPage() {
                 )}
 
                 <label className="signup-field">
-                  <span>Preferred language</span>
+                  <span>{t("signup.preferred")}</span>
                   <span className="signup-control">
-                    <select value={language} onChange={(event) => setLanguage(event.target.value)}>
+                    <select
+                      value={language}
+                      onChange={(event) => {
+                        const next = event.target.value;
+                        setLanguage(next);
+                        if (next === "en" || next === "si" || next === "sg") {
+                          writeCubLanguage(next);
+                        }
+                      }}
+                    >
                       {LANGUAGES.map((item) => (
                         <option key={item.id} value={item.id}>
                           {item.label}
@@ -318,12 +331,12 @@ export function CreateAccountPage() {
 
                 {role === "student" ? (
                   <label className="signup-field">
-                    <span>Teacher class code (optional)</span>
+                    <span>{t("signup.classCode")}</span>
                     <span className="signup-control">
                       <input
                         value={classCode}
                         onChange={(event) => setClassCode(event.target.value.toUpperCase())}
-                        placeholder="If your teacher gave you a code"
+                        placeholder={t("signup.classPh")}
                       />
                     </span>
                   </label>
@@ -331,12 +344,12 @@ export function CreateAccountPage() {
 
                 {role === "teacher" ? (
                   <label className="signup-field">
-                    <span>School or institution (optional)</span>
+                    <span>{t("signup.school")}</span>
                     <span className="signup-control">
                       <input
                         value={institution}
                         onChange={(event) => setInstitution(event.target.value)}
-                        placeholder="School name"
+                        placeholder={t("signup.schoolPh")}
                       />
                     </span>
                   </label>
@@ -344,7 +357,7 @@ export function CreateAccountPage() {
 
                 <label className="signup-field">
                   <span>
-                    Password <em>*</em>
+                    {t("signup.password")} <em>*</em>
                   </span>
                   <span className="signup-control">
                     <LockIcon />
@@ -352,13 +365,13 @@ export function CreateAccountPage() {
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
-                      placeholder="Create a password"
+                      placeholder={t("signup.passwordPh")}
                       autoComplete="new-password"
                     />
                     <button
                       type="button"
                       className="signup-eye"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={showPassword ? t("login.hide") : t("login.show")}
                       onClick={() => setShowPassword((open) => !open)}
                     >
                       👁
@@ -368,7 +381,7 @@ export function CreateAccountPage() {
 
                 <label className="signup-field">
                   <span>
-                    Confirm Password <em>*</em>
+                    {t("signup.confirm")} <em>*</em>
                   </span>
                   <span className="signup-control">
                     <LockIcon />
@@ -376,13 +389,13 @@ export function CreateAccountPage() {
                       type={showConfirm ? "text" : "password"}
                       value={confirm}
                       onChange={(event) => setConfirm(event.target.value)}
-                      placeholder="Confirm your password"
+                      placeholder={t("signup.confirmPh")}
                       autoComplete="new-password"
                     />
                     <button
                       type="button"
                       className="signup-eye"
-                      aria-label={showConfirm ? "Hide password" : "Show password"}
+                      aria-label={showConfirm ? t("login.hide") : t("login.show")}
                       onClick={() => setShowConfirm((open) => !open)}
                     >
                       👁
@@ -394,8 +407,7 @@ export function CreateAccountPage() {
               <label className="signup-check">
                 <input type="checkbox" checked={terms} onChange={(event) => setTerms(event.target.checked)} />
                 <span>
-                  I agree to the <button type="button">Terms of Service</button> and{" "}
-                  <button type="button">Privacy Policy</button>.
+                  {t("signup.terms")}
                 </span>
               </label>
 
@@ -412,22 +424,22 @@ export function CreateAccountPage() {
 
               <div className="signup-actions">
                 <button className="signup-back" type="button" onClick={() => setStep("role")}>
-                  Back
+                  {t("common.back")}
                 </button>
                 <button className="signup-next" type="submit">
-                  {role === "student" ? "Next →" : "Create account"}
+                  {role === "student" ? t("signup.next") : t("signup.create")}
                 </button>
               </div>
               <p className="signup-login">
-                Already have an account? <Link to="/login">Login</Link>
+                {t("signup.haveAccount")} <Link to="/login">{t("common.login")}</Link>
               </p>
             </form>
           ) : null}
 
           {step === "avatar" ? (
             <div className="signup-form">
-              <h2>Choose Avatar</h2>
-              <p className="signup-sub">This picture follows you on every student page.</p>
+              <h2>{t("signup.chooseAvatar")}</h2>
+              <p className="signup-sub">{t("signup.avatarHint")}</p>
               <div className="signup-avatars">
                 {PRACTICE_AVATARS.map((avatar) => (
                   <button
@@ -445,10 +457,10 @@ export function CreateAccountPage() {
               {error ? <p className="signup-error">{error}</p> : null}
               <div className="signup-actions">
                 <button className="signup-back" type="button" onClick={() => setStep("details")}>
-                  Back
+                  {t("common.back")}
                 </button>
                 <button className="signup-next" type="button" onClick={completeStudent}>
-                  Next →
+                  {t("signup.next")}
                 </button>
               </div>
             </div>
@@ -456,14 +468,17 @@ export function CreateAccountPage() {
 
           {step === "done" && role ? (
             <div className="signup-form signup-done">
-              <h2>All Set!</h2>
+              <h2>{t("signup.allSet")}</h2>
               <p className="signup-sub">
-                Welcome, {name.trim() || "friend"} (@{username}). This is a practice {role} account. No
-                real money or banks. Your password is stored as a hash, not as plain text.
+                {t("signup.welcomeDone", {
+                  name: name.trim() || t("common.guest"),
+                  user: username,
+                  role,
+                })}
               </p>
               {role === "student" ? <ChildAvatar className="signup-picked" avatarId={avatarId} name={name} /> : null}
               <button className="signup-next" type="button" onClick={() => navigate(homePathForRole(role))}>
-                Go to my dashboard
+                {t("signup.goDash")}
               </button>
             </div>
           ) : null}

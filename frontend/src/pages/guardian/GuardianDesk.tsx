@@ -1,17 +1,20 @@
 import { useState } from "react";
 import { RequireRole } from "../../components/auth/RequireRole";
 import { RoleShell } from "../../components/layout/RoleShell";
+import { useLang } from "../../i18n/useLang";
 import { useDemoChild } from "../auth/demoSession";
 import { inviteNote, readGuardianDesk, saveGuardianDesk } from "./guardianPreview";
 import "../../styles/role-workbench.css";
 
-const LINKS = [
-  { to: "/guardian/dashboard", label: "Home" },
-  { to: "/guardian/children", label: "Children" },
-  { to: "/guardian/progress", label: "Progress" },
-  { to: "/guardian/quizzes", label: "Quizzes" },
-  { to: "/guardian/tips", label: "Tips" },
-];
+function guardianLinks(t: (path: string) => string) {
+  return [
+    { to: "/guardian/dashboard", label: t("nav.home") },
+    { to: "/guardian/children", label: t("nav.children") },
+    { to: "/guardian/progress", label: t("common.progress") },
+    { to: "/guardian/quizzes", label: t("nav.quizzes") },
+    { to: "/guardian/tips", label: t("nav.tips") },
+  ];
+}
 
 type View = "home" | "children" | "progress" | "quizzes" | "tips";
 
@@ -20,6 +23,7 @@ function firstName(full?: string) {
 }
 
 export function GuardianDesk({ view }: { view: View }) {
+  const { t } = useLang();
   const { child } = useDemoChild();
   const [desk, setDesk] = useState(readGuardianDesk);
   const [picked, setPicked] = useState(desk.children[0]?.id ?? "");
@@ -62,29 +66,29 @@ export function GuardianDesk({ view }: { view: View }) {
 
   return (
     <RequireRole role="guardian">
-    <RoleShell title="Parent desk" banner="Parent preview. You only see a child after an invite — never by guessing a username." links={LINKS}>
+    <RoleShell title={t("guardian.title")} banner={t("guardian.banner")} links={guardianLinks(t)}>
       <section className="rb-hero is-parent">
         <div>
-          <p>Parent desk</p>
-          <h1>Hi, {firstName(child?.name)}</h1>
-          <p>See habits and modules. No profit ranks, no other families.</p>
+          <p>{t("guardian.title")}</p>
+          <h1>{t("guardian.hi", { name: firstName(child?.name) })}</h1>
+          <p>{t("guardian.lead")}</p>
         </div>
         <div className="rb-stats">
           <button className="rb-stat" type="button">
             <b>{desk.children.length}</b>
-            <span>Linked</span>
+            <span>{t("guardian.linked")}</span>
           </button>
           <button className="rb-stat" type="button">
             <b>{kid?.safety ?? 0}%</b>
-            <span>Safety</span>
+            <span>{t("guardian.safety")}</span>
           </button>
           <button className="rb-stat" type="button">
             <b>{kid?.market ?? 0}%</b>
-            <span>Market</span>
+            <span>{t("guardian.market")}</span>
           </button>
           <button className="rb-stat" type="button">
             <b>Off</b>
-            <span>Live ranks</span>
+            <span>{t("guardian.ranks")}</span>
           </button>
         </div>
       </section>

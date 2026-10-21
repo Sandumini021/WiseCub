@@ -1,9 +1,9 @@
 export type AccountRole = "student" | "teacher" | "guardian";
 
 export const LANGUAGES = [
-  { id: "en", label: "English" },
-  { id: "si", label: "Sinhala" },
-  { id: "ta", label: "Tamil" },
+  { id: "en", label: "English 🇬🇧" },
+  { id: "si", label: "සිංහල 🇱🇰" },
+  { id: "sg", label: "Singlish 🇱🇰" },
 ] as const;
 
 export function homePathForRole(role?: string) {

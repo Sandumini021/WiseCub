@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useLang } from "../../../i18n/useLang";
 import { applyTaxRule, rupees, type TaxRule } from "../data/applyTax";
 import { gradeTaxQuiz } from "../taxApi";
 import { TaxCub, useTaxLab } from "./TaxShell";
@@ -9,9 +10,39 @@ function pickRule(rules: TaxRule[], id: string) {
 }
 
 export function TaxHomePage() {
-  const { lessons, progress, lang } = useTaxLab();
+  const { t } = useLang();
+  const { lessons, progress, quiz, lang } = useTaxLab();
+  const rooms = [
+    { to: "/tax/learn", k: t("tax.learn"), t: t("tax.heroH"), s: `${progress.lessons.length}/${lessons.length}` },
+    { to: "/tax/simulate", k: t("tax.sim"), t: t("tax.heroP"), s: "Gross · relief · net" },
+    { to: "/tax/challenge", k: t("tax.challenge"), t: t("tax.heroH"), s: t("tax.practiceLab") },
+    { to: "/tax/decisions", k: t("tax.decisions"), t: "Rs 20,000", s: t("common.saveMoney") },
+    { to: "/tax/quiz", k: t("tax.quiz"), t: `${quiz.length}`, s: `${progress.quizPoints}` },
+    { to: "/tax/sri-lanka", k: t("tax.lk"), t: "YA 2025/2026", s: t("tax.practiceLab") },
+  ];
   return (
     <div className="tax-home">
+      <section className="tax-hero">
+        <div>
+          <p>{t("tax.practiceLab")}</p>
+          <h2>{t("tax.heroH")}</h2>
+          <p>{t("tax.heroP")}</p>
+        </div>
+        <div className="tax-hero-stats">
+          <span>
+            <b>{progress.lessons.length}</b>
+            {t("tax.lessons")}
+          </span>
+          <span>
+            <b>{progress.quizPoints}</b>
+            {t("tax.quizPts")}
+          </span>
+          <span>
+            <b>{progress.badges.length}</b>
+            {t("tax.badges")}
+          </span>
+        </div>
+      </section>
       <TaxCub
         text={
           lang === "si"
@@ -20,44 +51,15 @@ export function TaxHomePage() {
         }
       />
       <ul className="tax-cards">
-        <li>
-          <Link to="/tax/learn">
-            <strong>Learn</strong>
-            <span>
-              {progress.lessons.length}/{lessons.length} lessons
-            </span>
-          </Link>
-        </li>
-        <li>
-          <Link to="/tax/simulate">
-            <strong>Simulator</strong>
-            <span>Income, relief, bands, net</span>
-          </Link>
-        </li>
-        <li>
-          <Link to="/tax/challenge">
-            <strong>Threshold challenge</strong>
-            <span>What happens when income rises?</span>
-          </Link>
-        </li>
-        <li>
-          <Link to="/tax/decisions">
-            <strong>Smart money</strong>
-            <span>Spend, save, set aside (budgeting)</span>
-          </Link>
-        </li>
-        <li>
-          <Link to="/tax/quiz">
-            <strong>Quiz</strong>
-            <span>{progress.quizPoints} pts</span>
-          </Link>
-        </li>
-        <li>
-          <Link to="/tax/sri-lanka">
-            <strong>Sri Lanka awareness</strong>
-            <span>YA 2025/2026 · sourced</span>
-          </Link>
-        </li>
+        {rooms.map((room) => (
+          <li key={room.to}>
+            <Link to={room.to}>
+              <em>{room.k}</em>
+              <strong>{room.t}</strong>
+              <span>{room.s}</span>
+            </Link>
+          </li>
+        ))}
       </ul>
     </div>
   );
@@ -76,65 +78,72 @@ export function TaxLearnPage() {
     setChecked(false);
   }, [lesson?.id]);
   if (!lesson) {
-    return <p>No lessons.</p>;
+    return <p className="tax-note">No lessons in this pack.</p>;
   }
   const ok = pick === lesson.check.correct;
   return (
-    <div className="tax-learn">
-      <TaxCub text={lesson.blurb} />
-      <ol className="tax-lesson-list">
-        {lessons.map((item) => (
-          <li key={item.id}>
-            <Link to={`/tax/learn/${item.id}`} className={item.id === lesson.id ? "is-on" : ""}>
-              {item.title}
-              {progress.lessons.includes(item.id) ? " ✓" : ""}
-            </Link>
-          </li>
+    <div className="tax-learn tax-split">
+      <aside className="tax-card">
+        <h2>{lang === "si" ? "පාඩම්" : "Lessons"}</h2>
+        <ol className="tax-lesson-list">
+          {lessons.map((item) => (
+            <li key={item.id}>
+              <Link to={`/tax/learn/${item.id}`} className={item.id === lesson.id ? "is-on" : ""}>
+                {item.title}
+                {progress.lessons.includes(item.id) ? " ✓" : ""}
+              </Link>
+            </li>
+          ))}
+        </ol>
+      </aside>
+      <article className="tax-card">
+        <TaxCub text={lesson.blurb} />
+        <h2>{lesson.title}</h2>
+        <div className="ls-beats">
+          {lesson.beats.map((item, index) => (
+            <button key={item.t} type="button" className={beat === index ? "is-on" : ""} onClick={() => setBeat(index)}>
+              {item.t}
+            </button>
+          ))}
+        </div>
+        <p className="tax-beat">{lesson.beats[beat]?.d}</p>
+        <h3>{lang === "si" ? "කුඩා ප්‍රශ්නය" : "Quick check"}</h3>
+        {lesson.check.options.map((option) => (
+          <label key={option.id} className={`tax-opt ${pick === option.id ? "is-on" : ""}`}>
+            <input
+              type="radio"
+              name="tax-check"
+              checked={pick === option.id}
+              onChange={() => {
+                setPick(option.id);
+                setChecked(false);
+              }}
+            />
+            {option.label}
+          </label>
         ))}
-      </ol>
-      <h2>{lesson.title}</h2>
-      <div className="ls-beats">
-        {lesson.beats.map((item, index) => (
-          <button key={item.t} type="button" className={beat === index ? "is-on" : ""} onClick={() => setBeat(index)}>
-            {item.t}
+        <div className="tax-actions">
+          <button type="button" className="btn-gold" disabled={!pick} onClick={() => setChecked(true)}>
+            Check
           </button>
-        ))}
-      </div>
-      <p className="tax-beat">{lesson.beats[beat]?.d}</p>
-      <h3>{lang === "si" ? "කුඩා ප්‍රශ්නය" : "Quick check"}</h3>
-      {lesson.check.options.map((option) => (
-        <label key={option.id} className="tax-opt">
-          <input
-            type="radio"
-            name="tax-check"
-            checked={pick === option.id}
-            onChange={() => {
-              setPick(option.id);
-              setChecked(false);
-            }}
-          />
-          {option.label}
-        </label>
-      ))}
-      <button type="button" className="btn-gold" disabled={!pick} onClick={() => setChecked(true)}>
-        Check
-      </button>
-      {checked ? <p className={ok ? "tax-ok" : "tax-err"}>{ok ? "Cub: yes." : "Try again."}</p> : null}
-      {checked && ok ? (
-        <button
-          type="button"
-          className="btn-gold"
-          onClick={() => {
-            if (!progress.lessons.includes(lesson.id)) {
-              const lessonsDone = [...progress.lessons, lesson.id];
-              const badges = lessonsDone.length >= lessons.length ? ["tax-learner"] : progress.badges;
-              saveProgress({ ...progress, lessons: lessonsDone, badges });
-            }
-          }}
-        >
-          Save lesson
-        </button>
-      ) : null}
+          {checked && ok ? (
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => {
+                if (!progress.lessons.includes(lesson.id)) {
+                  const lessonsDone = [...progress.lessons, lesson.id];
+                  const badges = lessonsDone.length >= lessons.length ? ["tax-learner"] : progress.badges;
+                  saveProgress({ ...progress, lessons: lessonsDone, badges });
+                }
+              }}
+            >
+              Save lesson
+            </button>
+          ) : null}
+        </div>
+        {checked ? <p className={ok ? "tax-ok" : "tax-err"}>{ok ? "Cub: yes." : "Try again."}</p> : null}
+      </article>
     </div>
   );
 }
@@ -172,13 +181,15 @@ function ResultPanel({
           <dd>{rupees(result.tax)}</dd>
         </div>
         <div>
-          <dt>Net</dt>
+          <dt>Net remaining</dt>
           <dd>{rupees(result.net)}</dd>
         </div>
       </dl>
       <div className="tax-bars" aria-hidden="true">
+        <p>Gross</p>
         <i className="is-gross" style={{ width: "100%" }} />
-        <i className="is-tax" style={{ width: `${(result.tax / max) * 100}%` }} />
+        <p>Estimated tax</p>
+        <i className="is-tax" style={{ width: `${Math.min(100, (result.tax / max) * 100)}%` }} />
       </div>
       <ol className="tax-steps">
         {result.slices
@@ -206,55 +217,62 @@ export function TaxSimulatePage() {
   const rule = pickRule(rules, ruleId);
   const [income, setIncome] = useState(Number(scenario?.default_income ?? 0));
   if (!scenario || !rule) {
-    return <p>Need the API.</p>;
+    return <p className="tax-note">No scenarios in this pack.</p>;
   }
   const max = rule.mode === "verified" ? 5_000_000 : 200_000;
   return (
-    <div>
-      <TaxCub
-        text={
-          lang === "si"
-            ? "Slider එකෙන් ආදායම වෙනස් කරන්න. සහනය, බදු යටතේ ආදායම, තීරු, ශුද්ධ එකවර යාවත්කාලීන වෙනවා."
-            : "Slide income. Relief, taxable income, bands, and net update together. Yellow = practice. Blue = labelled IRD 2025/2026."
-        }
-      />
-      <label>
-        Scenario
-        <select
-          value={scenarioId}
-          onChange={(event) => {
-            const next = scenarios.find((item) => item.id === event.target.value);
-            setScenarioId(event.target.value);
-            if (next) {
-              setIncome(Number(next.default_income));
-              setRuleId(next.suggested_rule);
-            }
-          }}
-        >
+    <div className="tax-split">
+      <div>
+        <TaxCub
+          text={
+            lang === "si"
+              ? "Slider එකෙන් ආදායම වෙනස් කරන්න. සහනය, බදු යටතේ ආදායම, තීරු, ශුද්ධ එකවර යාවත්කාලීන වෙනවා."
+              : "Slide income. Relief, taxable income, bands, and net update together. Yellow = practice. Blue = labelled IRD 2025/2026."
+          }
+        />
+        <div className="tax-chips">
           {scenarios.map((item) => (
-            <option key={item.id} value={item.id}>
+            <button
+              key={item.id}
+              type="button"
+              className={item.id === scenarioId ? "is-on" : ""}
+              onClick={() => {
+                setScenarioId(item.id);
+                setIncome(Number(item.default_income));
+                setRuleId(item.suggested_rule);
+              }}
+            >
               {item.title}
-            </option>
+            </button>
           ))}
-        </select>
-      </label>
-      <p>{scenario.story}</p>
-      {scenario.saved_pile ? <p>Saved pile (not tax): {rupees(Number(scenario.saved_pile))}</p> : null}
-      <label>
-        Rule
-        <select value={ruleId} onChange={(event) => setRuleId(event.target.value)}>
-          {rules.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.mode === "verified" ? "Sri Lanka YA 2025/2026 (sourced)" : "Hypothetical practice"}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Annual income
-        <input type="range" min={0} max={max} step={rule.mode === "verified" ? 10000 : 1000} value={income} onChange={(event) => setIncome(Number(event.target.value))} />
-        <input type="number" min={0} value={income} onChange={(event) => setIncome(Math.max(0, Number(event.target.value)))} />
-      </label>
+        </div>
+        <article className="tax-card">
+          <p>{scenario.story}</p>
+          {scenario.saved_pile ? <p>Saved pile (not tax): {rupees(Number(scenario.saved_pile))}</p> : null}
+          <label>
+            Rule
+            <select value={ruleId} onChange={(event) => setRuleId(event.target.value)}>
+              {rules.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.mode === "verified" ? "Sri Lanka YA 2025/2026 (sourced)" : "Hypothetical practice"}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Annual income {rupees(income)}
+            <input
+              type="range"
+              min={0}
+              max={max}
+              step={rule.mode === "verified" ? 10000 : 1000}
+              value={income}
+              onChange={(event) => setIncome(Number(event.target.value))}
+            />
+            <input type="number" min={0} value={income} onChange={(event) => setIncome(Math.max(0, Number(event.target.value)))} />
+          </label>
+        </article>
+      </div>
       <ResultPanel rule={rule} income={income} kind={scenario.income_kind} />
     </div>
   );
@@ -268,40 +286,43 @@ export function TaxChallengePage() {
   const [guess, setGuess] = useState<"zero" | "some" | "all-top" | null>(null);
   const [shown, setShown] = useState(false);
   if (!rule) {
-    return <p>Need the API.</p>;
+    return <p className="tax-note">No practice rule in this pack.</p>;
   }
   const result = applyTaxRule(rule, income);
   return (
-    <div>
-      <h2>{lang === "si" ? "ආදායම වැඩි උනාම මොකද වෙන්නේ?" : "What happens when your income increases?"}</h2>
-      <TaxCub
-        text={
-          lang === "si"
-            ? "මුලින් අනාවැකියක් කියන්න. ඊට පස්සේ ගණනය පෙන්වනවා."
-            : "Guess first. Then reveal the live calculation."
-        }
-      />
-      <input type="range" min={0} max={200000} step={1000} value={income} onChange={(event) => setIncome(Number(event.target.value))} />
-      <p>
-        Compare: below {rupees(relief - 1)} · at {rupees(relief)} · above {rupees(relief + 20000)}
-      </p>
-      <fieldset>
-        <legend>If income is {rupees(income)}, estimated tax is…</legend>
-        <label>
-          <input type="radio" name="g" onChange={() => setGuess("zero")} /> Zero
-        </label>
-        <label>
-          <input type="radio" name="g" onChange={() => setGuess("some")} /> Some — only the slice above relief
-        </label>
-        <label>
-          <input type="radio" name="g" onChange={() => setGuess("all-top")} /> The whole amount at the top rate
-        </label>
-      </fieldset>
-      <button type="button" className="btn-gold" disabled={!guess} onClick={() => setShown(true)}>
-        Reveal
-      </button>
+    <div className="tax-split">
+      <article className="tax-card">
+        <h2>{lang === "si" ? "ආදායම වැඩි උනාම මොකද වෙන්නේ?" : "What happens when your income increases?"}</h2>
+        <TaxCub
+          text={
+            lang === "si"
+              ? "මුලින් අනාවැකියක් කියන්න. ඊට පස්සේ ගණනය පෙන්වනවා."
+              : "Guess first. Then reveal the live calculation."
+          }
+        />
+        <p className="tax-big">{rupees(income)}</p>
+        <input type="range" min={0} max={200000} step={1000} value={income} onChange={(event) => setIncome(Number(event.target.value))} />
+        <p>
+          Compare: below {rupees(relief - 1)} · at {rupees(relief)} · above {rupees(relief + 20000)}
+        </p>
+        <fieldset className="tax-guess">
+          <legend>If income is {rupees(income)}, estimated tax is…</legend>
+          <label className={guess === "zero" ? "is-on" : ""}>
+            <input type="radio" name="g" onChange={() => setGuess("zero")} /> Zero
+          </label>
+          <label className={guess === "some" ? "is-on" : ""}>
+            <input type="radio" name="g" onChange={() => setGuess("some")} /> Some — only the slice above relief
+          </label>
+          <label className={guess === "all-top" ? "is-on" : ""}>
+            <input type="radio" name="g" onChange={() => setGuess("all-top")} /> The whole amount at the top rate
+          </label>
+        </fieldset>
+        <button type="button" className="btn-gold" disabled={!guess} onClick={() => setShown(true)}>
+          Reveal
+        </button>
+      </article>
       {shown ? (
-        <>
+        <div>
           <p className={guess === "all-top" ? "tax-err" : "tax-ok"}>
             {guess === "all-top"
               ? "Not that. Progressive bands never re-tax the whole cake at the new rate."
@@ -310,8 +331,10 @@ export function TaxChallengePage() {
                 : "The extra slice is taxed; earlier rupees keep the lower treatment."}
           </p>
           <ResultPanel rule={rule} income={income} kind="tutoring" />
-        </>
-      ) : null}
+        </div>
+      ) : (
+        <div className="tax-card tax-empty">Guess, then reveal.</div>
+      )}
     </div>
   );
 }
@@ -322,32 +345,42 @@ export function TaxDecisionsPage() {
   const [spend, setSpend] = useState(8000);
   const [save, setSave] = useState(9000);
   const reserve = Math.max(0, received - spend - save);
+  const leftover = Math.max(0, received - spend - save - reserve);
   return (
-    <div>
-      <h2>{lang === "si" ? "නුවණින් බෙදන එක" : "Smart money decisions"}</h2>
-      <TaxCub
-        text={
-          lang === "si"
-            ? "රු. 20,000 ආවා. වියදම්, ඉතිරි, සහ බදු බිලක් ආවොත් කියලා වෙන් කිරීම — අයවැය අභ්‍යාසයක්, හැම විටම නීතියක් නෙවෙයි."
-            : "You received Rs 20,000. Split spend / save / maybe-tax reserve. Setting money aside is a budgeting exercise, not a law that always applies."
-        }
-      />
-      <p>Received (gross in this story): {rupees(received)}</p>
-      <label>
-        Spend {rupees(spend)}
-        <input type="range" min={0} max={received} value={spend} onChange={(event) => setSpend(Number(event.target.value))} />
-      </label>
-      <label>
-        Save {rupees(save)}
-        <input type="range" min={0} max={received} value={save} onChange={(event) => setSave(Number(event.target.value))} />
-      </label>
-      <p>Left as a maybe-tax reserve: {rupees(reserve)}</p>
-      <ul>
-        <li>Money received ≠ money saved.</li>
-        <li>Saved pile ≠ taxable income.</li>
-        <li>Tax payable is a later estimate on income that the rules cover.</li>
-        <li>Net disposable here ≈ received − spend − reserve.</li>
-      </ul>
+    <div className="tax-split">
+      <article className="tax-card">
+        <h2>{lang === "si" ? "නුවණින් බෙදන එක" : "Smart money decisions"}</h2>
+        <TaxCub
+          text={
+            lang === "si"
+              ? "රු. 20,000 ආවා. වියදම්, ඉතිරි, සහ බදු බිලක් ආවොත් කියලා වෙන් කිරීම — අයවැය අභ්‍යාසයක්, හැම විටම නීතියක් නෙවෙයි."
+              : "You received Rs 20,000. Split spend / save / maybe-tax reserve. Setting money aside is a budgeting exercise, not a law that always applies."
+          }
+        />
+        <p>Received (gross in this story): {rupees(received)}</p>
+        <label>
+          Spend {rupees(spend)}
+          <input type="range" min={0} max={received} value={spend} onChange={(event) => setSpend(Number(event.target.value))} />
+        </label>
+        <label>
+          Save {rupees(save)}
+          <input type="range" min={0} max={received} value={save} onChange={(event) => setSave(Number(event.target.value))} />
+        </label>
+        <p>Left as a maybe-tax reserve: {rupees(reserve)}</p>
+      </article>
+      <article className="tax-card">
+        <div className="tax-split-bars" aria-hidden="true">
+          <i className="is-spend" style={{ flex: spend || 1 }} />
+          <i className="is-save" style={{ flex: save || 1 }} />
+          <i className="is-keep" style={{ flex: reserve || 1 }} />
+        </div>
+        <ul className="tax-points">
+          <li>Money received ≠ money saved.</li>
+          <li>Saved pile ≠ taxable income.</li>
+          <li>Tax payable is a later estimate on income that the rules cover.</li>
+          <li>Spend + save + reserve = {rupees(spend + save + reserve)} · leftover {rupees(leftover)}</li>
+        </ul>
+      </article>
     </div>
   );
 }
@@ -358,9 +391,10 @@ export function TaxQuizPage() {
   const [choice, setChoice] = useState<string | null>(null);
   const [amount, setAmount] = useState("0");
   const [note, setNote] = useState<string | null>(null);
+  const [ok, setOk] = useState<boolean | null>(null);
   const item = quiz[index];
   if (!item) {
-    return <p>No quiz.</p>;
+    return <p className="tax-note">No quiz in this pack.</p>;
   }
   async function submit() {
     const current = quiz[index];
@@ -373,6 +407,7 @@ export function TaxQuizPage() {
         : { question_id: current.id, amount };
     const result = await gradeTaxQuiz(body);
     setNote(result.hint);
+    setOk(result.ok);
     if (result.ok) {
       saveProgress({
         ...progress,
@@ -382,30 +417,44 @@ export function TaxQuizPage() {
     }
   }
   return (
-    <div>
-      <TaxCub text={lang === "si" ? "වැරැද්දට retry කරන්න පුළුවන්. ලකුණු Common Area progress එකට යනවා." : "Retry is allowed. Points save on the common demo profile."} />
-      <p>
+    <article className="tax-card tax-quiz">
+      <TaxCub text={lang === "si" ? "වැරැද්දට retry කරන්න පුළුවන්. ලකුණු Common Area progress එකට යනවා." : "Retry is allowed. Points save on this device, and to the API if it is running."} />
+      <p className="tax-kicker">
         {index + 1}/{quiz.length} · {progress.quizPoints} pts
       </p>
       <h2>{item.q}</h2>
       {item.kind === "mcq"
         ? item.options?.map((option) => (
-            <label key={option.id} className="tax-opt">
+            <label key={option.id} className={`tax-opt ${choice === option.id ? "is-on" : ""}`}>
               <input type="radio" name="q" checked={choice === option.id} onChange={() => setChoice(option.id)} />
               {option.label}
             </label>
           ))
         : (
-            <input type="number" min={0} value={amount} onChange={(event) => setAmount(event.target.value)} />
+            <label>
+              Estimated tax
+              <input type="number" min={0} value={amount} onChange={(event) => setAmount(event.target.value)} />
+            </label>
           )}
-      <button type="button" className="btn-gold" onClick={() => void submit()}>
-        Check
-      </button>
-      {note ? <p>{note}</p> : null}
-      <button type="button" className="btn-ghost" onClick={() => { setIndex((n) => Math.min(quiz.length - 1, n + 1)); setNote(null); setChoice(null); }}>
-        Next
-      </button>
-    </div>
+      <div className="tax-actions">
+        <button type="button" className="btn-gold" onClick={() => void submit()}>
+          Check
+        </button>
+        <button
+          type="button"
+          className="btn-ghost"
+          onClick={() => {
+            setIndex((n) => Math.min(quiz.length - 1, n + 1));
+            setNote(null);
+            setOk(null);
+            setChoice(null);
+          }}
+        >
+          Next
+        </button>
+      </div>
+      {note ? <p className={ok ? "tax-ok" : "tax-err"}>{note}</p> : null}
+    </article>
   );
 }
 
@@ -414,38 +463,41 @@ export function TaxSriLankaPage() {
   const rule = pickRule(rules, "lk_pit_2025_2026");
   const [income, setIncome] = useState(2_800_000);
   if (!rule) {
-    return <p>Need the API.</p>;
+    return <p className="tax-note">Sri Lanka rule pack missing.</p>;
   }
   return (
-    <div>
-      <h2>{lang === "si" ? "ශ්‍රී ලංකා බදු දැනුවත්භාවය" : "Sri Lanka tax awareness"}</h2>
-      <TaxCub
-        text={
-          lang === "si"
-            ? "මේ රූප IRD YA 2025/2026. වත්මන් නීතිය කියලා 2026 අප්‍රේල්ට පස්සේ තහවුරු වෙලා නැහැ. උපදෙස් නෙවෙයි."
-            : "These figures are sourced for YA 2025/2026. They are not confirmed as current law after 31 March 2026. Not advice."
-        }
-      />
-      <p>
-        Year of assessment <strong>{rule.year_of_assessment}</strong> · verified {rule.verification_date} ·{" "}
-        {rule.expired ? "historical (not current)" : "within published period"}
-      </p>
-      <ul>
-        {rule.sources.map((source) => (
-          <li key={source.url}>
-            <a href={source.url} target="_blank" rel="noreferrer">
-              {source.title}
-            </a>
-          </li>
-        ))}
-      </ul>
-      <ul>
-        {rule.notes.map((note) => (
-          <li key={note}>{note}</li>
-        ))}
-      </ul>
-      <p>Turn the slider with the official 2025/2026 configuration. Banner stays on.</p>
-      <input type="range" min={0} max={5000000} step={10000} value={income} onChange={(event) => setIncome(Number(event.target.value))} />
+    <div className="tax-split">
+      <article className="tax-card">
+        <h2>{lang === "si" ? "ශ්‍රී ලංකා බදු දැනුවත්භාවය" : "Sri Lanka tax awareness"}</h2>
+        <TaxCub
+          text={
+            lang === "si"
+              ? "මේ රූප IRD YA 2025/2026. වත්මන් නීතිය කියලා 2026 අප්‍රේල්ට පස්සේ තහවුරු වෙලා නැහැ. උපදෙස් නෙවෙයි."
+              : "These figures are sourced for YA 2025/2026. They are not confirmed as current law after 31 March 2026. Not advice."
+          }
+        />
+        <p>
+          Year of assessment <strong>{rule.year_of_assessment}</strong> · verified {rule.verification_date} ·{" "}
+          {rule.expired ? "historical (not current)" : "within published period"}
+        </p>
+        <ul className="tax-points">
+          {rule.sources.map((source) => (
+            <li key={source.url}>
+              <a href={source.url} target="_blank" rel="noreferrer">
+                {source.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <ul className="tax-points">
+          {rule.notes.map((note) => (
+            <li key={note}>{note}</li>
+          ))}
+        </ul>
+        <p>Turn the slider with the official 2025/2026 configuration. Banner stays on.</p>
+        <p className="tax-big">{rupees(income)}</p>
+        <input type="range" min={0} max={5000000} step={10000} value={income} onChange={(event) => setIncome(Number(event.target.value))} />
+      </article>
       <ResultPanel rule={rule} income={income} kind="employment" />
     </div>
   );

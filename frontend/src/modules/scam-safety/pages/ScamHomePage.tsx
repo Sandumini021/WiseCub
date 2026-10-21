@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { SiteTopBar } from "../../../components/layout/SiteTopBar";
+import { useLang } from "../../../i18n/useLang";
 import "../../../styles/dashboard-long.css";
 import "../../../styles/scam-safety.css";
 import { Button } from "../../../components/common/Button";
@@ -379,6 +380,7 @@ function getDrillFeedback(action: DrillAction): {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function ScamHomePage() {
+  const { t } = useLang();
   const [view, setView] = useState<View>("home");
 
   // ── Category progress (persisted to localStorage via scamProgress) ─
@@ -897,14 +899,14 @@ export function ScamHomePage() {
         <SiteTopBar />
         <div className="safety-body">
           <aside className="safety-side" aria-label="Scam safety navigation">
-            <div className="safety-side-header">Stay Safe</div>
+            <div className="safety-side-header">{t("safety.side")}</div>
             <button
               type="button"
               className={view === "home" ? "is-on" : undefined}
               onClick={() => setView("home")}
             >
               <span aria-hidden="true">🛡️</span>
-              Scam Safety Home
+              {t("safety.home")}
             </button>
             <button
               type="button"
@@ -922,7 +924,7 @@ export function ScamHomePage() {
               }}
             >
               <span aria-hidden="true">📚</span>
-              Six Levels
+              {t("safety.levels")}
             </button>
             <button
               type="button"
@@ -930,7 +932,7 @@ export function ScamHomePage() {
               onClick={handleStartPractice}
             >
               <span aria-hidden="true">🎯</span>
-              Quick Practice
+              {t("safety.practice")}
             </button>
             <button
               type="button"
@@ -938,11 +940,11 @@ export function ScamHomePage() {
               onClick={handleOpenDrill}
             >
               <span aria-hidden="true">✉️</span>
-              Safety Drill
+              {t("safety.drill")}
             </button>
             <Link to="/student/dashboard">
               <span aria-hidden="true">⌂</span>
-              Student Home
+              {t("safety.studentHome")}
             </Link>
           </aside>
 
@@ -1677,7 +1679,7 @@ export function ScamHomePage() {
         <div className="safety-grid">
           <section className="safety-card" aria-labelledby="rules-title">
             <div className="safety-card-head">
-              <h2 id="rules-title">🔍 Detective Cub's 4 Rules</h2>
+              <h2 id="rules-title">🔍 {t("safety.rules")}</h2>
             </div>
             <ul className="safety-rule-list">
               <li className="safety-rule-item">
@@ -1709,7 +1711,7 @@ export function ScamHomePage() {
 
           <section className="safety-card" aria-labelledby="shield-title">
             <div className="safety-card-head">
-              <h2 id="shield-title">🛡️ Shield Score & Mastery</h2>
+              <h2 id="shield-title">🛡️ {t("safety.shield")}</h2>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               <div style={{ background: "#f8fafc", borderRadius: "14px", padding: "0.85rem 1rem", border: "1px solid #e2e8f0" }}>
@@ -2973,7 +2975,7 @@ export function ScamHomePage() {
       <div className="safety-inner-container">
         <div className="safety-main-card">
         <p className="muted">Stay safe · Scam Alley</p>
-        <h1>Email Safety Challenge</h1>
+        <h1>{t("safety.email")}</h1>
 
         <div
           style={{
@@ -3150,8 +3152,8 @@ export function ScamHomePage() {
   return renderShell(
     <div className="safety-inner-container">
       <div className="safety-main-card">
-      <p className="muted">Stay safe · Scam Alley</p>
-      <h1>Scam safety practice</h1>
+      <p className="muted">{t("safety.alley")}</p>
+      <h1>{t("safety.title")}</h1>
 
       {/* Virtual Safety Wallet — live display */}
       <div

@@ -1,3 +1,15 @@
+.splash-wrap {
+  position: relative;
+  min-height: 100vh;
+}
+
+.splash-lang {
+  position: absolute;
+  top: 1rem;
+  right: 1.2rem;
+  z-index: 2;
+}
+
 .splash {
   position: relative;
   display: flex;
