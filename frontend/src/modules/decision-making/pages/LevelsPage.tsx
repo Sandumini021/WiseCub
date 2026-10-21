@@ -15,18 +15,22 @@ import "../styles/choice-town.css";
 export function LevelsPage() {
   const location = useLocation();
   const [progress, setProgress] = useState(() => readProgress());
-  const [selectedLevelId, setSelectedLevelId] = useState(progress.currentLevelId);
+  const [selectedLevelId, setSelectedLevelId] = useState(progress.currentLevelId || 1);
 
   useEffect(() => {
     let cancelled = false;
     refreshProgress().then((next) => {
-      if (!cancelled) setProgress(next);
+      if (!cancelled) {
+        setProgress(next);
+        setSelectedLevelId(next.currentLevelId || 1);
+      }
     });
     return () => {
       cancelled = true;
     };
   }, [location.key]);
-  const selectedLevel = LEVELS.find((level) => level.id === selectedLevelId) ?? LEVELS[4];
+
+  const selectedLevel = LEVELS.find((level) => level.id === selectedLevelId) ?? LEVELS[0];
   const selectedStatus = getLevelStatus(selectedLevel.id, progress);
   const completedCount = progress.completedLevelIds.length;
   const percent = progressPercent(progress);
@@ -34,9 +38,8 @@ export function LevelsPage() {
   return (
     <div className="choice-town">
       <p className="choice-banner" role="note">
-        Demo progress is saved by the Choice Town API when it is running on this
-        computer. If the API is offline, this browser keeps a local copy. Levels
-        1–4 start completed for the demo. This is not a database of real children.
+        Decisions and reasoning progress are persisted in MongoDB for your authenticated profile.
+        If the server is offline, this browser keeps a local copy.
       </p>
       <header className="choice-hero">
         <div>
