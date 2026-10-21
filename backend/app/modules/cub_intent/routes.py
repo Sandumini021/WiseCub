@@ -27,6 +27,13 @@ CUB_ROUTE_ALLOWLIST = frozenset(
         "/safety",
         "/progress",
         "/profile",
+        "/tax",
+        "/tax/learn",
+        "/tax/simulate",
+        "/tax/challenge",
+        "/tax/decisions",
+        "/tax/quiz",
+        "/tax/sri-lanka",
         "/teacher/dashboard",
         "/teacher/classes",
         "/teacher/students",
@@ -88,7 +95,7 @@ INTENT_APP_ROUTES: dict[str, str | None] = {
 def is_allowed_cub_route(path: str) -> bool:
     if path in CUB_ROUTE_ALLOWLIST:
         return True
-    return bool(re.fullmatch(r"/market/lessons/\d+", path))
+    return bool(re.fullmatch(r"/market/lessons/\d+", path) or re.fullmatch(r"/tax(/[\w-]+)*", path))
 
 
 def home_path_for_role(role: str | None) -> str:

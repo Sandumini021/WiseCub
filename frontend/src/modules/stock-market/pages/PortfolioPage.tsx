@@ -72,7 +72,7 @@ function AllocationRing({
   const c = 2 * Math.PI * r;
   let offset = 0;
   return (
-    <svg className="pf-ring" viewBox="0 0 168 168" role="img" aria-label="How your bag is split">
+    <svg className="pf-ring" viewBox={`0 0 ${size} ${size}`} role="img" aria-label="How your bag is split">
       <circle cx="84" cy="84" r={r} fill="none" stroke="#eef2f8" strokeWidth="22" />
       {slices
         .filter((slice) => slice.pct > 0.4)

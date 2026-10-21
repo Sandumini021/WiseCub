@@ -1,0 +1,339 @@
+{
+  "trained_at": "2026-10-21T13:25:59.333512+00:00",
+  "model_note": "Random Forest on historical market indices (Kaggle global indexes). Not a CSE stock picker. Not validated on children. Education only.",
+  "horizon_days": 5,
+  "up_threshold": 0.012,
+  "down_threshold": -0.012,
+  "features": [
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "ret_1",
+    "ret_5",
+    "ma5",
+    "ma10",
+    "ma20",
+    "close_ma5",
+    "close_ma10",
+    "close_ma20",
+    "vol_20",
+    "hl_range"
+  ],
+  "split": {
+    "train_end": "2004-07-16",
+    "val_end": "2012-12-18",
+    "date_min": "1965-02-04",
+    "date_max": "2021-05-27",
+    "n_dates": 14629,
+    "shuffle": false,
+    "train_rows": 53984,
+    "val_rows": 26686,
+    "test_rows": 29233,
+    "class_counts_all": {
+      "sideways": 44313,
+      "upward": 36833,
+      "downward": 28757
+    },
+    "class_counts_train": {
+      "sideways": 21312,
+      "upward": 18051,
+      "downward": 14621
+    },
+    "class_counts_test": {
+      "sideways": 13436,
+      "upward": 9229,
+      "downward": 6568
+    }
+  },
+  "dummy_most_frequent": {
+    "val": {
+      "accuracy": 0.3584276399610283,
+      "macro_f1": 0.1759031934751225,
+      "labels": [
+        "downward",
+        "sideways",
+        "upward"
+      ],
+      "per_class": {
+        "downward": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 7568
+        },
+        "sideways": {
+          "precision": 0.3584276399610283,
+          "recall": 1.0,
+          "f1": 0.5277095804253675,
+          "support": 9565
+        },
+        "upward": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 9553
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          7568,
+          0
+        ],
+        [
+          0,
+          9565,
+          0
+        ],
+        [
+          0,
+          9553,
+          0
+        ]
+      ],
+      "classification_report": "              precision    recall  f1-score   support\n\n    downward       0.00      0.00      0.00      7568\n    sideways       0.36      1.00      0.53      9565\n      upward       0.00      0.00      0.00      9553\n\n    accuracy                           0.36     26686\n   macro avg       0.12      0.33      0.18     26686\nweighted avg       0.13      0.36      0.19     26686\n"
+    },
+    "test": {
+      "accuracy": 0.45961755550234323,
+      "macro_f1": 0.20992601967079927,
+      "labels": [
+        "downward",
+        "sideways",
+        "upward"
+      ],
+      "per_class": {
+        "downward": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 6568
+        },
+        "sideways": {
+          "precision": 0.45961755550234323,
+          "recall": 1.0,
+          "f1": 0.6297780590123978,
+          "support": 13436
+        },
+        "upward": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 9229
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          6568,
+          0
+        ],
+        [
+          0,
+          13436,
+          0
+        ],
+        [
+          0,
+          9229,
+          0
+        ]
+      ],
+      "classification_report": "              precision    recall  f1-score   support\n\n    downward       0.00      0.00      0.00      6568\n    sideways       0.46      1.00      0.63     13436\n      upward       0.00      0.00      0.00      9229\n\n    accuracy                           0.46     29233\n   macro avg       0.15      0.33      0.21     29233\nweighted avg       0.21      0.46      0.29     29233\n"
+    }
+  },
+  "logistic_baseline": {
+    "val": {
+      "accuracy": 0.4218691448699693,
+      "macro_f1": 0.4128908812096699,
+      "labels": [
+        "downward",
+        "sideways",
+        "upward"
+      ],
+      "per_class": {
+        "downward": {
+          "precision": 0.3569390666394946,
+          "recall": 0.46286997885835096,
+          "f1": 0.40306063744103093,
+          "support": 7568
+        },
+        "sideways": {
+          "precision": 0.48592524227041994,
+          "recall": 0.5504443282801882,
+          "f1": 0.5161764705882353,
+          "support": 9565
+        },
+        "upward": {
+          "precision": 0.4124565181381481,
+          "recall": 0.2606511043651209,
+          "f1": 0.3194355355997434,
+          "support": 9553
+        }
+      },
+      "confusion_matrix": [
+        [
+          3503,
+          2257,
+          1808
+        ],
+        [
+          2561,
+          5265,
+          1739
+        ],
+        [
+          3750,
+          3313,
+          2490
+        ]
+      ],
+      "classification_report": "              precision    recall  f1-score   support\n\n    downward       0.36      0.46      0.40      7568\n    sideways       0.49      0.55      0.52      9565\n      upward       0.41      0.26      0.32      9553\n\n    accuracy                           0.42     26686\n   macro avg       0.42      0.42      0.41     26686\nweighted avg       0.42      0.42      0.41     26686\n"
+    },
+    "test": {
+      "accuracy": 0.44826052748606027,
+      "macro_f1": 0.3713800812834978,
+      "labels": [
+        "downward",
+        "sideways",
+        "upward"
+      ],
+      "per_class": {
+        "downward": {
+          "precision": 0.26417370325693607,
+          "recall": 0.3334348355663825,
+          "f1": 0.2947906851527797,
+          "support": 6568
+        },
+        "sideways": {
+          "precision": 0.5417343111459442,
+          "recall": 0.7202292348913367,
+          "f1": 0.6183584140068373,
+          "support": 13436
+        },
+        "upward": {
+          "precision": 0.4016233766233766,
+          "recall": 0.13403402318777766,
+          "f1": 0.2009911446908766,
+          "support": 9229
+        }
+      },
+      "confusion_matrix": [
+        [
+          2190,
+          3575,
+          803
+        ],
+        [
+          2719,
+          9677,
+          1040
+        ],
+        [
+          3381,
+          4611,
+          1237
+        ]
+      ],
+      "classification_report": "              precision    recall  f1-score   support\n\n    downward       0.26      0.33      0.29      6568\n    sideways       0.54      0.72      0.62     13436\n      upward       0.40      0.13      0.20      9229\n\n    accuracy                           0.45     29233\n   macro avg       0.40      0.40      0.37     29233\nweighted avg       0.44      0.45      0.41     29233\n"
+    }
+  },
+  "random_forest": {
+    "val": {
+      "accuracy": 0.3998351195383347,
+      "macro_f1": 0.39549012232873765,
+      "labels": [
+        "downward",
+        "sideways",
+        "upward"
+      ],
+      "per_class": {
+        "downward": {
+          "precision": 0.33311287477954143,
+          "recall": 0.5989693446088795,
+          "f1": 0.4281261805817907,
+          "support": 7568
+        },
+        "sideways": {
+          "precision": 0.5201812774394562,
+          "recall": 0.3840041819132253,
+          "f1": 0.44183808492722243,
+          "support": 9565
+        },
+        "upward": {
+          "precision": 0.40950639853747717,
+          "recall": 0.25792944624725217,
+          "f1": 0.31650610147719976,
+          "support": 9553
+        }
+      },
+      "confusion_matrix": [
+        [
+          4533,
+          1353,
+          1682
+        ],
+        [
+          4021,
+          3673,
+          1871
+        ],
+        [
+          5054,
+          2035,
+          2464
+        ]
+      ],
+      "classification_report": "              precision    recall  f1-score   support\n\n    downward       0.33      0.60      0.43      7568\n    sideways       0.52      0.38      0.44      9565\n      upward       0.41      0.26      0.32      9553\n\n    accuracy                           0.40     26686\n   macro avg       0.42      0.41      0.40     26686\nweighted avg       0.43      0.40      0.39     26686\n"
+    },
+    "test": {
+      "accuracy": 0.40095098005678514,
+      "macro_f1": 0.3654050389132005,
+      "labels": [
+        "downward",
+        "sideways",
+        "upward"
+      ],
+      "per_class": {
+        "downward": {
+          "precision": 0.2537245014898006,
+          "recall": 0.5056333739342266,
+          "f1": 0.3378948974919876,
+          "support": 6568
+        },
+        "sideways": {
+          "precision": 0.5744157441574416,
+          "recall": 0.521360523965466,
+          "f1": 0.5466037220553236,
+          "support": 13436
+        },
+        "upward": {
+          "precision": 0.35325398835148136,
+          "recall": 0.15115397117780907,
+          "f1": 0.2117164971922902,
+          "support": 9229
+        }
+      },
+      "confusion_matrix": [
+        [
+          3321,
+          2353,
+          894
+        ],
+        [
+          4771,
+          7005,
+          1660
+        ],
+        [
+          4997,
+          2837,
+          1395
+        ]
+      ],
+      "classification_report": "              precision    recall  f1-score   support\n\n    downward       0.25      0.51      0.34      6568\n    sideways       0.57      0.52      0.55     13436\n      upward       0.35      0.15      0.21      9229\n\n    accuracy                           0.40     29233\n   macro avg       0.39      0.39      0.37     29233\nweighted avg       0.43      0.40      0.39     29233\n"
+    }
+  },
+  "selected_model": "logistic_baseline"
+}

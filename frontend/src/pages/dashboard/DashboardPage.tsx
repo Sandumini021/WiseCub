@@ -40,6 +40,14 @@ const WORLDS = [
     icon: "🧭",
     tone: "teal",
   },
+  {
+    to: "/tax",
+    kicker: "Tax Lab",
+    title: "Cub’s Tax Practice Lab",
+    blurb: "Learn tax ideas and try a practice calculator.",
+    icon: "🧾",
+    tone: "navy",
+  },
 ] as const;
 
 function firstName(full?: string) {

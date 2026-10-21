@@ -95,3 +95,33 @@
   font-weight: 800;
   color: #163a8a;
 }
+
+.tk-ai {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed #c9d6ee;
+}
+
+.tk-trend {
+  margin: 0 0 0.25rem;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.tk-trend.is-upward {
+  color: #15803d;
+}
+
+.tk-trend.is-downward {
+  color: #dc2626;
+}
+
+.tk-trend.is-sideways {
+  color: #163a8a;
+}
+
+.tk-ai-meta {
+  margin: 0 0 0.55rem;
+  color: #64748b;
+  font-size: 0.85rem;
+}

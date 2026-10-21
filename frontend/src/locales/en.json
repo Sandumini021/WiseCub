@@ -27,6 +27,10 @@
     "safety": {
       "title": "Scam Safety",
       "blurb": "Spot fake messages inside WiseCub. Nothing is sent to a real inbox."
+    },
+    "tax": {
+      "title": "Cub’s Tax Practice Lab",
+      "blurb": "Learn tax ideas with practice numbers and labelled Sri Lanka 2025/2026 figures."
     }
   },
   "cub": {

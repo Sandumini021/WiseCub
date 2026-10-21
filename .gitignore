@@ -166,3 +166,8 @@ dump/
 
 # Choice Town demo progress (not real learner data)
 backend/data/*.json
+
+# Virtual stock market raw indexes and bulky ML tables
+backend/app/modules/stock_market/data/raw/
+backend/app/modules/stock_market/ml/artifacts/*.parquet
+backend/app/modules/stock_market/ml/artifacts/cleaned_features.csv
