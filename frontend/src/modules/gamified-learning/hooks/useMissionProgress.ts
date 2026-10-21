@@ -34,6 +34,7 @@ import {
   submitMultiPeriodDecision,
   submitOptionDecision,
 } from '../services/gamifiedApi';
+import { PrototypeStorage } from '../services/prototypeStorage';
 import type { MissionProgress } from '../types/progress.types';
 import type { CharacterTransition } from '../types/emotion.types';
 import type { DecisionOutcome } from '../types/financial.types';
@@ -87,6 +88,32 @@ function masteryResultFromApi(result: EvaluationResultApi): LevelMasteryResult {
     remediationGuidance: result.remediation_guidance ?? undefined,
     nextLevelUnlocked: result.next_level_unlocked,
     timestamp: new Date().toISOString(),
+  };
+}
+
+function isApiUnreachable(err: unknown) {
+  if (err instanceof ApiError) {
+    return false;
+  }
+  const message = err instanceof Error ? err.message : String(err);
+  return /failed to fetch|networkerror|load failed|network request failed/i.test(message);
+}
+
+function apiTalkError(err: unknown, fallback: string) {
+  if (isApiUnreachable(err)) {
+    return 'Missions need the API on port 8000. You can keep playing on this device.';
+  }
+  return err instanceof Error ? err.message : fallback;
+}
+
+function localMissionProgress(missionId: string): MissionProgress {
+  const stored = PrototypeStorage.getUserState().missionProgress[missionId];
+  if (stored) {
+    return stored;
+  }
+  return {
+    ...PrototypeStorage.createDefaultState().missionProgress.mission_rescue_puppy,
+    missionId,
   };
 }
 
@@ -162,17 +189,39 @@ export function useMissionProgress(missionId: string, childKey?: string) {
             error: null,
           }));
         } catch (startErr) {
+          if (isApiUnreachable(startErr)) {
+            setState((prev) => ({
+              ...prev,
+              progress: localMissionProgress(missionId),
+              loading: false,
+              initialized: true,
+              error: null,
+            }));
+            return;
+          }
           setState((prev) => ({
             ...prev,
+            progress: localMissionProgress(missionId),
             loading: false,
-            error: startErr instanceof Error ? startErr.message : 'Could not start mission.',
+            initialized: true,
+            error: apiTalkError(startErr, 'Could not start mission.'),
           }));
         }
+      } else if (isApiUnreachable(err)) {
+        setState((prev) => ({
+          ...prev,
+          progress: localMissionProgress(missionId),
+          loading: false,
+          initialized: true,
+          error: null,
+        }));
       } else {
         setState((prev) => ({
           ...prev,
+          progress: localMissionProgress(missionId),
           loading: false,
-          error: err instanceof Error ? err.message : 'Could not load progress.',
+          initialized: true,
+          error: apiTalkError(err, 'Could not load progress.'),
         }));
       }
     }
@@ -185,6 +234,8 @@ export function useMissionProgress(missionId: string, childKey?: string) {
   // ── Start a level (enforces server-side lock) ──────────────────────────────
   const beginLevel = useCallback(async (levelNumber: number) => {
     setState((prev) => ({ ...prev, error: null }));
+    // Rotate session ID when beginning a genuinely new level attempt or replay
+    resetSessionId();
     try {
       await startLevel(missionId, levelNumber);
     } catch (err) {
@@ -194,6 +245,9 @@ export function useMissionProgress(missionId: string, childKey?: string) {
           error: err.message,
         }));
         throw err; // let caller handle navigation
+      }
+      if (isApiUnreachable(err)) {
+        return;
       }
       throw err;
     }
@@ -208,6 +262,9 @@ export function useMissionProgress(missionId: string, childKey?: string) {
       selectedOptionIds: string[];
       selectedRationaleId?: string;
     }): Promise<EvaluationResultApi> => {
+      if (state.submitting) {
+        throw new Error('A decision submission is already in progress.');
+      }
       setState((prev) => ({ ...prev, submitting: true, error: null }));
       try {
         const result = await submitOptionDecision({
@@ -230,18 +287,14 @@ export function useMissionProgress(missionId: string, childKey?: string) {
           progress: progressFromApiResponse(freshProgress),
           error: null,
         }));
-        // Rotate session ID so retries get a fresh idempotency key
-        if (!result.passed) {
-          resetSessionId();
-        }
         return result;
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Submission failed.';
+        const msg = apiTalkError(err, 'Submission failed.');
         setState((prev) => ({ ...prev, submitting: false, error: msg }));
         throw err;
       }
     },
-    [missionId]
+    [missionId, state.submitting]
   );
 
   // ── Submit allocation decisions ───────────────────────────────────────────
@@ -252,6 +305,9 @@ export function useMissionProgress(missionId: string, childKey?: string) {
       interactionType: string;
       allocations: Record<string, number>;
     }): Promise<EvaluationResultApi> => {
+      if (state.submitting) {
+        throw new Error('A decision submission is already in progress.');
+      }
       setState((prev) => ({ ...prev, submitting: true, error: null }));
       try {
         const result = await submitAllocationDecision({
@@ -272,15 +328,14 @@ export function useMissionProgress(missionId: string, childKey?: string) {
           progress: progressFromApiResponse(freshProgress),
           error: null,
         }));
-        if (!result.passed) resetSessionId();
         return result;
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Submission failed.';
+        const msg = apiTalkError(err, 'Submission failed.');
         setState((prev) => ({ ...prev, submitting: false, error: msg }));
         throw err;
       }
     },
-    [missionId]
+    [missionId, state.submitting]
   );
 
   // ── Submit multi-period saving decisions ──────────────────────────────────
@@ -290,6 +345,9 @@ export function useMissionProgress(missionId: string, childKey?: string) {
       levelNumber: number;
       weeklyDecisions: WeeklyDecisionInput[];
     }): Promise<EvaluationResultApi> => {
+      if (state.submitting) {
+        throw new Error('A decision submission is already in progress.');
+      }
       setState((prev) => ({ ...prev, submitting: true, error: null }));
       try {
         const result = await submitMultiPeriodDecision({
@@ -309,15 +367,14 @@ export function useMissionProgress(missionId: string, childKey?: string) {
           progress: progressFromApiResponse(freshProgress),
           error: null,
         }));
-        if (!result.passed) resetSessionId();
         return result;
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Submission failed.';
+        const msg = apiTalkError(err, 'Submission failed.');
         setState((prev) => ({ ...prev, submitting: false, error: msg }));
         throw err;
       }
     },
-    [missionId]
+    [missionId, state.submitting]
   );
 
   // ── Clear error ────────────────────────────────────────────────────────────
@@ -345,7 +402,7 @@ export function useMissionProgress(missionId: string, childKey?: string) {
       setState((prev) => ({
         ...prev,
         loading: false,
-        error: err instanceof Error ? err.message : 'Could not reset progress.',
+        error: apiTalkError(err, 'Could not reset progress.'),
       }));
     }
   }, [missionId]);

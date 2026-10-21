@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useLang } from "../../../i18n/useLang";
 import { CubMascot } from "../../../components/cub-assistant/CubMascot";
 import { LevelCard } from "../components/LevelCard";
 import { LevelPreview } from "../components/LevelPreview";
@@ -13,6 +14,7 @@ import {
 import "../styles/choice-town.css";
 
 export function LevelsPage() {
+  const { t } = useLang();
   const location = useLocation();
   const [progress, setProgress] = useState(() => readProgress());
   const [selectedLevelId, setSelectedLevelId] = useState(progress.currentLevelId || 1);
@@ -38,28 +40,23 @@ export function LevelsPage() {
   return (
     <div className="choice-town">
       <p className="choice-banner" role="note">
-        Decisions and reasoning progress are persisted in MongoDB for your authenticated profile.
-        If the server is offline, this browser keeps a local copy.
+        {t("choices.banner")}
       </p>
       <header className="choice-hero">
         <div>
           <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
             <CubMascot size={92} />
             <div>
-              <h1>Choice Town</h1>
-              <p className="choice-kicker">Your decision journey</p>
+              <h1>{t("choices.title")}</h1>
+              <p className="choice-kicker">{t("choices.kicker")}</p>
             </div>
           </div>
-          <p className="lede">
-            Explore real-life situations, make choices, and learn from the outcomes.
-          </p>
+          <p className="lede">{t("choices.lede")}</p>
         </div>
-        <aside className="progress-card" aria-label="Level progress">
-          <strong>
-            {completedCount} of {TOTAL_LEVELS} levels completed
-          </strong>
+        <aside className="progress-card" aria-label={t("choices.progress")}>
+          <strong>{t("choices.done", { done: completedCount, total: TOTAL_LEVELS })}</strong>
           <div className="progress-meta">
-            <span>Progress</span>
+            <span>{t("choices.progress")}</span>
             <span>{percent}%</span>
           </div>
           <div className="progress-track">

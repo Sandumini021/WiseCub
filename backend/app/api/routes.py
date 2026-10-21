@@ -19,6 +19,7 @@ ALLOWED_MODULES = {
     "missions",
     "safety",
     "progress",
+    "tax_learning",
 }
 
 

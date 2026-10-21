@@ -19,7 +19,9 @@ import {
   type Ticker,
 } from "../data/syntheticPrices";
 import { StockPriceChart } from "../components/StockPriceChart";
+import { MarketInsightsPanel } from "../components/MarketInsightsPanel";
 import "../../../styles/market-dashboard.css";
+import "../../../styles/market-lesson.css";
 
 const RANGES = ["1D", "1W", "1M", "1Y"] as const;
 
@@ -322,6 +324,7 @@ export function MarketTerminalPage() {
               })}
             </div>
           </div>
+          <MarketInsightsPanel ticker={ticker} />
         </section>
 
         <aside className="tk-side">

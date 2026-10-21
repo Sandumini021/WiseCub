@@ -7,6 +7,12 @@ from app.modules.stock_market.allocation import portfolio_allocation
 from app.modules.stock_market.coaching import coaching_for
 from app.modules.stock_market.engine import analyse_events
 from app.modules.stock_market.events import MarketEvent, MarketEventIn
+from app.modules.stock_market.ml.service import (
+    TrendModelMissing,
+    analysis_for,
+    history_for,
+    list_assets,
+)
 from app.modules.stock_market.store import events_collection, insert_event, upsert_habit_snapshot
 from app.modules.stock_market.sectors import COMPANY_SECTORS
 
@@ -35,6 +41,36 @@ def snapshot_from_book(data: dict[str, Any] | None) -> dict[str, Any] | None:
             }
         )
     return portfolio_allocation(float(data.get("cash") or 0), holdings)
+
+
+@router.get("/api/market/assets")
+async def market_assets() -> dict[str, Any]:
+    return {
+        "assets": list_assets(),
+        "kind": "market_index",
+        "note": "These are historical indexes, not WiseCub practice companies.",
+    }
+
+
+@router.get("/api/market/history/{symbol}")
+async def market_history(symbol: str, limit: int = Query(default=180, ge=20, le=500)) -> dict[str, Any]:
+    try:
+        return history_for(symbol, limit)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"No classroom history for {exc.args[0]}.") from exc
+
+
+@router.get("/api/market/analysis/{symbol}")
+async def market_analysis(symbol: str) -> dict[str, Any]:
+    try:
+        return analysis_for(symbol)
+    except TrendModelMissing as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Trend model files are missing. Run stock_market.ml.preprocess then .train.",
+        ) from exc
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"Unknown classroom index {exc.args[0]}.") from exc
 
 
 @router.post("/api/market/events")

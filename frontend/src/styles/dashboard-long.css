@@ -124,10 +124,16 @@
   gap: 0.6rem;
 }
 
-.dash-en {
-  font-size: 0.8rem;
+.lang-select select {
+  min-height: 36px;
+  border-radius: 999px;
+  border: 1px solid #e5eaf3;
+  padding: 0 0.65rem;
   font-weight: 800;
-  color: #7b8798;
+  background: #fff;
+  color: #163a8a;
+  font: inherit;
+  font-size: 0.82rem;
 }
 
 .dash-user {
@@ -345,7 +351,7 @@
 
 .dash-worlds {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 0.85rem;
   margin-top: 0.8rem;
 }
@@ -396,6 +402,10 @@
 
 .dash-world.tone-teal .dash-world-ico {
   background: #d7f3ee;
+}
+
+.dash-world.tone-navy .dash-world-ico {
+  background: #dbe4ff;
 }
 
 .dash-learn-band,

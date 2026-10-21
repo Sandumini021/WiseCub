@@ -1,4 +1,4 @@
-export type CubLang = "en" | "si";
+export type CubLang = "en" | "si" | "sg";
 
 export type CubRole = "student" | "teacher" | "guardian";
 

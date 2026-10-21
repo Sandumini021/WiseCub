@@ -93,25 +93,32 @@ export const MultiPeriodSaving: React.FC<MultiPeriodSavingProps> = ({
   return (
     <form onSubmit={handleSubmit} className="challenge-form clean-savings-challenge">
       {/* Sleek Goal Bar */}
-      <div className={`clean-goal-bar ${isGoalReached ? 'goal-complete' : ''}`}>
+      <div className={`clean-goal-bar ${isGoalReached ? 'goal-complete' : ''}`} aria-label="Savings Goal Status">
         <div className="goal-bar-info">
-          <span className="goal-label">🎯 Splint Goal: Rs. {targetGoalLKR.toLocaleString()}</span>
+          <span className="goal-label">🎯 Savings Target: Rs. {targetGoalLKR.toLocaleString()}</span>
           <span className="goal-numbers">
             <strong>Rs. {totalSaved.toLocaleString()}</strong> / Rs. {targetGoalLKR.toLocaleString()} ({goalProgressPercent}%)
           </span>
         </div>
         <div className="goal-track">
-          <div className="goal-fill" style={{ width: `${goalProgressPercent}%` }} />
+          <div
+            className="goal-fill"
+            style={{ width: `${goalProgressPercent}%` }}
+            role="progressbar"
+            aria-valuenow={goalProgressPercent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          />
         </div>
         {!isGoalReached && remainingNeeded > 0 ? (
-          <span className="goal-subtext">Need Rs. {remainingNeeded.toLocaleString()} more across the 3 weeks.</span>
+          <span className="goal-subtext">Need Rs. {remainingNeeded.toLocaleString()} more across the planning periods.</span>
         ) : (
-          <span className="goal-subtext goal-ok">🎉 Goal Reached! Barnaby can get his splint!</span>
+          <span className="goal-subtext goal-ok">🎉 Goal Reached! Full savings buffer achieved!</span>
         )}
       </div>
 
-      {/* 3 Clean Weekly Cards */}
-      <div className="clean-weeks-grid">
+      {/* Clean Weekly Cards */}
+      <div className="clean-weeks-grid" role="group" aria-label="Savings Planning Periods">
         {periods.map((p) => {
           const current = choices[p.period];
           const isResisted = current.resistedTemptation;
@@ -129,15 +136,15 @@ export const MultiPeriodSaving: React.FC<MultiPeriodSavingProps> = ({
 
               {/* Fixed Basics */}
               <div className="line-item basic-item">
-                <span className="item-label">🐾 Basics (Food & Bed)</span>
-                <span className="item-cost">-Rs. {p.mandatoryCostLKR.toLocaleString()}</span>
+                <span className="item-label">🐾 Mandatory Basics (Food & Bed)</span>
+                <span className="item-cost">−Rs. {p.mandatoryCostLKR.toLocaleString()}</span>
               </div>
 
               {/* Temptation Toggle */}
               <div className={`temptation-pill-card ${isResisted ? 'pill-resisted' : 'pill-bought'}`}>
                 <div className="temptation-title-row">
                   <span className="temptation-name">🍭 {p.temptationTitle}</span>
-                  <span className="temptation-cost">-Rs. {p.temptationCostLKR.toLocaleString()}</span>
+                  <span className="temptation-cost">−Rs. {p.temptationCostLKR.toLocaleString()}</span>
                 </div>
                 <div className="temptation-toggle-pills">
                   <button
@@ -145,16 +152,18 @@ export const MultiPeriodSaving: React.FC<MultiPeriodSavingProps> = ({
                     className={`pill-btn ${isResisted ? 'pill-active-green' : ''}`}
                     onClick={() => setTemptation(p.period, true)}
                     disabled={disabled}
+                    aria-pressed={isResisted}
                   >
-                    🛡️ Skip (Save)
+                    🛡️ Skip & Save
                   </button>
                   <button
                     type="button"
                     className={`pill-btn ${!isResisted ? 'pill-active-red' : ''}`}
                     onClick={() => setTemptation(p.period, false)}
                     disabled={disabled}
+                    aria-pressed={!isResisted}
                   >
-                    💸 Buy It
+                    💸 Spend on Want
                   </button>
                 </div>
               </div>
@@ -162,7 +171,7 @@ export const MultiPeriodSaving: React.FC<MultiPeriodSavingProps> = ({
               {/* Deposit Slider */}
               <div className="deposit-box">
                 <div className="deposit-label-row">
-                  <span className="deposit-title">💰 Save This Week:</span>
+                  <span className="deposit-title">💰 Save This Period:</span>
                   <span className="deposit-val">Rs. {current.savedAmountLKR.toLocaleString()}</span>
                 </div>
 
@@ -175,6 +184,7 @@ export const MultiPeriodSaving: React.FC<MultiPeriodSavingProps> = ({
                   onChange={(e) => setSavings(p.period, Number(e.target.value))}
                   disabled={disabled}
                   className="clean-slider"
+                  aria-label={`${p.label} savings amount`}
                 />
 
                 <div className="deposit-quick-actions">
@@ -209,10 +219,10 @@ export const MultiPeriodSaving: React.FC<MultiPeriodSavingProps> = ({
           disabled={disabled || totalSaved === 0}
         >
           {isGoalReached
-            ? `🎉 Lock 3-Week Plan & Heal Barnaby (Rs. ${totalSaved.toLocaleString()}) ➔`
+            ? `🎉 Lock Savings Plan (Rs. ${totalSaved.toLocaleString()}) ➔`
             : totalSaved === 0
             ? 'Set your weekly savings to continue'
-            : `Save Rs. ${targetGoalLKR.toLocaleString()} to pass (Current: Rs. ${totalSaved.toLocaleString()})`}
+            : `Save Rs. ${targetGoalLKR.toLocaleString()} to pass (Current: Rs. ${totalSaved.toLocaleString()}) ➔`}
         </button>
       </div>
     </form>

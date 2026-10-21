@@ -6,6 +6,7 @@ const mainLinks = [
   { to: "/choices", label: "Choice Town", icon: "choices" },
   { to: "/missions", label: "Missions", icon: "flag" },
   { to: "/safety", label: "Scam Alley", icon: "shield" },
+  { to: "/tax", label: "Tax Lab", icon: "flag" },
   { to: "/progress", label: "My Progress", icon: "bars" },
 ] as const;
 

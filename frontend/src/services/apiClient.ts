@@ -233,6 +233,55 @@ export function getMarketBehaviour(childId: string, sessionId?: string) {
   return apiGet<BehaviourReport>(`/api/market/behaviour/${childId}${query}`);
 }
 
+export type MarketAnalysis = {
+  symbol: string;
+  requested: string;
+  mapped_from_demo: boolean;
+  name: string;
+  region: string | null;
+  currency: string | null;
+  as_of: string;
+  last_close: number;
+  trend: "upward" | "downward" | "sideways" | string;
+  title: string;
+  explanation: string;
+  risk: string;
+  probabilities: Record<string, number> | null;
+  indicators: {
+    ret_1?: number;
+    ret_5?: number;
+    ma5?: number;
+    ma20?: number;
+    close_ma20?: number;
+    vol_20?: number;
+    hl_range?: number;
+  };
+  model: {
+    file: string;
+    selected?: string;
+    test_accuracy?: number;
+    test_macro_f1?: number;
+    trained_at?: string;
+  };
+  disclaimer: string;
+};
+
+export function getMarketAssets() {
+  return apiGet<{ assets: Array<{ symbol: string; exchange: string; region: string; currency: string }> }>(
+    "/api/market/assets",
+  );
+}
+
+export function getMarketHistory(symbol: string, limit = 180) {
+  return apiGet<{ symbol: string; points: Array<{ date: string; close: number }> }>(
+    `/api/market/history/${encodeURIComponent(symbol)}?limit=${limit}`,
+  );
+}
+
+export function getMarketAnalysis(symbol: string) {
+  return apiGet<MarketAnalysis>(`/api/market/analysis/${encodeURIComponent(symbol)}`);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  SCAM SAFETY GUARDIAN & SIMULATION API
 // ─────────────────────────────────────────────────────────────────────────────

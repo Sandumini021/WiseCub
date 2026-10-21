@@ -16,6 +16,10 @@ const ID_KEY = "wisecub.childId";
 const LANG_KEY = "wisecub.language";
 const SESSION_EVENT = "wisecub-session";
 
+export function isCubLang(value: string | undefined): value is CubLang {
+  return value === "en" || value === "si" || value === "sg";
+}
+
 function notifySession() {
   window.dispatchEvent(new Event(SESSION_EVENT));
 }
@@ -23,6 +27,7 @@ function notifySession() {
 export type DemoChild = {
   name: string;
   enteredAt: string;
+  childId?: string;
   email?: string;
   username?: string;
   role?: AccountRole;
@@ -51,6 +56,12 @@ export type SignupProfile = {
 export function childId(): string {
   let id = window.localStorage.getItem(ID_KEY);
   if (!id) {
+    const demo = readDemoChild();
+    if (demo?.childId) {
+      id = demo.childId;
+      window.localStorage.setItem(ID_KEY, id);
+      return id;
+    }
     id = window.crypto.randomUUID();
     window.localStorage.setItem(ID_KEY, id);
   }
@@ -80,6 +91,7 @@ export function setChildId(id: string) {
 function fromRemote(account: RemoteAccount): DemoChild {
   return {
     name: account.name,
+    childId: account.child_id,
     enteredAt: account.entered_at || new Date().toISOString(),
     email: account.email,
     username: account.username,
@@ -87,7 +99,7 @@ function fromRemote(account: RemoteAccount): DemoChild {
     age: account.age,
     gender: account.gender,
     avatarId: account.avatar_id,
-    language: account.language,
+    language: isCubLang(account.language) ? account.language : "en",
     classCode: account.class_code,
     institution: account.institution,
   };
@@ -98,6 +110,13 @@ export function applyRemoteSession(account: RemoteAccount): DemoChild {
     setChildId(account.child_id);
   }
   const next = fromRemote(account);
+  const chosen = window.localStorage.getItem(LANG_KEY);
+  if (isCubLang(chosen)) {
+    next.language = chosen;
+    void patchMe({ language: chosen }).catch(() => {});
+  } else if (isCubLang(next.language)) {
+    window.localStorage.setItem(LANG_KEY, next.language);
+  }
   window.localStorage.setItem(KEY, JSON.stringify(next));
   notifySession();
   return next;
@@ -114,7 +133,7 @@ export function writeDemoChild(name: string, extras?: Partial<DemoChild>): DemoC
     age: extras?.age ?? prev?.age,
     gender: extras?.gender ?? prev?.gender,
     avatarId: extras?.avatarId ?? prev?.avatarId,
-    language: extras?.language ?? prev?.language ?? "en",
+    language: isCubLang(extras?.language) ? extras.language : isCubLang(prev?.language) ? prev.language : "en",
     classCode: extras?.classCode ?? prev?.classCode,
     institution: extras?.institution ?? prev?.institution,
   };
@@ -168,11 +187,14 @@ export async function writeSignupProfile(profile: SignupProfile): Promise<DemoCh
 
 export function readCubLanguage(): CubLang {
   const stored = window.localStorage.getItem(LANG_KEY);
-  if (stored === "si" || stored === "en") {
+  if (isCubLang(stored)) {
     return stored;
   }
   const child = readDemoChild();
-  return child?.language === "si" ? "si" : "en";
+  if (isCubLang(child?.language)) {
+    return child.language;
+  }
+  return "en";
 }
 
 export function writeCubLanguage(lang: CubLang) {

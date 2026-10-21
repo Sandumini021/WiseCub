@@ -1,0 +1,11 @@
+{
+  "horizon_days": 5,
+  "upward": "future 5-day return >= 0.012",
+  "downward": "future 5-day return <= -0.012",
+  "sideways": "between thresholds",
+  "labels": [
+    "downward",
+    "sideways",
+    "upward"
+  ]
+}

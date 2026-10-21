@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { SiteTopBar } from "../../../components/layout/SiteTopBar";
+import { useLang } from "../../../i18n/useLang";
 import "../../../styles/dashboard-long.css";
 import "../../../styles/scam-safety.css";
 import { Button } from "../../../components/common/Button";
@@ -379,6 +380,7 @@ function getDrillFeedback(action: DrillAction): {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function ScamHomePage() {
+  const { t } = useLang();
   const [view, setView] = useState<View>("home");
 
   // ── Category progress (persisted to localStorage via scamProgress) ─
@@ -401,6 +403,8 @@ export function ScamHomePage() {
   });
   const [simulations, setSimulations] = useState<Record<string, LevelSimulationStatus | null>>({});
   const [learningMetrics, setLearningMetrics] = useState<SafetyLearningMetrics | null>(null);
+  const [guardianLoading, setGuardianLoading] = useState(true);
+  const activeChildIdRef = useRef<string>("");
   const [guardianSaving, setGuardianSaving] = useState(false);
   const [guardianMsg, setGuardianMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isEditingGuardian, setIsEditingGuardian] = useState(false);
@@ -411,12 +415,20 @@ export function ScamHomePage() {
   const [actionLoadingCategory, setActionLoadingCategory] = useState<string | null>(null);
 
   const loadGuardianAndSimulations = useCallback((id: string) => {
-    if (!id) return;
+    if (!id) {
+      setGuardianLoading(false);
+      return;
+    }
+    activeChildIdRef.current = id;
+    setGuardianLoading(true);
     void Promise.allSettled([
       getGuardianDetails(id),
       getSimulationStatuses(id),
       getSafetyLearningMetrics(id),
     ]).then(([guardRes, simRes, metricsRes]) => {
+      // Discard response if a newer child ID was requested
+      if (activeChildIdRef.current !== id) return;
+
       if (guardRes.status === "fulfilled" && guardRes.value) {
         setGuardian(guardRes.value);
         if (guardRes.value.configured) {
@@ -428,6 +440,8 @@ export function ScamHomePage() {
             simulation_enabled: guardRes.value.simulation_enabled,
           });
         }
+      } else if (guardRes.status === "rejected") {
+        console.warn("Could not load guardian details for child:", id, guardRes.reason);
       }
       if (simRes.status === "fulfilled" && simRes.value?.by_category) {
         setSimulations(simRes.value.by_category);
@@ -435,6 +449,7 @@ export function ScamHomePage() {
       if (metricsRes.status === "fulfilled" && metricsRes.value) {
         setLearningMetrics(metricsRes.value);
       }
+      setGuardianLoading(false);
     });
   }, []);
 
@@ -884,14 +899,14 @@ export function ScamHomePage() {
         <SiteTopBar />
         <div className="safety-body">
           <aside className="safety-side" aria-label="Scam safety navigation">
-            <div className="safety-side-header">Stay Safe</div>
+            <div className="safety-side-header">{t("safety.side")}</div>
             <button
               type="button"
               className={view === "home" ? "is-on" : undefined}
               onClick={() => setView("home")}
             >
               <span aria-hidden="true">🛡️</span>
-              Scam Safety Home
+              {t("safety.home")}
             </button>
             <button
               type="button"
@@ -909,7 +924,7 @@ export function ScamHomePage() {
               }}
             >
               <span aria-hidden="true">📚</span>
-              Six Levels
+              {t("safety.levels")}
             </button>
             <button
               type="button"
@@ -917,7 +932,7 @@ export function ScamHomePage() {
               onClick={handleStartPractice}
             >
               <span aria-hidden="true">🎯</span>
-              Quick Practice
+              {t("safety.practice")}
             </button>
             <button
               type="button"
@@ -925,11 +940,11 @@ export function ScamHomePage() {
               onClick={handleOpenDrill}
             >
               <span aria-hidden="true">✉️</span>
-              Safety Drill
+              {t("safety.drill")}
             </button>
             <Link to="/student/dashboard">
               <span aria-hidden="true">⌂</span>
-              Student Home
+              {t("safety.studentHome")}
             </Link>
           </aside>
 
@@ -1169,17 +1184,25 @@ export function ScamHomePage() {
               <span>👨‍👩‍👧</span> Parent / Guardian Details & Safety Simulations
             </h2>
             <div>
-              {guardian?.verification_status === "verified" && guardian.consent_confirmed && guardian.simulation_enabled && (
-                <span className="safety-badge verified">✓ Verified & Simulations Active</span>
-              )}
-              {guardian?.verification_status === "verified" && (!guardian.consent_confirmed || !guardian.simulation_enabled) && (
-                <span className="safety-badge disabled">⚠️ Simulations Disabled</span>
-              )}
-              {guardian?.verification_status === "pending" && (
-                <span className="safety-badge pending">⏳ Awaiting Email Verification</span>
-              )}
-              {(!guardian || guardian.verification_status === "unconfigured") && (
-                <span className="safety-badge unconfigured">ℹ️ Details Incomplete</span>
+              {guardianLoading ? (
+                <span className="safety-badge" style={{ background: "#f1f5f9", color: "#475569" }}>
+                  ⏳ Loading Details...
+                </span>
+              ) : (
+                <>
+                  {guardian?.verification_status === "verified" && guardian.consent_confirmed && guardian.simulation_enabled && (
+                    <span className="safety-badge verified">✓ Verified & Simulations Active</span>
+                  )}
+                  {guardian?.verification_status === "verified" && (!guardian.consent_confirmed || !guardian.simulation_enabled) && (
+                    <span className="safety-badge disabled">⚠️ Simulations Disabled</span>
+                  )}
+                  {guardian?.verification_status === "pending" && (
+                    <span className="safety-badge pending">⏳ Awaiting Email Verification</span>
+                  )}
+                  {(!guardian || guardian.verification_status === "unconfigured") && (
+                    <span className="safety-badge unconfigured">ℹ️ Details Incomplete</span>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -1206,7 +1229,11 @@ export function ScamHomePage() {
             </div>
           )}
 
-          {(!guardian?.configured || isEditingGuardian) ? (
+          {guardianLoading && !guardian ? (
+            <div style={{ padding: "32px 16px", textAlign: "center", color: "#64748b", fontSize: "0.95rem" }}>
+              Loading parent / guardian settings from WiseCub database...
+            </div>
+          ) : (!guardian?.configured || isEditingGuardian) ? (
             <form onSubmit={handleSaveGuardian}>
               <div className="safety-guardian-grid">
                 <div className="safety-input-group">
@@ -1652,7 +1679,7 @@ export function ScamHomePage() {
         <div className="safety-grid">
           <section className="safety-card" aria-labelledby="rules-title">
             <div className="safety-card-head">
-              <h2 id="rules-title">🔍 Detective Cub's 4 Rules</h2>
+              <h2 id="rules-title">🔍 {t("safety.rules")}</h2>
             </div>
             <ul className="safety-rule-list">
               <li className="safety-rule-item">
@@ -1684,7 +1711,7 @@ export function ScamHomePage() {
 
           <section className="safety-card" aria-labelledby="shield-title">
             <div className="safety-card-head">
-              <h2 id="shield-title">🛡️ Shield Score & Mastery</h2>
+              <h2 id="shield-title">🛡️ {t("safety.shield")}</h2>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               <div style={{ background: "#f8fafc", borderRadius: "14px", padding: "0.85rem 1rem", border: "1px solid #e2e8f0" }}>
@@ -2948,7 +2975,7 @@ export function ScamHomePage() {
       <div className="safety-inner-container">
         <div className="safety-main-card">
         <p className="muted">Stay safe · Scam Alley</p>
-        <h1>Email Safety Challenge</h1>
+        <h1>{t("safety.email")}</h1>
 
         <div
           style={{
@@ -3125,8 +3152,8 @@ export function ScamHomePage() {
   return renderShell(
     <div className="safety-inner-container">
       <div className="safety-main-card">
-      <p className="muted">Stay safe · Scam Alley</p>
-      <h1>Scam safety practice</h1>
+      <p className="muted">{t("safety.alley")}</p>
+      <h1>{t("safety.title")}</h1>
 
       {/* Virtual Safety Wallet — live display */}
       <div

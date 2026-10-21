@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LevelDefinition } from '../../types/mission.types';
 
 interface EmergencyResponseProps {
@@ -28,24 +28,25 @@ export const EmergencyResponse: React.FC<EmergencyResponseProps> = ({
   return (
     <form onSubmit={handleSubmit} className="challenge-form">
       {/* Emergency Alert Banner */}
-      <div className="emergency-alert-card">
+      <div className="emergency-alert-card" role="alert" aria-label="Emergency Shock Alert">
         <div className="emergency-icon-col">🚨</div>
         <div className="emergency-text-col">
-          <h4 className="emergency-alert-title">Emergency Situation: Midnight Fever Spikes!</h4>
+          <div className="emergency-badge-tag">CRITICAL FINANCIAL EMERGENCY</div>
+          <h4 className="emergency-alert-title">Sudden Fever Spike: Immediate Clinic Care Needed!</h4>
           <p className="emergency-alert-desc">
-            Barnaby’s temperature is rising rapidly due to a bacterial reaction. The emergency clinic
-            requires <strong>Rs. 4,500</strong> for the antibiotic injection immediately.
+            Barnaby’s condition has deteriorated suddenly. The emergency vet requires <strong>Rs. 4,500</strong> for
+            immediate medical intervention.
           </p>
           <div className="emergency-financial-pill-row">
-            <span className="pill-cash">Cash on Hand: Rs. 2,000</span>
-            <span className="pill-reserve">Saved Emergency Fund: Rs. 3,500</span>
-            <span className="pill-total">Total Available Funds: Rs. 5,500</span>
+            <span className="pill-cash">💵 Cash on Hand: Rs. 2,000</span>
+            <span className="pill-reserve">🛡️ Emergency Buffer: Rs. 3,500</span>
+            <span className="pill-total">📊 Total Liquid Capital: Rs. 5,500</span>
           </div>
         </div>
       </div>
 
       {/* Decision Strategy Cards */}
-      <div className="emergency-options-grid">
+      <div className="emergency-options-grid" role="radiogroup" aria-label="Emergency Financial Strategies">
         {options.map((opt) => {
           const isSelected = selectedId === opt.id;
           const isSafeStrategy = opt.id === 'opt_use_emergency_fund';
@@ -55,9 +56,16 @@ export const EmergencyResponse: React.FC<EmergencyResponseProps> = ({
               key={opt.id}
               className={`emergency-card ${isSelected ? 'emergency-card-selected' : ''}`}
               onClick={() => !disabled && setSelectedId(opt.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  if (!disabled) setSelectedId(opt.id);
+                }
+              }}
               role="radio"
               aria-checked={isSelected}
-              tabIndex={0}
+              tabIndex={disabled ? -1 : 0}
+              aria-label={`${opt.title}, ${isSafeStrategy ? 'Smart Emergency Strategy' : 'Dangerous Risk'}, cost Rs. ${opt.costLKR.toLocaleString()}`}
             >
               <div className="emergency-card-header">
                 <span className={`strategy-badge ${isSafeStrategy ? 'badge-safe' : 'badge-danger'}`}>
@@ -76,14 +84,20 @@ export const EmergencyResponse: React.FC<EmergencyResponseProps> = ({
               )}
 
               <div className="emergency-radio-row">
+                <div className={`option-check-pill ${isSelected ? 'pill-checked' : ''}`}>
+                  <span className="check-icon">{isSelected ? '✓' : '○'}</span>
+                  <span className="check-label">{isSelected ? 'Selected Strategy' : 'Choose Strategy'}</span>
+                </div>
                 <input
                   type="radio"
                   name="emergency_choice"
                   checked={isSelected}
                   onChange={() => setSelectedId(opt.id)}
                   disabled={disabled}
+                  className="sr-only-checkbox"
+                  tabIndex={-1}
+                  aria-hidden="true"
                 />
-                <span>{isSelected ? 'Selected Strategy' : 'Choose Strategy'}</span>
               </div>
             </div>
           );
@@ -96,7 +110,7 @@ export const EmergencyResponse: React.FC<EmergencyResponseProps> = ({
           className="btn-confirm-decision"
           disabled={disabled || !selectedId}
         >
-          Execute Emergency Strategy
+          {!selectedId ? 'Select an emergency strategy to continue' : 'Execute Emergency Strategy ➔'}
         </button>
       </div>
     </form>

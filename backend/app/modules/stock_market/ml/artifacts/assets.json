@@ -1,0 +1,142 @@
+[
+  {
+    "symbol": "000001.SS",
+    "exchange": "Shanghai Stock Exchange",
+    "region": "China",
+    "currency": "CNY",
+    "start": "1997-07-02",
+    "end": "2021-05-31",
+    "rows": 5791,
+    "category": "market_index"
+  },
+  {
+    "symbol": "399001.SZ",
+    "exchange": "Shenzhen Stock Exchange",
+    "region": "China",
+    "currency": "CNY",
+    "start": "1997-08-22",
+    "end": "2021-06-02",
+    "rows": 5760,
+    "category": "market_index"
+  },
+  {
+    "symbol": "GDAXI",
+    "exchange": "Frankfurt Stock Exchange",
+    "region": "Germany",
+    "currency": "EUR",
+    "start": "1987-12-30",
+    "end": "2021-05-31",
+    "rows": 8438,
+    "category": "market_index"
+  },
+  {
+    "symbol": "GSPTSE",
+    "exchange": "Toronto Stock Exchange",
+    "region": "Canada",
+    "currency": "CAD",
+    "start": "1979-06-29",
+    "end": "2021-05-31",
+    "rows": 10526,
+    "category": "market_index"
+  },
+  {
+    "symbol": "HSI",
+    "exchange": "Hong Kong Stock Exchange",
+    "region": "Hong Kong",
+    "currency": "HKD",
+    "start": "1986-12-31",
+    "end": "2021-05-31",
+    "rows": 8492,
+    "category": "market_index"
+  },
+  {
+    "symbol": "IXIC",
+    "exchange": "NASDAQ",
+    "region": "United States",
+    "currency": "USD",
+    "start": "1971-02-05",
+    "end": "2021-05-28",
+    "rows": 12690,
+    "category": "market_index"
+  },
+  {
+    "symbol": "J203.JO",
+    "exchange": "Johannesburg Stock Exchange",
+    "region": "South Africa",
+    "currency": "ZAR",
+    "start": "2012-02-08",
+    "end": "2021-05-31",
+    "rows": 2346,
+    "category": "market_index"
+  },
+  {
+    "symbol": "KS11",
+    "exchange": "Korea Exchange",
+    "region": "Korea",
+    "currency": "KRW",
+    "start": "1996-12-11",
+    "end": "2021-06-01",
+    "rows": 6029,
+    "category": "market_index"
+  },
+  {
+    "symbol": "N100",
+    "exchange": "Euronext",
+    "region": "Europe",
+    "currency": "EUR",
+    "start": "1999-12-31",
+    "end": "2021-06-02",
+    "rows": 5474,
+    "category": "market_index"
+  },
+  {
+    "symbol": "N225",
+    "exchange": "Tokyo Stock Exchange",
+    "region": "Japan",
+    "currency": "JPY",
+    "start": "1965-01-05",
+    "end": "2021-06-03",
+    "rows": 13874,
+    "category": "market_index"
+  },
+  {
+    "symbol": "NSEI",
+    "exchange": "National Stock Exchange of India",
+    "region": "India",
+    "currency": "INR",
+    "start": "2007-09-17",
+    "end": "2021-05-31",
+    "rows": 3346,
+    "category": "market_index"
+  },
+  {
+    "symbol": "NYA",
+    "exchange": "New York Stock Exchange",
+    "region": "United States",
+    "currency": "USD",
+    "start": "1965-12-31",
+    "end": "2021-05-28",
+    "rows": 13947,
+    "category": "market_index"
+  },
+  {
+    "symbol": "SSMI",
+    "exchange": "SIX Swiss Exchange",
+    "region": "Switzerland",
+    "currency": "CHF",
+    "start": "1990-11-09",
+    "end": "2021-05-28",
+    "rows": 7671,
+    "category": "market_index"
+  },
+  {
+    "symbol": "TWII",
+    "exchange": "Taiwan Stock Exchange",
+    "region": "Taiwan",
+    "currency": "TWD",
+    "start": "1997-07-02",
+    "end": "2021-05-31",
+    "rows": 5869,
+    "category": "market_index"
+  }
+]

@@ -16,6 +16,8 @@ describe("cub routes", () => {
   it("allows listed routes only", () => {
     expect(isAllowedCubRoute("/market")).toBe(true);
     expect(isAllowedCubRoute("/market/lessons/3")).toBe(true);
+    expect(isAllowedCubRoute("/tax")).toBe(true);
+    expect(isAllowedCubRoute("/tax/learn/what-are-taxes")).toBe(true);
     expect(isAllowedCubRoute("https://evil.example")).toBe(false);
     expect(isAllowedCubRoute("/admin")).toBe(false);
   });
