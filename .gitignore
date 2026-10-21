@@ -163,3 +163,6 @@ env/
 
 # MongoDB local dumps
 dump/
+
+# Choice Town demo progress (not real learner data)
+backend/data/*.json
