@@ -1,0 +1,17 @@
+dimension,category_or_property,record_count,percentage_of_total
+total_records,canonical_dataset_size,2500,100.0%
+template_groups,unique_template_groups,253,-
+binary_label,scam_or_suspicious,1250,50.00%
+binary_label,legitimate_or_benign,1250,50.00%
+scam_category,financial,150,6.00%
+scam_category,impersonation,200,8.00%
+scam_category,legitimate_or_benign,1250,50.00%
+scam_category,phishing,200,8.00%
+scam_category,prize,196,7.84%
+scam_category,qr,200,8.00%
+scam_category,sms,304,12.16%
+source_type,public_dataset,600,24.00%
+source_type,synthetic,1900,76.00%
+difficulty,easy,1120,44.80%
+difficulty,hard,530,21.20%
+difficulty,medium,850,34.00%

@@ -1,0 +1,249 @@
+{
+  "metadata": {
+    "dataset_path": "/Users/tharushinethra/Desktop/WiseCub/WiseCub/research/scam-awareness-ml/data/scam_messages_dataset.csv",
+    "random_seed": 42,
+    "train_rows": 1756,
+    "val_rows": 373,
+    "test_rows": 371,
+    "best_model_selected": "TFIDF_Multinomial_NB"
+  },
+  "cross_validation_5fold": {
+    "Majority_Baseline": {
+      "mean_macro_f1": 0.3222,
+      "std_macro_f1": 0.0087,
+      "fold_macro_f1s": [
+        0.3101,
+        0.3282,
+        0.3136,
+        0.3269,
+        0.3321
+      ]
+    },
+    "TFIDF_Logistic_Regression": {
+      "mean_macro_f1": 0.984,
+      "std_macro_f1": 0.0089,
+      "fold_macro_f1s": [
+        0.9943,
+        0.9741,
+        0.9827,
+        0.9942,
+        0.9747
+      ]
+    },
+    "TFIDF_Multinomial_NB": {
+      "mean_macro_f1": 0.9635,
+      "std_macro_f1": 0.0273,
+      "fold_macro_f1s": [
+        0.9972,
+        0.951,
+        0.9682,
+        0.9827,
+        0.9183
+      ]
+    },
+    "TFIDF_Linear_SVC": {
+      "mean_macro_f1": 0.9818,
+      "std_macro_f1": 0.0171,
+      "fold_macro_f1s": [
+        1.0,
+        0.9856,
+        0.9855,
+        0.9885,
+        0.9494
+      ]
+    }
+  },
+  "validation_set_comparison": {
+    "Majority_Baseline": {
+      "accuracy": 0.4933,
+      "precision_scam": 0.4933,
+      "recall_scam": 1.0,
+      "f1_scam": 0.6607,
+      "macro_f1": 0.3303,
+      "confusion_matrix": [
+        [
+          0,
+          189
+        ],
+        [
+          0,
+          184
+        ]
+      ]
+    },
+    "TFIDF_Logistic_Regression": {
+      "accuracy": 0.9303,
+      "precision_scam": 0.9877,
+      "recall_scam": 0.8696,
+      "f1_scam": 0.9249,
+      "macro_f1": 0.9299,
+      "confusion_matrix": [
+        [
+          187,
+          2
+        ],
+        [
+          24,
+          160
+        ]
+      ]
+    },
+    "TFIDF_Multinomial_NB": {
+      "accuracy": 0.9544,
+      "precision_scam": 0.9372,
+      "recall_scam": 0.9728,
+      "f1_scam": 0.9547,
+      "macro_f1": 0.9544,
+      "confusion_matrix": [
+        [
+          177,
+          12
+        ],
+        [
+          5,
+          179
+        ]
+      ]
+    },
+    "TFIDF_Linear_SVC": {
+      "accuracy": 0.941,
+      "precision_scam": 1.0,
+      "recall_scam": 0.8804,
+      "f1_scam": 0.9364,
+      "macro_f1": 0.9407,
+      "confusion_matrix": [
+        [
+          189,
+          0
+        ],
+        [
+          22,
+          162
+        ]
+      ]
+    }
+  },
+  "final_test_set_evaluation": {
+    "overall": {
+      "accuracy": 0.9838,
+      "precision_scam": 0.9738,
+      "recall_scam": 0.9947,
+      "f1_scam": 0.9841,
+      "macro_f1": 0.9838,
+      "confusion_matrix": [
+        [
+          179,
+          5
+        ],
+        [
+          1,
+          186
+        ]
+      ]
+    },
+    "public_subset": {
+      "accuracy": 0.9341,
+      "precision_scam": 0.878,
+      "recall_scam": 0.973,
+      "f1_scam": 0.9231,
+      "macro_f1": 0.9327,
+      "confusion_matrix": [
+        [
+          49,
+          5
+        ],
+        [
+          1,
+          36
+        ]
+      ]
+    },
+    "synthetic_subset": {
+      "accuracy": 1.0,
+      "precision_scam": 1.0,
+      "recall_scam": 1.0,
+      "f1_scam": 1.0,
+      "macro_f1": 1.0,
+      "confusion_matrix": [
+        [
+          130,
+          0
+        ],
+        [
+          0,
+          150
+        ]
+      ]
+    }
+  },
+  "all_models_test_comparison": {
+    "Majority_Baseline": {
+      "accuracy": 0.504,
+      "precision_scam": 0.504,
+      "recall_scam": 1.0,
+      "f1_scam": 0.6703,
+      "macro_f1": 0.3351,
+      "confusion_matrix": [
+        [
+          0,
+          184
+        ],
+        [
+          0,
+          187
+        ]
+      ]
+    },
+    "TFIDF_Logistic_Regression": {
+      "accuracy": 0.965,
+      "precision_scam": 0.9888,
+      "recall_scam": 0.9412,
+      "f1_scam": 0.9644,
+      "macro_f1": 0.965,
+      "confusion_matrix": [
+        [
+          182,
+          2
+        ],
+        [
+          11,
+          176
+        ]
+      ]
+    },
+    "TFIDF_Multinomial_NB": {
+      "accuracy": 0.9838,
+      "precision_scam": 0.9738,
+      "recall_scam": 0.9947,
+      "f1_scam": 0.9841,
+      "macro_f1": 0.9838,
+      "confusion_matrix": [
+        [
+          179,
+          5
+        ],
+        [
+          1,
+          186
+        ]
+      ]
+    },
+    "TFIDF_Linear_SVC": {
+      "accuracy": 0.9623,
+      "precision_scam": 0.9832,
+      "recall_scam": 0.9412,
+      "f1_scam": 0.9617,
+      "macro_f1": 0.9623,
+      "confusion_matrix": [
+        [
+          181,
+          3
+        ],
+        [
+          11,
+          176
+        ]
+      ]
+    }
+  }
+}
