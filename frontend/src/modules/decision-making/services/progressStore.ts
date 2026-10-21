@@ -7,16 +7,18 @@ import type {
   AnalysisResult,
 } from "../types/decisionMaking";
 
-const STORAGE_KEY = "wisecub.choiceTown.v1";
+const BASE_STORAGE_KEY = "wisecub.choiceTown.v1";
 
-/** Starting dashboard state for this frontend prototype (not loaded from a database). */
-const DEMO_COMPLETED = [1, 2, 3, 4];
-const DEMO_CURRENT = 5;
+function getStorageKey(): string {
+  if (typeof window === "undefined") return BASE_STORAGE_KEY;
+  const childId = localStorage.getItem("wisecub.childId");
+  return childId ? `${BASE_STORAGE_KEY}.${childId}` : BASE_STORAGE_KEY;
+}
 
 function emptyProgress(): ChoiceTownProgress {
   return {
-    completedLevelIds: [...DEMO_COMPLETED],
-    currentLevelId: DEMO_CURRENT,
+    completedLevelIds: [],
+    currentLevelId: 1,
     sessions: {},
     updatedAt: new Date().toISOString(),
   };
@@ -43,7 +45,8 @@ function parseProgress(raw: unknown): ChoiceTownProgress | null {
 
 export function readProgress(): ChoiceTownProgress {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const key = getStorageKey();
+    const stored = localStorage.getItem(key);
     if (!stored) return emptyProgress();
     const parsed = parseProgress(JSON.parse(stored) as unknown);
     return parsed ?? emptyProgress();
@@ -59,7 +62,12 @@ export function writeProgress(progress: ChoiceTownProgress): ChoiceTownProgress 
     sessions: progress.sessions,
     updatedAt: progress.updatedAt || new Date().toISOString(),
   };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  try {
+    const key = getStorageKey();
+    localStorage.setItem(key, JSON.stringify(next));
+  } catch {
+    // Ignore storage quota errors in restricted environments
+  }
   return next;
 }
 
@@ -69,7 +77,8 @@ export function getLevelStatus(
 ): LevelStatus {
   if (progress.completedLevelIds.includes(levelId)) return "completed";
   if (levelId === progress.currentLevelId) return "current";
-  return "available";
+  if (levelId < progress.currentLevelId) return "available";
+  return "locked";
 }
 
 export function getSession(levelId: number, progress = readProgress()): LevelSession {
