@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useLang } from "../../i18n/useLang";
 import { ChildAvatar } from "../../pages/auth/ChildAvatar";
 import { clearDemoChild, useDemoChild } from "../../pages/auth/demoSession";
 import { homePathForRole } from "../../pages/auth/roles";
+import { LanguageSelect } from "./LanguageSelect";
 import "../../styles/dashboard-long.css";
 import "../../styles/role-dash.css";
 
@@ -16,9 +18,10 @@ type RoleShellProps = {
 };
 
 export function RoleShell({ title, banner, links, children }: RoleShellProps) {
+  const { t } = useLang();
   const { child: session } = useDemoChild();
   const navigate = useNavigate();
-  const name = session?.name?.trim() || "Guest";
+  const name = session?.name?.trim() || t("common.guest");
   const home = homePathForRole(session?.role);
 
   return (
@@ -37,6 +40,7 @@ export function RoleShell({ title, banner, links, children }: RoleShellProps) {
             ))}
           </nav>
           <div className="dash-top-right">
+            <LanguageSelect />
             <Link className="dash-user" to="/profile">
               <ChildAvatar avatarId={session?.avatarId} name={name} />
               <span>{name}</span>
@@ -49,7 +53,7 @@ export function RoleShell({ title, banner, links, children }: RoleShellProps) {
                 navigate("/login");
               }}
             >
-              Sign out
+              {t("common.signOut")}
             </button>
           </div>
         </div>

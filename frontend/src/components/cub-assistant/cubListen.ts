@@ -42,12 +42,12 @@ export function makeRecognizer(): SpeechRec | null {
 }
 
 export function listenLang(lang: CubLang) {
-  return lang === "si" ? "si-LK" : "en-US";
+  return lang === "en" ? "en-US" : "si-LK";
 }
 
 /** Chrome often fails si-LK with a fake "network" error. Fall back to English STT. */
 export function listenLangCandidates(lang: CubLang) {
-  if (lang === "si") {
+  if (lang !== "en") {
     return ["si-LK", "si", "en-US"];
   }
   return ["en-US", "en-GB"];

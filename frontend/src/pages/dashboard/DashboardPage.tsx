@@ -1,5 +1,6 @@
 import { Link, Navigate } from "react-router-dom";
 import { SiteTopBar } from "../../components/layout/SiteTopBar";
+import { useLang } from "../../i18n/useLang";
 import { readLesson1Complete } from "../../modules/stock-market/data/demoMarket";
 import { readBook } from "../../modules/stock-market/data/demoPortfolio";
 import { ChildAvatar } from "../auth/ChildAvatar";
@@ -8,38 +9,11 @@ import { homePathForRole } from "../auth/roles";
 import "../../styles/dashboard-long.css";
 
 const WORLDS = [
-  {
-    to: "/missions",
-    kicker: "Learn",
-    title: "Money Missions",
-    blurb: "Learn through fun quizzes and challenges.",
-    icon: "🎯",
-    tone: "green",
-  },
-  {
-    to: "/market",
-    kicker: "Market",
-    title: "Virtual Stock Market",
-    blurb: "Practice investing with virtual money.",
-    icon: "📈",
-    tone: "gold",
-  },
-  {
-    to: "/safety",
-    kicker: "Stay Safe",
-    title: "Scam Safety",
-    blurb: "Learn to spot and avoid scams.",
-    icon: "🛡️",
-    tone: "coral",
-  },
-  {
-    to: "/choices",
-    kicker: "Life Choices",
-    title: "Life Choices",
-    blurb: "See how your choices shape the future.",
-    icon: "🧭",
-    tone: "teal",
-  },
+  { to: "/missions", id: "missions", icon: "🎯", tone: "green" },
+  { to: "/market", id: "market", icon: "📈", tone: "gold" },
+  { to: "/safety", id: "safety", icon: "🛡️", tone: "coral" },
+  { to: "/choices", id: "choices", icon: "🧭", tone: "teal" },
+  { to: "/tax", id: "tax", icon: "🧾", tone: "navy" },
 ] as const;
 
 function firstName(full?: string) {
@@ -52,6 +26,7 @@ function firstName(full?: string) {
 }
 
 export function DashboardPage() {
+  const { lang, t } = useLang();
   const { child } = useDemoChild();
   if (child?.role === "teacher" || child?.role === "guardian") {
     return <Navigate to={homePathForRole(child.role)} replace />;
@@ -68,24 +43,24 @@ export function DashboardPage() {
 
       <section className="dash-hero-long">
         <div className="dash-hero-copy">
-          <h1>Hi, {name}!</h1>
-          <p className="dash-ready">Ready to grow your money skills today?</p>
+          <h1>{t("dash.hi", { name })}</h1>
+          <p className="dash-ready">{t("dash.ready")}</p>
           <blockquote>
-            “Small steps today, bigger dreams tomorrow!”
+            “{t("dash.quote")}”
             <cite>— WiseCub</cite>
           </blockquote>
           {!child ? (
             <p className="dash-login-hint">
-              <Link to="/login">Login</Link> or <Link to="/signup">create an account</Link> so this
-              greeting uses your name.
+              <Link to="/login">{t("dash.loginLink")}</Link> {t("dash.loginHint")}{" "}
+              <Link to="/signup">{t("dash.createLink")}</Link>
             </p>
           ) : null}
         </div>
         <div className="dash-hero-side">
           <aside className="dash-progress-card">
-            <p>Your Progress</p>
+            <p>{t("dash.progress")}</p>
             <strong>
-              Level {level} <span>{progressPct}%</span>
+              {t("dash.level", { level })} <span>{progressPct}%</span>
             </strong>
             <div className="dash-bar">
               <i style={{ width: `${progressPct}%` }} />
@@ -93,45 +68,42 @@ export function DashboardPage() {
             <ul>
               <li>
                 <b>{lessonDone ? 1 : 0}</b>
-                Lessons
+                {t("dash.lessons")}
               </li>
               <li>
                 <b>{book.trades.length}</b>
-                Trades
+                {t("dash.trades")}
               </li>
               <li>
                 <b>1</b>
-                Day here
+                {t("dash.day")}
               </li>
             </ul>
           </aside>
           {child?.avatarId ? (
             <ChildAvatar className="dash-hero-cub" avatarId={child.avatarId} name={child.name} alt="" />
           ) : (
-            <img className="dash-hero-cub" src="/images/dash/cub-hero.png" alt="Cub waving" />
+            <img className="dash-hero-cub" src="/images/dash/cub-hero.png" alt={t("dash.cubAlt")} />
           )}
         </div>
       </section>
 
       <section className="dash-block">
-        <h2>Assigned quizzes</h2>
-        <p className="muted">
-          Teachers will assign quizzes here. None yet in this demo increment. Scores will be counted
-          on the server later — you will not see the correct answers before you submit.
-        </p>
+        <h2>{t("dash.quizzesH")}</h2>
+        <p className="muted">{t("dash.quizzesB")}</p>
       </section>
 
       <section className="dash-block">
-        <h2>Explore WiseCub</h2>
+        <h2>{t("dash.explore")}</h2>
         <div className="dash-worlds">
           {WORLDS.map((world) => (
             <Link key={world.to} className={`dash-world tone-${world.tone}`} to={world.to}>
               <span className="dash-world-ico" aria-hidden="true">
                 {world.icon}
               </span>
-              <p className="dash-kicker">{world.kicker}</p>
-              <strong>{world.title}</strong>
-              <p>{world.blurb}</p>
+              <p className="dash-kicker">{t(`dash.worlds.${world.id}K`)}</p>
+              <strong>{t(`dash.worlds.${world.id}T`)}</strong>
+              <p>{t(`dash.worlds.${world.id}B`)}</p>
             </Link>
           ))}
         </div>
@@ -139,141 +111,111 @@ export function DashboardPage() {
 
       <section className="dash-learn-band">
         <div>
-          <p className="dash-kicker">Learn</p>
-          <h2>Learn by doing, not by reading.</h2>
-          <p>
-            Complete fun missions, interactive lessons and real life scenarios to build money skills
-            step by step. Missions stay inside WiseCub — virtual coins only.
-          </p>
+          <p className="dash-kicker">{t("dash.bands.learnK")}</p>
+          <h2>{t("dash.bands.learnH")}</h2>
+          <p>{t("dash.bands.learnB")}</p>
           <Link className="dash-cta is-gold" to="/missions">
-            Go to Missions
+            {t("dash.bands.learnCta")}
           </Link>
         </div>
         <div className="dash-learn-art">
-          <img
-            className="dash-scene"
-            src="/images/dash/learn-by-doing.jpg"
-            alt="A student and Cub practising money skills at a desk."
-          />
+          <img className="dash-scene" src="/images/dash/learn-by-doing.jpg" alt={t("dash.learnAlt")} />
         </div>
       </section>
 
       <section className="dash-market-band">
         <div className="dash-learn-art">
-          <img
-            className="dash-scene"
-            src="/images/dash/real-market.jpg"
-            alt="Cub showing a practice stock chart on a laptop."
-          />
+          <img className="dash-scene" src="/images/dash/real-market.jpg" alt={t("dash.marketAlt")} />
         </div>
         <div>
-          <p className="dash-kicker">Market</p>
-          <h2>A real market. Fake money. No regrets.</h2>
-          <p>
-            Explore the virtual stock market, practise trades, and build your own portfolio with
-            pretend rupees.
-          </p>
+          <p className="dash-kicker">{t("dash.bands.marketK")}</p>
+          <h2>{t("dash.bands.marketH")}</h2>
+          <p>{t("dash.bands.marketB")}</p>
           <Link className="dash-cta is-blue" to="/market">
-            Open Market Simulator
+            {t("dash.bands.marketCta")}
           </Link>
         </div>
       </section>
 
       <section className="dash-safe-band">
         <div>
-          <p className="dash-kicker">Stay Safe</p>
-          <h2>We send the scam, so no one else has to.</h2>
-          <p>
-            Try realistic scam scenarios and learn how to identify and avoid fraud in a safe space.
-            WiseCub never sends real messages.
-          </p>
+          <p className="dash-kicker">{t("dash.bands.safeK")}</p>
+          <h2>{t("dash.bands.safeH")}</h2>
+          <p>{t("dash.bands.safeB")}</p>
           <Link className="dash-cta is-coral" to="/safety">
-            Take the 60-second Test
+            {t("dash.bands.safeCta")}
           </Link>
         </div>
         <div className="dash-scam-preview">
           <div>
-            <p>Practice preview</p>
+            <p>{t("dash.bands.preview")}</p>
             <div className="dash-sms">
-              <strong>Unknown Number</strong>
-              <span>Congratulations! You have won Rs. 50,000. This is a fake drill.</span>
+              <strong>{t("dash.bands.unknown")}</strong>
+              <span>{t("dash.bands.sms")}</span>
             </div>
           </div>
-          <img className="dash-portrait" src="/images/dash/cub-detective.png" alt="Cub looking for scams" />
+          <img className="dash-portrait" src="/images/dash/cub-detective.png" alt={t("dash.scamAlt")} />
         </div>
       </section>
 
       <section className="dash-choice-band">
         <div className="dash-learn-art">
-          <img
-            className="dash-scene"
-            src="/images/dash/life-choices.jpg"
-            alt="A student imagining a house, car, trip, savings, and graduation."
-          />
+          <img className="dash-scene" src="/images/dash/life-choices.jpg" alt={t("dash.choiceAlt")} />
         </div>
         <div>
-          <p className="dash-kicker">Life Choices</p>
-          <h2>Every choice shows its future.</h2>
-          <p>
-            Explore different life paths and see how your education, spending and saving choices can
-            shape your future.
-          </p>
+          <p className="dash-kicker">{t("dash.bands.choiceK")}</p>
+          <h2>{t("dash.bands.choiceH")}</h2>
+          <p>{t("dash.bands.choiceB")}</p>
           <Link className="dash-cta is-navy" to="/choices">
-            Walk a Scenario
+            {t("dash.bands.choiceCta")}
           </Link>
         </div>
       </section>
 
       <section className="dash-buddy-band">
         <div>
-          <p className="dash-kicker">Your AI buddy</p>
-          <h2>Ask Cub in English or Sinhala.</h2>
-          <p>
-            Tap Ask Cub at the bottom-right on any page after login. Cub can explain pages and
-            open allowed rooms. Pretend money only.
-          </p>
+          <p className="dash-kicker">{t("dash.bands.buddyK")}</p>
+          <h2>{t("dash.bands.buddyH")}</h2>
+          <p>{t("dash.bands.buddyB")}</p>
           <p className="dash-langs">
-            <span>සිංහල</span>
-            <span>தமிழ்</span>
-            <span className="is-on">English</span>
+            <span className={lang === "si" ? "is-on" : undefined}>සිංහල</span>
+            <span className={lang === "sg" ? "is-on" : undefined}>Singlish</span>
+            <span className={lang === "en" ? "is-on" : undefined}>English</span>
           </p>
         </div>
         <div className="dash-buddy-card">
-          <img className="dash-portrait" src="/images/dash/cub-explain.png" alt="Cub explaining" />
+          <img className="dash-portrait" src="/images/dash/cub-explain.png" alt={t("dash.explainAlt")} />
           <div>
-            <p>Hey! I&apos;m WiseCub. Ask me anything about money, investing or staying safe.</p>
-            <p className="muted">English first. Virtual money only.</p>
+            <p>{t("dash.bands.buddyHi")}</p>
+            <p className="muted">{t("dash.bands.buddyNote")}</p>
           </div>
         </div>
       </section>
 
       <section className="dash-parent-band">
         <div>
-          <p className="dash-kicker">For parents &amp; teachers</p>
-          <h2>See progress, not just screen time.</h2>
-          <p>
-            Track learning progress, completed missions and key skills. Support your child&apos;s
-            financial education journey. Habit notes — never a profit rank.
-          </p>
+          <p className="dash-kicker">{t("dash.bands.parentK")}</p>
+          <h2>{t("dash.bands.parentH")}</h2>
+          <p>{t("dash.bands.parentB")}</p>
           <Link className="dash-cta is-purple" to="/progress">
-            View Parent Dashboard
+            {t("dash.bands.parentCta")}
           </Link>
         </div>
         <div className="dash-parent-card">
           <ChildAvatar className="dash-parent-face" avatarId={child?.avatarId} name={child?.name} />
           <p>
-            {child?.name?.trim() || "Demo child"}
-            {child?.age ? ` · age ${child.age}` : ""}
+            {child?.name?.trim() || t("dash.bands.demoChild")}
+            {child?.age ? ` · ${t("profile.age")} ${child.age}` : ""}
           </p>
           <ul>
             <li>
-              Missions ready <b>—</b>
+              {t("dash.bands.missionsReady")} <b>—</b>
             </li>
             <li>
-              Practice trades <b>{book.trades.length}</b>
+              {t("dash.bands.practiceTrades")} <b>{book.trades.length}</b>
             </li>
             <li>
-              Lesson 1 <b>{lessonDone ? "done" : "open"}</b>
+              {t("dash.bands.lesson1")} <b>{lessonDone ? t("dash.bands.done") : t("dash.bands.open")}</b>
             </li>
           </ul>
         </div>
@@ -282,11 +224,11 @@ export function DashboardPage() {
       <footer className="dash-foot">
         <img className="dash-foot-bg" src="/images/dash/bg-footer.png" alt="" />
         <div className="dash-foot-copy">
-          <h2>A brighter, safer financial future starts with you.</h2>
+          <h2>{t("dash.bands.footH")}</h2>
           <Link className="dash-cta is-gold" to="/missions">
-            Keep Learning
+            {t("dash.bands.keep")}
           </Link>
-          <p>WiseCub · Small steps today, bigger dreams tomorrow.</p>
+          <p>{t("dash.bands.footP")}</p>
         </div>
         <img className="dash-foot-cubs" src="/images/dash/cub-thumbs.png" alt="" />
       </footer>

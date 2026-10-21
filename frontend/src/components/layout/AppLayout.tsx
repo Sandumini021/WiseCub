@@ -10,6 +10,7 @@ const crumbs: Record<string, string> = {
   "/safety": "Stay Safe",
   "/progress": "My Progress",
   "/profile": "Profile",
+  "/tax": "Tax Lab",
 };
 
 export function AppLayout() {

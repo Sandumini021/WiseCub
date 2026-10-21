@@ -21,6 +21,13 @@
   pointer-events: none;
 }
 
+.login-lang {
+  position: absolute;
+  top: 1rem;
+  right: 1.2rem;
+  z-index: 2;
+}
+
 .login-back {
   display: inline-flex;
   align-items: center;

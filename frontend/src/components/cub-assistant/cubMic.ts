@@ -105,7 +105,7 @@ function startMediaRecorderSession(stream: MediaStream): CaptureSession {
 export async function transcribeWav(wav: Blob, lang: CubLang): Promise<TranscribeResponse> {
   const body = new FormData();
   body.append("audio", wav, "cub.wav");
-  body.append("language", lang);
+  body.append("language", lang === "en" ? "en" : "si");
   try {
     const result = await apiPostForm<TranscribeResponse>("/api/cub/transcribe", body);
     return {

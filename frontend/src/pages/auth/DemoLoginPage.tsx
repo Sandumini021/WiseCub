@@ -1,12 +1,15 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CubMascot } from "../../components/cub-assistant/CubMascot";
+import { LanguageSelect } from "../../components/layout/LanguageSelect";
+import { useLang } from "../../i18n/useLang";
 import { ApiError, loginAccount } from "../../services/apiClient";
 import { applyRemoteSession } from "./demoSession";
 import { homePathForRole } from "./roles";
 import "../../styles/login-card.css";
 
 export function DemoLoginPage() {
+  const { t } = useLang();
   const navigate = useNavigate();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -18,7 +21,7 @@ export function DemoLoginPage() {
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     if (!identifier.trim() || !password) {
-      setNote("Enter your username or email, and your password.");
+      setNote(t("login.needFields"));
       return;
     }
     setBusy(true);
@@ -34,7 +37,7 @@ export function DemoLoginPage() {
       if (error instanceof ApiError) {
         setNote(error.message);
       } else {
-        setNote("Could not log in. Start MongoDB and the API, then try again.");
+        setNote(t("login.fail"));
       }
     } finally {
       setBusy(false);
@@ -43,8 +46,11 @@ export function DemoLoginPage() {
 
   return (
     <div className="login-screen">
+      <div className="login-lang">
+        <LanguageSelect />
+      </div>
       <Link className="login-back" to="/">
-        ← Back
+        {t("login.back")}
       </Link>
 
       <main id="main" className="login-card">
@@ -57,26 +63,26 @@ export function DemoLoginPage() {
           </p>
         </div>
 
-        <h1>Welcome Back!</h1>
-        <p className="login-lead">Login to continue your learning journey</p>
+        <h1>{t("login.title")}</h1>
+        <p className="login-lead">{t("login.lead")}</p>
 
         <form className="login-fields" onSubmit={(event) => void onSubmit(event)}>
           <label className="login-field">
-            <span className="visually-hidden">Username or email</span>
+            <span className="visually-hidden">{t("login.user")}</span>
             <span className="login-ico" aria-hidden="true">
               ✉
             </span>
             <input
               name="username"
               autoComplete="username"
-              placeholder="Username or email"
+              placeholder={t("login.user")}
               value={identifier}
               onChange={(event) => setIdentifier(event.target.value)}
             />
           </label>
 
           <label className="login-field">
-            <span className="visually-hidden">Password</span>
+            <span className="visually-hidden">{t("login.password")}</span>
             <span className="login-ico" aria-hidden="true">
               🔒
             </span>
@@ -84,14 +90,14 @@ export function DemoLoginPage() {
               type={showPassword ? "text" : "password"}
               name="password"
               autoComplete="current-password"
-              placeholder="Password"
+              placeholder={t("login.password")}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
             <button
               className="login-eye"
               type="button"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? t("login.hide") : t("login.show")}
               onClick={() => setShowPassword((open) => !open)}
             >
               👁
@@ -105,26 +111,26 @@ export function DemoLoginPage() {
                 checked={remember}
                 onChange={(event) => setRemember(event.target.checked)}
               />
-              Remember me
+              {t("login.remember")}
             </label>
             <button
               className="login-text-btn"
               type="button"
-              onClick={() => setNote("Password reset is not built yet. Ask a teammate if you are stuck.")}
+              onClick={() => setNote(t("login.forgotNote"))}
             >
-              Forgot password?
+              {t("login.forgot")}
             </button>
           </div>
 
           <button className="login-submit" type="submit" disabled={busy}>
-            {busy ? "Checking…" : "Login"}
+            {busy ? t("login.checking") : t("login.submit")}
           </button>
         </form>
 
-        <p className="login-or">or continue with</p>
+        <p className="login-or">{t("login.or")}</p>
 
         <div className="login-social">
-          <button type="button" onClick={() => setNote("Google sign-in is not enabled in this practice app.")}>
+          <button type="button" onClick={() => setNote(t("login.google"))}>
             <span className="g-icon" aria-hidden="true">
               G
             </span>
@@ -132,14 +138,14 @@ export function DemoLoginPage() {
           </button>
           <button
             type="button"
-            onClick={() => setNote("Microsoft sign-in is not enabled in this practice app.")}
+            onClick={() => setNote(t("login.microsoft"))}
           >
             <span className="ms-icon" aria-hidden="true">
               ⊞
             </span>
             Microsoft
           </button>
-          <button type="button" onClick={() => setNote("Apple sign-in is not enabled in this practice app.")}>
+          <button type="button" onClick={() => setNote(t("login.apple"))}>
             <span className="ap-icon" aria-hidden="true">
               
             </span>
@@ -148,16 +154,13 @@ export function DemoLoginPage() {
         </div>
 
         <p className="login-signup">
-          Don’t have an account?{" "}
+          {t("login.needAccount")}{" "}
           <Link className="login-text-btn" to="/signup">
-            Create one
+            {t("login.create")}
           </Link>
         </p>
         {note ? <p className="login-note">{note}</p> : null}
-        <p className="login-note">
-          Practice login. Passwords are hashed on the server. Students use a username. Teachers and
-          guardians may use email. Not a bank.
-        </p>
+        <p className="login-note">{t("login.practice")}</p>
       </main>
     </div>
   );

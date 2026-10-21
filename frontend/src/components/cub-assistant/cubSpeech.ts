@@ -17,8 +17,12 @@ export function listVoices(): SpeechSynthesisVoice[] {
   return api ? api.getVoices() : [];
 }
 
+export function voiceLang(lang: CubLang): "en" | "si" {
+  return lang === "en" ? "en" : "si";
+}
+
 export function pickVoice(lang: CubLang, voices = listVoices()): SpeechSynthesisVoice | null {
-  const want = lang === "si" ? "si" : "en";
+  const want = voiceLang(lang);
   const exact = voices.find((voice) => voice.lang.toLowerCase().startsWith(want === "si" ? "si" : "en"));
   return exact ?? null;
 }
@@ -38,13 +42,13 @@ export function speakCub(text: string, lang: CubLang, voices = listVoices()): Sp
   }
   const ready = voices.length ? voices : api.getVoices();
   const voice = pickVoice(lang, ready);
-  if (lang === "si" && !voice) {
+  if (voiceLang(lang) === "si" && !voice) {
     return { ok: false, reason: "no-sinhala-voice" };
   }
   api.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.rate = 0.95;
-  utterance.lang = lang === "si" ? "si-LK" : "en-GB";
+  utterance.lang = voiceLang(lang) === "si" ? "si-LK" : "en-GB";
   if (voice) {
     utterance.voice = voice;
   }
