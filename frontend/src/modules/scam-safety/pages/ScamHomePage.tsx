@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { SiteTopBar } from "../../../components/layout/SiteTopBar";
+import "../../../styles/dashboard-long.css";
+import "../../../styles/scam-safety.css";
 import { Button } from "../../../components/common/Button";
 import { Card } from "../../../components/common/Card";
 import { getOrCreateSessionId } from "../services/researchSession";
@@ -12,6 +16,8 @@ import {
   isCategoryPassing,
   loadScamProgress,
   saveCategoryProgress,
+  syncProgressFromBackend,
+  syncProgressToBackend,
   type CategoryId,
 } from "../services/scamProgress";
 import {
@@ -21,6 +27,22 @@ import {
   type CategoryScenario,
   type Concept,
 } from "../data/smsScenarios";
+import { childId as getChildId } from "../../../pages/auth/demoSession";
+import {
+  getGuardianDetails,
+  saveGuardianDetails,
+  verifyGuardianEmail,
+  updateGuardianConsent,
+  triggerLevelSimulation,
+  triggerPassedLevelSimulation,
+  getSimulationStatuses,
+  getSafetyLearningMetrics,
+  type GuardianDetails,
+  type LevelSimulationStatus,
+  type SafetyLearningMetrics,
+  loadModuleState,
+  saveModuleState,
+} from "../../../services/apiClient";
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  TYPES
@@ -98,7 +120,7 @@ const CATEGORY_META: CategoryMeta[] = [
     icon: "📷",
     description: "Spot dangerous QR codes used to trick people.",
     unlockHint: "Complete Scam text messages to unlock this level.",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: "prize",
@@ -106,7 +128,7 @@ const CATEGORY_META: CategoryMeta[] = [
     icon: "🎁",
     description: "Learn why too-good-to-be-true prizes are often scams.",
     unlockHint: "Complete Fake QR-code offers to unlock this level.",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: "impersonation",
@@ -114,7 +136,7 @@ const CATEGORY_META: CategoryMeta[] = [
     icon: "🎭",
     description: "Identify when scammers pretend to be someone you trust.",
     unlockHint: "Complete Prize and giveaway scams to unlock this level.",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: "financial",
@@ -122,9 +144,10 @@ const CATEGORY_META: CategoryMeta[] = [
     icon: "💰",
     description: "Spot fake investment and financial offers.",
     unlockHint: "Complete Impersonation scams to unlock this level.",
-    comingSoon: true,
+    comingSoon: false,
   },
 ];
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  ADAPTIVE ENGINE (pure, no React dependency)
@@ -360,12 +383,210 @@ export function ScamHomePage() {
 
   // ── Category progress (persisted to localStorage via scamProgress) ─
   const [completedCategories, setCompletedCategories] = useState<CategoryId[]>(
-    () => loadScamProgress().completedCategories
+    () => loadScamProgress(getChildId()).completedCategories
   );
-  const [, setCategoryScores] = useState<Partial<Record<CategoryId, number>>>(
-    () => loadScamProgress().categoryScores
+  const [categoryScores, setCategoryScores] = useState<Partial<Record<CategoryId, number>>>(
+    () => loadScamProgress(getChildId()).categoryScores
   );
   const [activeCategory, setActiveCategory] = useState<CategoryId | null>(null);
+
+  // ── Parent / Guardian contact, consent, & simulations ──────────────
+  const [guardian, setGuardian] = useState<GuardianDetails | null>(null);
+  const [guardianForm, setGuardianForm] = useState({
+    parent_name: "",
+    email: "",
+    relationship: "Parent",
+    consent_confirmed: false,
+    simulation_enabled: true,
+  });
+  const [simulations, setSimulations] = useState<Record<string, LevelSimulationStatus | null>>({});
+  const [learningMetrics, setLearningMetrics] = useState<SafetyLearningMetrics | null>(null);
+  const [guardianSaving, setGuardianSaving] = useState(false);
+  const [guardianMsg, setGuardianMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [isEditingGuardian, setIsEditingGuardian] = useState(false);
+  const [simulationMsg, setSimulationMsg] = useState<{
+    type: "success" | "warning" | "error" | "info";
+    text: string;
+  } | null>(null);
+  const [actionLoadingCategory, setActionLoadingCategory] = useState<string | null>(null);
+
+  const loadGuardianAndSimulations = useCallback((id: string) => {
+    if (!id) return;
+    void Promise.allSettled([
+      getGuardianDetails(id),
+      getSimulationStatuses(id),
+      getSafetyLearningMetrics(id),
+    ]).then(([guardRes, simRes, metricsRes]) => {
+      if (guardRes.status === "fulfilled" && guardRes.value) {
+        setGuardian(guardRes.value);
+        if (guardRes.value.configured) {
+          setGuardianForm({
+            parent_name: guardRes.value.parent_name,
+            email: guardRes.value.email,
+            relationship: guardRes.value.relationship || "Parent",
+            consent_confirmed: guardRes.value.consent_confirmed,
+            simulation_enabled: guardRes.value.simulation_enabled,
+          });
+        }
+      }
+      if (simRes.status === "fulfilled" && simRes.value?.by_category) {
+        setSimulations(simRes.value.by_category);
+      }
+      if (metricsRes.status === "fulfilled" && metricsRes.value) {
+        setLearningMetrics(metricsRes.value);
+      }
+    });
+  }, []);
+
+  // ── Backend sync & Account Switching: load progress for current child ─
+  useEffect(() => {
+    let active = true;
+
+    function syncForCurrentChild() {
+      const id = getChildId();
+      // Immediately load local cache for this child
+      const local = loadScamProgress(id);
+      if (active) {
+        setCompletedCategories(local.completedCategories);
+        setCategoryScores(local.categoryScores);
+      }
+
+      if (!id) return;
+      void syncProgressFromBackend(id, loadModuleState)
+        .then((merged) => {
+          if (active) {
+            setCompletedCategories(merged.completedCategories);
+            setCategoryScores(merged.categoryScores);
+          }
+        })
+        .catch(() => {});
+
+      loadGuardianAndSimulations(id);
+    }
+
+    syncForCurrentChild();
+
+    window.addEventListener("wisecub-session", syncForCurrentChild);
+    window.addEventListener("storage", syncForCurrentChild);
+    return () => {
+      active = false;
+      window.removeEventListener("wisecub-session", syncForCurrentChild);
+      window.removeEventListener("storage", syncForCurrentChild);
+    };
+  }, [loadGuardianAndSimulations]);
+
+  async function handleSaveGuardian(e: React.FormEvent) {
+    e.preventDefault();
+    const id = getChildId();
+    if (!id) return;
+    setGuardianSaving(true);
+    setGuardianMsg(null);
+    try {
+      const res = await saveGuardianDetails(id, guardianForm);
+      setGuardian(res);
+      setIsEditingGuardian(false);
+      setGuardianMsg({
+        type: "success",
+        text: "Guardian details saved successfully! Email is awaiting verification.",
+      });
+      loadGuardianAndSimulations(id);
+    } catch (err: unknown) {
+      setGuardianMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "Failed to save guardian details.",
+      });
+    } finally {
+      setGuardianSaving(false);
+    }
+  }
+
+  async function handleVerifyEmail() {
+    const id = getChildId();
+    if (!id) return;
+    setGuardianSaving(true);
+    setGuardianMsg(null);
+    try {
+      await verifyGuardianEmail(id, guardian?.verification_token_dev || "", true);
+      setGuardianMsg({
+        type: "success",
+        text: "Parent/Guardian email verified successfully (Dev Mode)!",
+      });
+      loadGuardianAndSimulations(id);
+    } catch (err: unknown) {
+      setGuardianMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "Verification failed.",
+      });
+    } finally {
+      setGuardianSaving(false);
+    }
+  }
+
+  async function handleToggleConsent() {
+    const id = getChildId();
+    if (!id || !guardian) return;
+    const nextConsent = !guardian.consent_confirmed;
+    setGuardianSaving(true);
+    try {
+      await updateGuardianConsent(id, {
+        consent_confirmed: nextConsent,
+        simulation_enabled: nextConsent ? guardian.simulation_enabled : false,
+      });
+      setGuardianMsg({
+        type: "success",
+        text: nextConsent ? "Consent confirmed." : "Consent withdrawn. Simulations disabled.",
+      });
+      loadGuardianAndSimulations(id);
+    } catch {
+      setGuardianMsg({ type: "error", text: "Could not update consent." });
+    } finally {
+      setGuardianSaving(false);
+    }
+  }
+
+  async function handleTriggerPassed(catId: CategoryId) {
+    const id = getChildId();
+    if (!id) return;
+    setActionLoadingCategory(catId);
+    setSimulationMsg(null);
+    try {
+      const res = await triggerPassedLevelSimulation(id, catId);
+      loadGuardianAndSimulations(id);
+      if (res.status === "sent") {
+        setSimulationMsg({
+          type: "success",
+          text: `Simulation email for Level ${res.level_number || catId} accepted by mail provider! Dispatched to ${res.parent_email || "guardian"}.`,
+        });
+      } else if (res.status === "not_configured") {
+        setSimulationMsg({
+          type: "warning",
+          text: `Simulation recorded for Level ${res.level_number || catId}, but SMTP email server is not configured in backend environment (.env). Real email was not dispatched.`,
+        });
+      } else if (res.status === "failed") {
+        setSimulationMsg({
+          type: "error",
+          text: `Simulation email delivery failed: ${res.detail || "Provider error"}.`,
+        });
+      } else if (res.status === "unverified") {
+        setSimulationMsg({
+          type: "warning",
+          text: "Please verify parent/guardian email address first before sending simulations.",
+        });
+      } else {
+        setSimulationMsg({
+          type: "info",
+          text: res.detail || `Simulation status: ${res.status}`,
+        });
+      }
+    } catch (err: unknown) {
+      setSimulationMsg({
+        type: "error",
+        text: err instanceof Error ? err.message : "Failed to trigger simulation email.",
+      });
+    } finally {
+      setActionLoadingCategory(null);
+    }
+  }
 
   // ── Phishing category lesson state ────────────────────────────────
   const [lessonSectionIndex, setLessonSectionIndex] = useState(0);
@@ -529,13 +750,58 @@ export function ScamHomePage() {
 
   const handleFinishPhishingPractice = useCallback(() => {
     if (activeCategory) {
+      const id = getChildId();
       const pct = calculateScorePercent(phishingCorrect, phishingTotal);
-      const updated = saveCategoryProgress(activeCategory, pct);
+      const updated = saveCategoryProgress(activeCategory, pct, id);
       setCompletedCategories(updated.completedCategories);
       setCategoryScores(updated.categoryScores);
+      // Persist to backend — fire-and-forget, never blocks UI
+      syncProgressToBackend(id, updated, saveModuleState);
+
+      // Trigger educational simulation for this level if passed (>= 80%)
+      if (isCategoryPassing(pct)) {
+        const attemptId = `attempt-${activeCategory}-${Date.now()}`;
+        void triggerLevelSimulation(id, {
+          category_id: activeCategory,
+          score: pct,
+          attempt_id: attemptId,
+        })
+          .then((res) => {
+            loadGuardianAndSimulations(id);
+            if (res.status === "sent") {
+              setSimulationMsg({
+                type: "success",
+                text: `Simulation email for Level ${res.level_number || activeCategory} accepted by provider! Sent to ${res.parent_email || "guardian"}.`,
+              });
+            } else if (res.status === "not_configured") {
+              setSimulationMsg({
+                type: "warning",
+                text: "Level passed (≥80%)! Simulation recorded, but SMTP email server is not configured in backend .env. Real email was not dispatched.",
+              });
+            } else if (res.status === "unverified") {
+              setSimulationMsg({
+                type: "warning",
+                text: "Level passed (≥80%)! Guardian email is awaiting verification before simulations can be emailed.",
+              });
+            } else if (res.status === "failed") {
+              setSimulationMsg({
+                type: "error",
+                text: `Level passed, but email delivery failed: ${res.detail || "Provider error"}. You can retry from the dashboard.`,
+              });
+            }
+          })
+          .catch((err: unknown) => {
+            setSimulationMsg({
+              type: "error",
+              text: err instanceof Error ? err.message : "Failed to trigger simulation.",
+            });
+          });
+      } else {
+        setSimulationMsg(null);
+      }
     }
     setView("cat-results");
-  }, [activeCategory, phishingCorrect, phishingTotal]);
+  }, [activeCategory, phishingCorrect, phishingTotal, loadGuardianAndSimulations]);
 
   const handlePhishingNext = useCallback(() => {
     if (phishingCurrentScenario === null) return;
@@ -582,9 +848,11 @@ export function ScamHomePage() {
     if (view === "cat-results" && activeCategory) {
       const pct = calculateScorePercent(phishingCorrect, phishingTotal);
       if (isCategoryPassing(pct) && !completedCategories.includes(activeCategory)) {
-        const updated = saveCategoryProgress(activeCategory, pct);
+        const id = getChildId();
+        const updated = saveCategoryProgress(activeCategory, pct, id);
         setCompletedCategories(updated.completedCategories);
         setCategoryScores(updated.categoryScores);
+        syncProgressToBackend(id, updated, saveModuleState);
       }
     }
   }, [view, activeCategory, phishingCorrect, phishingTotal, completedCategories]);
@@ -607,177 +875,849 @@ export function ScamHomePage() {
     setView("cat-learn");
   }
 
+  function renderShell(content: React.ReactNode) {
+    return (
+      <div className="safety-shell">
+        <SiteTopBar />
+        <div className="safety-body">
+          <aside className="safety-side" aria-label="Scam safety navigation">
+            <div className="safety-side-header">Stay Safe</div>
+            <button
+              type="button"
+              className={view === "home" ? "is-on" : undefined}
+              onClick={() => setView("home")}
+            >
+              <span aria-hidden="true">🛡️</span>
+              Scam Safety Home
+            </button>
+            <button
+              type="button"
+              className={
+                view === "cat-learn" || view === "cat-practice" || view === "cat-results"
+                  ? "is-on"
+                  : undefined
+              }
+              onClick={() => {
+                if (activeCategory) {
+                  setView("cat-learn");
+                } else {
+                  handleOpenCategory("phishing");
+                }
+              }}
+            >
+              <span aria-hidden="true">📚</span>
+              Six Levels
+            </button>
+            <button
+              type="button"
+              className={view === "practice" || view === "results" ? "is-on" : undefined}
+              onClick={handleStartPractice}
+            >
+              <span aria-hidden="true">🎯</span>
+              Quick Practice
+            </button>
+            <button
+              type="button"
+              className={view === "drill" ? "is-on" : undefined}
+              onClick={handleOpenDrill}
+            >
+              <span aria-hidden="true">✉️</span>
+              Safety Drill
+            </button>
+            <Link to="/student/dashboard">
+              <span aria-hidden="true">⌂</span>
+              Student Home
+            </Link>
+          </aside>
+
+          <main className="safety-main" id="main">
+            {content}
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   // ══════════════════════════════════════════════════════════════════
   //  RENDER — HOME SCREEN
   // ══════════════════════════════════════════════════════════════════
   if (view === "home") {
     const allComplete = CATEGORY_ORDER.every((id) => completedCategories.includes(id));
 
-    return (
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "1.5rem" }}>
-        <p className="muted" style={{ marginBottom: "0.5rem" }}>Stay safe · Scam Alley</p>
-        <h1 style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>Scam safety practice</h1>
-        <p style={{ marginBottom: "1.5rem" }}>
-          Welcome! Learn to recognise warning signs in six scam categories.
-        </p>
-
+    return renderShell(
+      <>
         {/* All categories complete banner */}
         {allComplete && (
           <div
             style={{
               background: "#eaf8ef",
-              border: "1px solid #9fd3b0",
-              borderRadius: "12px",
-              padding: "1rem 1.25rem",
-              marginBottom: "1.5rem",
+              border: "2px solid #86efac",
+              borderRadius: "18px",
+              padding: "1.1rem 1.4rem",
+              marginBottom: "1.25rem",
+              boxShadow: "0 8px 24px rgba(34, 197, 94, 0.12)",
             }}
           >
-            <p style={{ margin: 0, fontWeight: "700", fontSize: "1.1rem" }}>
+            <p style={{ margin: 0, fontWeight: "800", fontSize: "1.15rem", color: "#166534" }}>
               🏆 You completed all six Scam Safety levels!
             </p>
-            <p style={{ margin: "0.35rem 0 0" }}>
-              Amazing work! You can revisit any category below to review your knowledge.
+            <p style={{ margin: "0.35rem 0 0", color: "#15803d", fontSize: "0.95rem" }}>
+              Amazing work Detective! You can revisit any level below to review your skills and keep your coins safe.
             </p>
           </div>
         )}
 
-        {/* Six category cards with lock/unlock/complete states */}
+        {/* Hero Section */}
+        <section className="safety-hero" aria-labelledby="safety-hero-title">
+          <div className="safety-hero-art">
+            <img src="/images/cub-wave.png" alt="Detective Cub" />
+            <p className="safety-speech">
+              Let’s spot tricky scams and protect your coins together!
+            </p>
+          </div>
+          <div className="safety-hero-copy">
+            <h1 id="safety-hero-title">
+              Spot the trick.
+              <br />
+              Save your coins. No regrets.
+            </h1>
+            <p>
+              Learn to spot fake emails, tricky text messages, and suspicious offers with Detective Cub.
+              Pass each level with 80% to unlock the next level and protect your virtual wallet!
+            </p>
+          </div>
+          <aside className="safety-wallet">
+            <div className="safety-wallet-head">
+              <strong>Your Safety Wallet</strong>
+              <span>Virtual Coins</span>
+            </div>
+            <p className="safety-cash">
+              🛡️ Rs {walletBalance}
+            </p>
+            <dl>
+              <div>
+                <dt>Levels Completed</dt>
+                <dd>{completedCategories.length} of 6</dd>
+              </div>
+              <div>
+                <dt>Safety Shield</dt>
+                <dd>
+                  {lifetimeTotal === 0
+                    ? "100%"
+                    : `${Math.round((lifetimeCorrect / lifetimeTotal) * 100)}%`}
+                </dd>
+              </div>
+              <div>
+                <dt>Coins Protected</dt>
+                <dd>Rs {walletBalance}</dd>
+              </div>
+            </dl>
+            <button
+              type="button"
+              className="safety-start-btn"
+              onClick={handleStartPractice}
+            >
+              Start Scam Alley Practice →
+            </button>
+          </aside>
+        </section>
+
+        {/* Practice Simulated Inbox Quick Card */}
         <section
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: "1.25rem",
-            marginBottom: "2rem",
+            background: "linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)",
+            border: "1.5px solid #bbf7d0",
+            borderRadius: "18px",
+            padding: "20px 24px",
+            marginBottom: "24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "16px",
+            boxShadow: "0 4px 16px rgba(16, 185, 129, 0.08)",
           }}
         >
-          {CATEGORY_META.map((cat) => {
-            const status = getCategoryStatus(cat.id, completedCategories);
-            const isLocked = status === "locked";
-            const isDone = status === "completed";
-            const isAvail = status === "available";
-
-            return (
-              <div
-                key={cat.id}
-                onClick={() => !isLocked && handleOpenCategory(cat.id)}
-                role={isLocked ? undefined : "button"}
-                tabIndex={isLocked ? undefined : 0}
-                onKeyDown={(e) => {
-                  if (!isLocked && (e.key === "Enter" || e.key === " ")) {
-                    handleOpenCategory(cat.id);
-                  }
-                }}
-                style={{
-                  borderRadius: "12px",
-                  border: `2px solid ${
-                    isDone ? "#9fd3b0" : isAvail ? "#3b82f6" : "#e2e8f0"
-                  }`,
-                  background: isDone
-                    ? "#f0fdf4"
-                    : isAvail
-                    ? "#f0f8ff"
-                    : "#f8fafc",
-                  padding: "1.1rem",
-                  cursor: isLocked ? "default" : "pointer",
-                  opacity: isLocked ? 0.65 : 1,
-                  transition: "box-shadow 0.15s",
-                  position: "relative",
-                }}
-                aria-label={
-                  isLocked
-                    ? `${cat.label} — locked`
-                    : isDone
-                    ? `${cat.label} — completed`
-                    : `${cat.label} — available, start learning`
-                }
-              >
-                {/* Status badge */}
-                <div
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <span style={{ fontSize: "2.4rem" }}>📬</span>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                <h2 style={{ margin: 0, fontSize: "1.15rem", color: "#065f46" }}>
+                  Practice Simulation Inbox
+                </h2>
+                <span
                   style={{
-                    position: "absolute",
-                    top: "0.65rem",
-                    right: "0.75rem",
-                    fontSize: "1.1rem",
+                    background: "#dcfce7",
+                    color: "#15803d",
+                    fontSize: "0.74rem",
+                    fontWeight: 700,
+                    padding: "2px 8px",
+                    borderRadius: "999px",
                   }}
                 >
-                  {isDone ? "✅" : isLocked ? "🔒" : "▶️"}
+                  Realistic & Safe
+                </span>
+              </div>
+              <p style={{ margin: 0, fontSize: "0.88rem", color: "#374151", maxWidth: "620px", lineHeight: 1.45 }}>
+                Test your skills against real-world educational emails in our safe simulation sandbox. Evaluate sender addresses, urgent deadlines, and links without risking your personal data.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/safety/inbox"
+            className="safety-btn-primary"
+            style={{
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "10px 20px",
+              fontSize: "0.92rem",
+              background: "#059669",
+            }}
+          >
+            Open Practice Inbox ✉️ →
+          </Link>
+        </section>
+
+        {/* Six Lessons Container */}
+        <section className="safety-lessons" aria-labelledby="lessons-title">
+          <div className="safety-lessons-head">
+            <h2 id="lessons-title">Six Lessons — Unlock Scam Alley</h2>
+            <p>Complete each lesson with 80% or more to unlock the next. Pass all six to master scam safety!</p>
+          </div>
+          <ol className="safety-lessons-grid">
+            {CATEGORY_META.map((cat, index) => {
+              const status = getCategoryStatus(cat.id, completedCategories);
+              const isLocked = status === "locked";
+              const isDone = status === "completed";
+              const isAvail = status === "available";
+              const score = categoryScores[cat.id];
+
+              return (
+                <li
+                  key={cat.id}
+                  className={`safety-level-item ${
+                    isDone ? "is-completed" : isAvail ? "is-open" : "is-locked"
+                  }`}
+                  onClick={() => !isLocked && handleOpenCategory(cat.id)}
+                  role={isLocked ? undefined : "button"}
+                  tabIndex={isLocked ? undefined : 0}
+                  onKeyDown={(e) => {
+                    if (!isLocked && (e.key === "Enter" || e.key === " ")) {
+                      handleOpenCategory(cat.id);
+                    }
+                  }}
+                  style={{ cursor: isLocked ? "default" : "pointer" }}
+                >
+                  <div className="safety-level-top">
+                    <span className="safety-level-num">{index + 1}</span>
+                    {isDone && (
+                      <span className="safety-level-tag tag-passed">
+                        Passed {score ? `(${score}%)` : "✓"}
+                      </span>
+                    )}
+                    {isAvail && !isDone && (
+                      <span className="safety-level-tag tag-open">
+                        Ready to Learn
+                      </span>
+                    )}
+                    {isLocked && (
+                      <span className="safety-level-tag tag-locked">
+                        Locked
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="safety-level-title">
+                    <span>{cat.icon}</span> {cat.label}
+                  </h3>
+
+                  <p className="safety-level-desc">
+                    {isLocked ? cat.unlockHint : cat.description}
+                  </p>
+
+                  {isLocked ? (
+                    <div className="safety-level-locked">
+                      <span>🔒</span> Locked level
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className={`safety-level-btn ${isDone ? "btn-completed" : ""}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenCategory(cat.id);
+                      }}
+                    >
+                      {isDone ? "Review Lesson" : "Start Lesson"} →
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+
+        {/* Parent / Guardian Contact, Consent, & 6-Level Simulation Section */}
+        <section className="safety-guardian-card" aria-labelledby="guardian-section-title">
+          <div className="safety-guardian-head">
+            <h2 id="guardian-section-title">
+              <span>👨‍👩‍👧</span> Parent / Guardian Details & Safety Simulations
+            </h2>
+            <div>
+              {guardian?.verification_status === "verified" && guardian.consent_confirmed && guardian.simulation_enabled && (
+                <span className="safety-badge verified">✓ Verified & Simulations Active</span>
+              )}
+              {guardian?.verification_status === "verified" && (!guardian.consent_confirmed || !guardian.simulation_enabled) && (
+                <span className="safety-badge disabled">⚠️ Simulations Disabled</span>
+              )}
+              {guardian?.verification_status === "pending" && (
+                <span className="safety-badge pending">⏳ Awaiting Email Verification</span>
+              )}
+              {(!guardian || guardian.verification_status === "unconfigured") && (
+                <span className="safety-badge unconfigured">ℹ️ Details Incomplete</span>
+              )}
+            </div>
+          </div>
+
+          <p className="safety-guardian-intro">
+            WiseCub partners with your family to practice online safety in the real world. Whenever you pass each of the 6 levels (scoring 80% or higher),
+            WiseCub automatically sends an approved educational scam simulation email to your verified parent or guardian so you can inspect red flags and practice spotting scams together!
+          </p>
+
+          {guardianMsg && (
+            <div
+              style={{
+                padding: "10px 14px",
+                borderRadius: "10px",
+                marginBottom: "14px",
+                fontSize: "0.88rem",
+                fontWeight: 600,
+                background: guardianMsg.type === "success" ? "#ecfdf5" : "#fef2f2",
+                color: guardianMsg.type === "success" ? "#065f46" : "#991b1b",
+                border: `1px solid ${guardianMsg.type === "success" ? "#a7f3d0" : "#fecaca"}`,
+              }}
+            >
+              {guardianMsg.text}
+            </div>
+          )}
+
+          {(!guardian?.configured || isEditingGuardian) ? (
+            <form onSubmit={handleSaveGuardian}>
+              <div className="safety-guardian-grid">
+                <div className="safety-input-group">
+                  <label htmlFor="parent-name">Parent / Guardian Full Name</label>
+                  <input
+                    id="parent-name"
+                    type="text"
+                    required
+                    placeholder="e.g. Jane Smith"
+                    value={guardianForm.parent_name}
+                    onChange={(e) => setGuardianForm({ ...guardianForm, parent_name: e.target.value })}
+                  />
                 </div>
 
-                <p style={{ fontSize: "1.5rem", margin: "0 0 0.4rem" }}>
-                  {cat.icon}
-                </p>
-                <p style={{ fontWeight: "700", margin: "0 0 0.3rem" }}>
-                  {cat.label}
-                </p>
-                <p
-                  style={{
-                    margin: "0 0 0.5rem",
-                    fontSize: "0.88rem",
-                    color: "#475569",
-                  }}
-                >
-                  {isLocked ? cat.unlockHint : cat.description}
-                </p>
+                <div className="safety-input-group">
+                  <label htmlFor="parent-email">Parent / Guardian Email Address</label>
+                  <input
+                    id="parent-email"
+                    type="email"
+                    required
+                    placeholder="e.g. parent@example.com"
+                    value={guardianForm.email}
+                    onChange={(e) => setGuardianForm({ ...guardianForm, email: e.target.value })}
+                  />
+                </div>
 
-                {isDone && (
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: "0.8rem",
-                      color: "#16a34a",
-                      fontWeight: "600",
-                    }}
+                <div className="safety-input-group">
+                  <label htmlFor="parent-relationship">Relationship to Child (Optional)</label>
+                  <select
+                    id="parent-relationship"
+                    value={guardianForm.relationship}
+                    onChange={(e) => setGuardianForm({ ...guardianForm, relationship: e.target.value })}
                   >
-                    Completed ✓
-                  </p>
+                    <option value="Parent">Parent</option>
+                    <option value="Mother">Mother</option>
+                    <option value="Father">Father</option>
+                    <option value="Legal Guardian">Legal Guardian</option>
+                    <option value="Teacher">Teacher / Instructor</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <label className="safety-checkbox-wrap">
+                <input
+                  type="checkbox"
+                  checked={guardianForm.consent_confirmed}
+                  onChange={(e) => setGuardianForm({ ...guardianForm, consent_confirmed: e.target.checked })}
+                />
+                <span>
+                  <strong>Parent/Guardian Consent:</strong> I confirm I am the parent or legal guardian of this child, and I consent to WiseCub sending educational scam simulation emails to my email address upon completion of Scam Safety practical lessons.
+                </span>
+              </label>
+
+              <label className="safety-checkbox-wrap">
+                <input
+                  type="checkbox"
+                  checked={guardianForm.simulation_enabled}
+                  onChange={(e) => setGuardianForm({ ...guardianForm, simulation_enabled: e.target.checked })}
+                />
+                <span>
+                  <strong>Enable Simulation Emails:</strong> Send educational simulation emails when my child passes each of the six levels. (You can disable this at any time).
+                </span>
+              </label>
+
+              <div className="safety-guardian-btn-row">
+                <button
+                  type="submit"
+                  disabled={guardianSaving || !guardianForm.consent_confirmed}
+                  className="safety-btn-primary"
+                >
+                  {guardianSaving ? "Saving..." : guardian?.configured ? "Update Details" : "Save Guardian Details"}
+                </button>
+                {guardian?.configured && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingGuardian(false)}
+                    className="safety-btn-secondary"
+                  >
+                    Cancel
+                  </button>
                 )}
-                {isAvail && !isDone && (
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: "0.8rem",
-                      color: "#1d4ed8",
-                      fontWeight: "600",
-                    }}
+              </div>
+            </form>
+          ) : (
+            <div>
+              <div style={{ background: "#f8fafc", padding: "14px 18px", borderRadius: "14px", border: "1px solid #e2e8f0", marginBottom: "14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+                  <div>
+                    <div style={{ fontSize: "0.82rem", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>Registered Guardian</div>
+                    <div style={{ fontSize: "1rem", fontWeight: 700, color: "#1e293b" }}>{guardian.parent_name} ({guardian.relationship})</div>
+                    <div style={{ fontSize: "0.9rem", color: "#475569" }}>{guardian.email}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "0.82rem", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>Consent & Status</div>
+                    <div style={{ fontSize: "0.9rem", color: "#1e293b" }}>
+                      Consent: {guardian.consent_confirmed ? "Confirmed ✓" : "Withdrawn"} | Status: {guardian.verification_status}
+                    </div>
+                    {guardian.verified_at && (
+                      <div style={{ fontSize: "0.78rem", color: "#059669" }}>Verified on {new Date(guardian.verified_at).toLocaleDateString()}</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="safety-guardian-btn-row">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingGuardian(true)}
+                  className="safety-btn-secondary"
+                >
+                  Edit Details
+                </button>
+
+                {guardian.verification_status === "pending" && (
+                  <button
+                    type="button"
+                    onClick={handleVerifyEmail}
+                    disabled={guardianSaving}
+                    className="safety-btn-primary"
+                    style={{ background: "#059669" }}
+                    title="Simulate parent email verification (for development & testing)"
                   >
-                    Tap to start →
+                    {guardianSaving ? "Verifying..." : "Simulate Email Verification [Dev Mode]"}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleToggleConsent}
+                  disabled={guardianSaving}
+                  className={guardian.consent_confirmed && guardian.simulation_enabled ? "safety-btn-danger" : "safety-btn-secondary"}
+                >
+                  {guardian.consent_confirmed && guardian.simulation_enabled
+                    ? "Withdraw Consent / Disable Simulations"
+                    : "Re-enable Consent & Simulations"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 6-Level Simulation Tracker */}
+          <div className="safety-sim-tracker">
+            <h3 className="safety-sim-tracker-title">
+              <span>✉️</span> 6-Level Scam Simulation Status Tracker
+            </h3>
+            <p style={{ margin: "0 0 12px 0", fontSize: "0.84rem", color: "#64748b" }}>
+              Educational scam emails are triggered after passing each individual level (80%+). Real-time simulation status:
+            </p>
+
+            {simulationMsg && (
+              <div
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  marginBottom: "14px",
+                  fontSize: "0.88rem",
+                  fontWeight: 600,
+                  background:
+                    simulationMsg.type === "success"
+                      ? "#ecfdf5"
+                      : simulationMsg.type === "warning"
+                      ? "#fffbeb"
+                      : simulationMsg.type === "error"
+                      ? "#fef2f2"
+                      : "#eff6ff",
+                  color:
+                    simulationMsg.type === "success"
+                      ? "#065f46"
+                      : simulationMsg.type === "warning"
+                      ? "#92400e"
+                      : simulationMsg.type === "error"
+                      ? "#991b1b"
+                      : "#1e40af",
+                  border: `1px solid ${
+                    simulationMsg.type === "success"
+                      ? "#a7f3d0"
+                      : simulationMsg.type === "warning"
+                      ? "#fde68a"
+                      : simulationMsg.type === "error"
+                      ? "#fecaca"
+                      : "#bfdbfe"
+                  }`,
+                }}
+              >
+                {simulationMsg.text}
+              </div>
+            )}
+
+            <div className="safety-sim-grid">
+              {CATEGORY_META.map((cat, idx) => {
+                const isPassed = completedCategories.includes(cat.id);
+                const score = categoryScores[cat.id];
+                const sim = simulations[cat.id];
+
+                let statusBadgeClass = "not_passed";
+                let statusText = "Not passed yet";
+                let canRetry = false;
+                let canTriggerPassed = false;
+
+                const isEligibleToDispatch = Boolean(
+                  isPassed &&
+                  guardian?.configured &&
+                  guardian.verification_status === "verified" &&
+                  guardian.consent_confirmed &&
+                  guardian.simulation_enabled
+                );
+
+                if (sim) {
+                  if (sim.status === "sent") {
+                    statusBadgeClass = "sent";
+                    statusText = "Accepted by Provider ✓";
+                  } else if (sim.status === "not_configured") {
+                    statusBadgeClass = "not_configured";
+                    statusText = "SMTP Not Configured";
+                    canRetry = isEligibleToDispatch;
+                  } else if (sim.status === "failed") {
+                    statusBadgeClass = "failed";
+                    statusText = "Delivery Failed";
+                    canRetry = isEligibleToDispatch;
+                  } else if (sim.status === "unverified") {
+                    statusBadgeClass = "unverified";
+                    statusText = "Awaiting Verification";
+                  } else if (sim.status === "consent_required" || sim.status === "disabled") {
+                    statusBadgeClass = "unverified";
+                    statusText = "Consent Disabled";
+                  }
+                } else if (isPassed) {
+                  if (!guardian?.configured) {
+                    statusBadgeClass = "unverified";
+                    statusText = "Add Guardian";
+                  } else if (guardian.verification_status !== "verified") {
+                    statusBadgeClass = "unverified";
+                    statusText = "Awaiting Verification";
+                  } else if (!guardian.consent_confirmed || !guardian.simulation_enabled) {
+                    statusBadgeClass = "unverified";
+                    statusText = "Consent Disabled";
+                  } else {
+                    statusBadgeClass = "pending";
+                    statusText = "Pending Simulation";
+                    canTriggerPassed = true;
+                  }
+                }
+
+                return (
+                  <div key={cat.id} className="safety-sim-item">
+                    <div className="safety-sim-item-head">
+                      <span className="safety-sim-item-name">
+                        {cat.icon} Level {idx + 1}: {cat.label}
+                      </span>
+                      <span className={`safety-sim-item-status ${statusBadgeClass}`}>
+                        {statusText}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: "0.8rem", color: "#64748b", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "6px" }}>
+                      <span>Score: {score ? `${score}%` : "Not attempted"}</span>
+                      {canRetry && (
+                        <button
+                          type="button"
+                          className="safety-sim-btn"
+                          disabled={actionLoadingCategory === cat.id}
+                          onClick={() => handleTriggerPassed(cat.id)}
+                          title="Retry dispatching this simulation email to verified guardian"
+                        >
+                          {actionLoadingCategory === cat.id ? "Retrying..." : "Retry Dispatch ↻"}
+                        </button>
+                      )}
+                      {canTriggerPassed && (
+                        <button
+                          type="button"
+                          className="safety-sim-btn primary"
+                          disabled={actionLoadingCategory === cat.id}
+                          onClick={() => handleTriggerPassed(cat.id)}
+                          title="Send educational simulation email for this completed level"
+                        >
+                          {actionLoadingCategory === cat.id ? "Sending..." : "Send Simulation ✉️"}
+                        </button>
+                      )}
+                      {sim?.simulation_id && (
+                        <Link
+                          to={`/safety/simulation-feedback?id=${sim.simulation_id}`}
+                          style={{ color: "#4f46e5", fontWeight: 600, textDecoration: "none" }}
+                        >
+                          View Debrief →
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {guardian?.smtp_summary && !guardian.smtp_summary.configured && (
+              <div
+                style={{
+                  marginTop: "14px",
+                  padding: "10px 14px",
+                  background: "#f8fafc",
+                  borderRadius: "10px",
+                  border: "1px solid #e2e8f0",
+                  fontSize: "0.82rem",
+                  color: "#64748b",
+                  lineHeight: 1.45,
+                }}
+              >
+                ℹ️ <strong>Email Server Note:</strong> SMTP is currently not configured in backend <code>.env</code>. Educational simulations are safely tracked in the database and can be retried at any time once SMTP settings are provided.
+              </div>
+            )}
+          </div>
+
+          {/* Parent/Guardian Learning Analytics Panel */}
+          {learningMetrics && (
+            <div className="safety-analytics-card">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>
+                <h3 style={{ margin: 0, fontSize: "1.05rem", color: "#1e1b4b", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span>📊</span> Child Decision Analytics & Educational Progress
+                </h3>
+                <span style={{ fontSize: "0.78rem", color: "#64748b" }}>
+                  Independent metrics: Initial Decision, Link Clicks, and Follow-Up Mastery
+                </span>
+              </div>
+              <p style={{ margin: "0 0 16px 0", fontSize: "0.84rem", color: "#64748b", lineHeight: 1.45 }}>
+                WiseCub tracks realistic simulation behaviors separately from textbook quizzes. Review how your child identifies threats, responds to simulated links, and reinforces learning through debriefs.
+              </p>
+
+              <div className="safety-analytics-grid">
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num">{learningMetrics.total_simulations}</div>
+                  <div className="safety-metric-lbl">Total Simulations</div>
+                  <div className="safety-metric-hint">Delivered / Attempted</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: "#059669" }}>
+                    {learningMetrics.correctly_reported_count}
+                  </div>
+                  <div className="safety-metric-lbl">Safely Reported</div>
+                  <div className="safety-metric-hint">{learningMetrics.suspicious_recognition_rate}% recognition</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: learningMetrics.unsafe_clicks_count > 0 ? "#dc2626" : "#059669" }}>
+                    {learningMetrics.unsafe_clicks_count}
+                  </div>
+                  <div className="safety-metric-lbl">Unsafe Clicks</div>
+                  <div className="safety-metric-hint">Simulated links clicked</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: "#2563eb" }}>
+                    {learningMetrics.safe_avoidance_rate}%
+                  </div>
+                  <div className="safety-metric-lbl">Avoidance Rate</div>
+                  <div className="safety-metric-hint">Avoided unsafe clicks</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: "#7c3aed" }}>
+                    {learningMetrics.debrief_completion_rate}%
+                  </div>
+                  <div className="safety-metric-lbl">Debriefs Viewed</div>
+                  <div className="safety-metric-hint">{learningMetrics.debrief_completion_count} debriefs viewed</div>
+                </div>
+
+                <div className="safety-metric-box">
+                  <div className="safety-metric-num" style={{ color: "#0284c7" }}>
+                    {learningMetrics.follow_up_completed_count > 0 ? `${learningMetrics.follow_up_accuracy}%` : "—"}
+                  </div>
+                  <div className="safety-metric-lbl">Follow-Up Score</div>
+                  <div className="safety-metric-hint">{learningMetrics.follow_up_correct_count} of {learningMetrics.follow_up_completed_count} correct</div>
+                </div>
+              </div>
+
+              {/* Per-Level Breakdown Table */}
+              <div style={{ marginTop: "18px", overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.84rem", textAlign: "left" }}>
+                  <thead>
+                    <tr style={{ background: "#f8fafc", borderBottom: "1.5px solid #e2e8f0", color: "#475569" }}>
+                      <th style={{ padding: "8px 12px" }}>Level</th>
+                      <th style={{ padding: "8px 12px" }}>Attempts</th>
+                      <th style={{ padding: "8px 12px" }}>Correctly Reported</th>
+                      <th style={{ padding: "8px 12px" }}>Unsafe Clicks</th>
+                      <th style={{ padding: "8px 12px" }}>Debrief Viewed</th>
+                      <th style={{ padding: "8px 12px" }}>Latest Decision Outcome</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {CATEGORY_META.map((cat, i) => {
+                      const lvl = learningMetrics.by_level[cat.id];
+                      const attempts = lvl?.attempts || 0;
+                      const reported = lvl?.correctly_reported || 0;
+                      const clicked = lvl?.unsafe_clicks || 0;
+                      const debriefs = lvl?.debrief_completed || 0;
+                      const latestOutcome = lvl?.latest_outcome;
+
+                      return (
+                        <tr key={cat.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                          <td style={{ padding: "8px 12px", fontWeight: 600, color: "#1e293b" }}>
+                            {cat.icon} Level {i + 1}: {cat.label}
+                          </td>
+                          <td style={{ padding: "8px 12px", color: "#475569" }}>{attempts}</td>
+                          <td style={{ padding: "8px 12px", color: "#059669", fontWeight: reported > 0 ? 700 : 400 }}>
+                            {reported}
+                          </td>
+                          <td style={{ padding: "8px 12px", color: clicked > 0 ? "#dc2626" : "#475569", fontWeight: clicked > 0 ? 700 : 400 }}>
+                            {clicked}
+                          </td>
+                          <td style={{ padding: "8px 12px", color: "#475569" }}>{debriefs}</td>
+                          <td style={{ padding: "8px 12px" }}>
+                            {latestOutcome === "safely_reported" ? (
+                              <span style={{ color: "#065f46", background: "#ecfdf5", padding: "2px 8px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 700 }}>
+                                Safely Reported ✓
+                              </span>
+                            ) : latestOutcome === "unsafe_link_clicked" ? (
+                              <span style={{ color: "#991b1b", background: "#fef2f2", padding: "2px 8px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 700 }}>
+                                Unsafe Click Recorded ⚠️
+                              </span>
+                            ) : latestOutcome === "marked_safe" ? (
+                              <span style={{ color: "#1e40af", background: "#eff6ff", padding: "2px 8px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 700 }}>
+                                Classified Safe
+                              </span>
+                            ) : attempts > 0 ? (
+                              <span style={{ color: "#b45309", background: "#fffbeb", padding: "2px 8px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 700 }}>
+                                Pending Review
+                              </span>
+                            ) : (
+                              <span style={{ color: "#94a3b8", fontSize: "0.78rem" }}>Not triggered yet</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Bottom 3-Card Grid */}
+        <div className="safety-grid">
+          <section className="safety-card" aria-labelledby="rules-title">
+            <div className="safety-card-head">
+              <h2 id="rules-title">🔍 Detective Cub's 4 Rules</h2>
+            </div>
+            <ul className="safety-rule-list">
+              <li className="safety-rule-item">
+                <span className="safety-rule-icon">1</span>
+                <div>
+                  <strong>Check URLs & Senders:</strong> Scammers use lookalike links that differ slightly from real brands.
+                </div>
+              </li>
+              <li className="safety-rule-item">
+                <span className="safety-rule-icon">2</span>
+                <div>
+                  <strong>Never Share Secret Codes:</strong> OTPs and passwords are for you alone. Real banks never ask for them!
+                </div>
+              </li>
+              <li className="safety-rule-item">
+                <span className="safety-rule-icon">3</span>
+                <div>
+                  <strong>Beware of Fake Urgency:</strong> Messages saying "Act in 10 minutes or lose account" are trying to rush you.
+                </div>
+              </li>
+              <li className="safety-rule-item">
+                <span className="safety-rule-icon">4</span>
+                <div>
+                  <strong>Ask a Trusted Adult:</strong> When in doubt, ask a parent or teacher before clicking anything.
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <section className="safety-card" aria-labelledby="shield-title">
+            <div className="safety-card-head">
+              <h2 id="shield-title">🛡️ Shield Score & Mastery</h2>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <div style={{ background: "#f8fafc", borderRadius: "14px", padding: "0.85rem 1rem", border: "1px solid #e2e8f0" }}>
+                <p style={{ margin: 0, fontWeight: "700", color: "#1e293b", fontSize: "0.95rem" }}>
+                  Lifetime Shield: {lifetimeTotal === 0 ? "Not assessed yet" : `${Math.round((lifetimeCorrect / lifetimeTotal) * 100)}%`}
+                </p>
+                {lifetimeTotal > 0 && (
+                  <p style={{ margin: "0.25rem 0 0", fontSize: "0.84rem", color: "#64748b" }}>
+                    {lifetimeCorrect} correct out of {lifetimeTotal} answered across all practice rounds
                   </p>
                 )}
               </div>
-            );
-          })}
-        </section>
+              <p style={{ margin: 0, fontSize: "0.86rem", color: "#64748b", lineHeight: 1.5 }}>
+                Score <strong>80% or more</strong> in each lesson quiz to unlock the next level and protect your virtual coins.
+              </p>
+              <p style={{ margin: 0, fontSize: "0.78rem", color: "#94a3b8" }}>
+                (Practice indicator only — not a formal assessment)
+              </p>
+            </div>
+          </section>
 
-        {/* Lifetime Shield Score */}
-        <section
-          style={{
-            background: "#f0f8ff",
-            border: "1px solid #cce4ff",
-            borderRadius: "12px",
-            padding: "1rem",
-            marginBottom: "1.5rem",
-          }}
-        >
-          <p style={{ margin: 0, fontWeight: "600" }}>
-            Scam Safety Shield Score:{" "}
-            {lifetimeTotal === 0
-              ? "Not assessed yet - complete a practice round to see your score"
-              : `${Math.round((lifetimeCorrect / lifetimeTotal) * 100)}%`}
-          </p>
-          {lifetimeTotal > 0 && (
-            <p style={{ marginTop: "0.25rem" }}>
-              {lifetimeCorrect} correct out of {lifetimeTotal} answered across all rounds
-            </p>
-          )}
-          <p className="muted" style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
-            (Practice indicator only - not a formal assessment)
-          </p>
-        </section>
-
-        <Button variant="primary" onClick={handleStartPractice} style={{ width: "100%" }}>
-          Start practice scenario
-        </Button>
-      </div>
+          <section className="safety-card safety-cub-tip-card" aria-labelledby="tip-title">
+            <div className="safety-card-head">
+              <h2 id="tip-title">🐾 Cub's Tip</h2>
+            </div>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
+              <img
+                src="/images/dash/cub-detective.png"
+                alt="Cub Detective"
+                className="safety-cub-avatar"
+              />
+              <p style={{ margin: 0, fontSize: "0.86rem", color: "#334155", lineHeight: 1.5 }}>
+                "Scammers try to create excitement or panic to make you act fast. Take a deep breath, look for clues, and always protect your personal details!"
+              </p>
+            </div>
+          </section>
+        </div>
+      </>
     );
   }
 
@@ -785,98 +1725,154 @@ export function ScamHomePage() {
   //  RENDER — CATEGORY LESSON (Stage A)
   // ══════════════════════════════════════════════════════════════════
   if (view === "cat-learn") {
-    if (activeCategory !== "phishing" && activeCategory !== "sms") {
-      return (
-        <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
-          <p className="muted">Stay safe · Scam Alley</p>
-          <h1>
-            {CATEGORY_META.find((c) => c.id === activeCategory)?.icon}{" "}
-            {CATEGORY_META.find((c) => c.id === activeCategory)?.label}
-          </h1>
-          <Card title="Coming soon">
-            <p>
-              This level's lesson content is being prepared. Check back soon! You can
-              return to Scam Safety Home and try a different level.
-            </p>
-            <Button variant="secondary" onClick={() => setView("home")}>
+    const catMeta = CATEGORY_META.find((c) => c.id === activeCategory);
+    if (catMeta?.comingSoon) {
+      return renderShell(
+        <div className="safety-inner-container">
+          <div className="safety-main-card">
+            <div className="safety-top-nav">
+              <button
+                type="button"
+                className="safety-back-link"
+                onClick={() => setView("home")}
+              >
+                ← Back to Scam Safety Home
+              </button>
+            </div>
+            <h1 style={{ fontSize: "1.75rem", color: "#163a8a", margin: "0.5rem 0" }}>
+              {CATEGORY_META.find((c) => c.id === activeCategory)?.icon}{" "}
+              {CATEGORY_META.find((c) => c.id === activeCategory)?.label}
+            </h1>
+            <div style={{ background: "#f8fafc", borderRadius: "16px", padding: "1.5rem", border: "1px solid #e2e8f0", margin: "1rem 0" }}>
+              <p style={{ margin: 0, fontSize: "1rem", color: "#475569", lineHeight: 1.6 }}>
+                This level's lesson content is currently being prepared. Check back soon! You can
+                return to Scam Safety Home to practice an unlocked level.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="safety-start-btn"
+              onClick={() => setView("home")}
+              style={{ width: "auto", padding: "0 1.5rem" }}
+            >
               Back to Scam Safety Home
-            </Button>
-          </Card>
+            </button>
+          </div>
         </div>
       );
     }
 
     const sections = getLessonSectionsForCategory(activeCategory);
-    const catMeta = CATEGORY_META.find((c) => c.id === activeCategory);
     const section = sections[lessonSectionIndex] ?? sections[0];
     const isLastSection = lessonSectionIndex === sections.length - 1;
 
-    return (
-      <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
-        <p className="muted">Stay safe · Scam Alley · {catMeta?.label ?? "Lesson"}</p>
-        <h1 style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}>
-          {catMeta?.icon} {catMeta?.label} — Learn
-        </h1>
-        <p style={{ marginBottom: "1.25rem", color: "#64748b", fontSize: "0.9rem" }}>
-          Section {lessonSectionIndex + 1} of {sections.length}
-        </p>
+    return renderShell(
+      <div className="safety-inner-container">
+        <div className="safety-main-card">
+          <div className="safety-top-nav">
+            <button
+              type="button"
+              className="safety-back-link"
+              onClick={() => setView("home")}
+            >
+              ← Back to Scam Safety Home
+            </button>
+            <span className="safety-badge-pill">
+              {catMeta?.icon} {catMeta?.label}
+            </span>
+          </div>
 
-        {/* Section progress bar */}
-        <div
-          style={{
-            height: "6px",
-            background: "#e5e7eb",
-            borderRadius: "999px",
-            marginBottom: "1.5rem",
-            overflow: "hidden",
-          }}
-        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.35rem" }}>
+            <h1 style={{ fontSize: "1.65rem", fontWeight: "800", color: "#163a8a", margin: 0 }}>
+              {section.heading}
+            </h1>
+            <span style={{ fontSize: "0.88rem", fontWeight: "700", color: "#64748b" }}>
+              Step {lessonSectionIndex + 1} of {sections.length}
+            </span>
+          </div>
+
+          {/* Section progress bar */}
+          <div className="safety-progress-bar-bg">
+            <div
+              className="safety-progress-bar-fill"
+              style={{ width: `${((lessonSectionIndex + 1) / sections.length) * 100}%` }}
+            />
+          </div>
+
+          {/* Mascot note */}
           <div
             style={{
-              height: "100%",
-              width: `${((lessonSectionIndex + 1) / sections.length) * 100}%`,
-              background: "#3b82f6",
-              borderRadius: "999px",
-              transition: "width 0.3s ease",
+              background: "#eff6ff",
+              border: "1.5px solid #bfdbfe",
+              borderRadius: "16px",
+              padding: "0.85rem 1.1rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              marginBottom: "1.5rem",
             }}
-          />
-        </div>
+          >
+            <img
+              src="/images/dash/cub-logo.png"
+              alt="Cub Helper"
+              style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#ffffff" }}
+            />
+            <p style={{ margin: 0, fontSize: "0.88rem", color: "#1e40af", fontWeight: "600", lineHeight: 1.4 }}>
+              Detective Cub tip: Read this lesson carefully to spot the clues before starting the practice quiz!
+            </p>
+          </div>
 
-        <Card title={section.heading}>
-          <p style={{ lineHeight: "1.7", fontSize: "1rem" }}>{section.body}</p>
-        </Card>
+          <div
+            style={{
+              fontSize: "1.02rem",
+              lineHeight: "1.75",
+              color: "#334155",
+              background: "#f8fafc",
+              borderRadius: "18px",
+              padding: "1.5rem",
+              border: "1px solid #e2e8f0",
+              marginBottom: "1.75rem",
+            }}
+          >
+            {section.body}
+          </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: "0.75rem",
-            flexWrap: "wrap",
-            marginTop: "1.25rem",
-          }}
-        >
-          {lessonSectionIndex > 0 && (
-            <Button
-              variant="secondary"
-              onClick={() => setLessonSectionIndex((prev) => prev - 1)}
-            >
-              ← Previous
-            </Button>
-          )}
-          {!isLastSection ? (
-            <Button
-              variant="primary"
-              onClick={() => setLessonSectionIndex((prev) => prev + 1)}
-            >
-              Next →
-            </Button>
-          ) : (
-            <Button variant="primary" onClick={handleStartCategoryPractice}>
-              Start practice ▶
-            </Button>
-          )}
-          <Button variant="secondary" onClick={() => setView("home")}>
-            Back to Home
-          </Button>
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              {lessonSectionIndex > 0 && (
+                <button
+                  type="button"
+                  className="safety-back-link"
+                  onClick={() => setLessonSectionIndex((prev) => prev - 1)}
+                  style={{ minHeight: "42px", padding: "0 1.25rem", fontSize: "0.92rem" }}
+                >
+                  ← Previous Step
+                </button>
+              )}
+            </div>
+
+            <div style={{ display: "flex", gap: "0.75rem" }}>
+              {!isLastSection ? (
+                <button
+                  type="button"
+                  className="safety-start-btn"
+                  onClick={() => setLessonSectionIndex((prev) => prev + 1)}
+                  style={{ minHeight: "42px", padding: "0 1.5rem", width: "auto" }}
+                >
+                  Next Step →
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="safety-start-btn"
+                  onClick={handleStartCategoryPractice}
+                  style={{ minHeight: "42px", padding: "0 1.5rem", width: "auto" }}
+                >
+                  Start practice ▶
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -887,11 +1883,19 @@ export function ScamHomePage() {
   // ══════════════════════════════════════════════════════════════════
   if (view === "cat-practice") {
     if (phishingCurrentScenario === null) {
-      return (
-        <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
-          <p className="muted">Stay safe · Scam Alley · Phishing emails</p>
-          <p>Loading practice scenario…</p>
-          <Button variant="secondary" onClick={() => setView("home")}>Back to Home</Button>
+      return renderShell(
+        <div className="safety-inner-container">
+          <div className="safety-main-card">
+            <p className="muted">Stay safe · Scam Alley · Practice</p>
+            <p>Loading practice scenario…</p>
+            <button
+              type="button"
+              className="safety-back-link"
+              onClick={() => setView("home")}
+            >
+              Back to Home
+            </button>
+          </div>
         </div>
       );
     }
@@ -907,57 +1911,52 @@ export function ScamHomePage() {
     const catMeta = CATEGORY_META.find((c) => c.id === activeCategory);
     const catLabel = catMeta?.label ?? "Practice";
 
-    return (
-      <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
-        <p className="muted">Stay safe · Scam Alley · {catLabel}</p>
-        <h1 style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}>
-          {catMeta?.icon} {catLabel} — Practice
-        </h1>
+    return renderShell(
+      <div className="safety-inner-container">
+        <div className="safety-main-card">
+          <div className="safety-top-nav">
+            <button
+              type="button"
+              className="safety-back-link"
+              onClick={() => setView("home")}
+            >
+              ← Exit Practice
+            </button>
+            <span className="safety-badge-pill">
+              {catMeta?.icon} {catLabel}
+            </span>
+          </div>
 
-        {/* Adaptive practice note */}
-        <div
-          style={{
-            background: "#f0f8ff",
-            border: "1px solid #cce4ff",
-            borderRadius: "8px",
-            padding: "0.5rem 0.85rem",
-            marginBottom: "1rem",
-            fontSize: "0.85rem",
-            color: "#1d4ed8",
-          }}
-        >
-          Adaptive practice based on your answers — the next question is chosen to match your learning needs.
-        </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.35rem" }}>
+            <h1 style={{ fontSize: "1.65rem", fontWeight: "800", color: "#163a8a", margin: 0 }}>
+              Question {Math.min(phishingTotal + 1, PHISHING_MAX_SCENARIOS)} of {PHISHING_MAX_SCENARIOS}
+            </h1>
+            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: "#64748b" }}>
+              Adaptive Practice
+            </span>
+          </div>
 
-        {/* Progress */}
-        <p style={{ marginBottom: "0.25rem", fontWeight: "600", color: "#555" }}>
-          Question {Math.min(phishingTotal + 1, PHISHING_MAX_SCENARIOS)} of {PHISHING_MAX_SCENARIOS}
-        </p>
-        <div
-          style={{
-            height: "6px",
-            background: "#e5e7eb",
-            borderRadius: "999px",
-            marginBottom: "1.25rem",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              height: "100%",
-              width: `${(phishingTotal / PHISHING_MAX_SCENARIOS) * 100}%`,
-              background: "#3b82f6",
-              borderRadius: "999px",
-              transition: "width 0.3s ease",
-            }}
-          />
-        </div>
+          {/* Section progress bar */}
+          <div className="safety-progress-bar-bg">
+            <div
+              className="safety-progress-bar-fill"
+              style={{ width: `${(phishingTotal / PHISHING_MAX_SCENARIOS) * 100}%` }}
+            />
+          </div>
 
-        {/* Simulated scenario card (SMS or Email) */}
+        {/* Simulated scenario card tailored per category */}
         <Card
           title={
             activeCategory === "sms"
               ? "Inspect this text message carefully"
+              : activeCategory === "qr"
+              ? "Inspect this QR code offer carefully"
+              : activeCategory === "prize"
+              ? "Inspect this prize or giveaway announcement carefully"
+              : activeCategory === "impersonation"
+              ? "Inspect this direct message and profile carefully"
+              : activeCategory === "financial"
+              ? "Inspect this earning or financial offer carefully"
               : "Read this email carefully"
           }
         >
@@ -1009,6 +2008,314 @@ export function ScamHomePage() {
                 aria-label="Simulated text message body"
               >
                 <p style={{ margin: 0 }}>{pScenario.body}</p>
+              </div>
+            </div>
+          ) : activeCategory === "qr" ? (
+            <div
+              style={{
+                maxWidth: "480px",
+                margin: "0 auto 1.25rem",
+                background: "#ffffff",
+                borderRadius: "18px",
+                padding: "1.25rem",
+                border: "2px solid #cbd5e1",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+              }}
+            >
+              {pScenario.contextLocation && (
+                <div
+                  style={{
+                    display: "inline-block",
+                    background: "#fef3c7",
+                    color: "#92400e",
+                    padding: "0.25rem 0.65rem",
+                    borderRadius: "999px",
+                    fontSize: "0.78rem",
+                    fontWeight: "700",
+                    marginBottom: "0.85rem",
+                  }}
+                >
+                  📍 {pScenario.contextLocation}
+                </div>
+              )}
+              {pScenario.posterHeadline && (
+                <div
+                  style={{
+                    fontWeight: "800",
+                    fontSize: "1.05rem",
+                    color: "#0f172a",
+                    marginBottom: "0.85rem",
+                  }}
+                >
+                  {pScenario.posterHeadline}
+                </div>
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "1rem",
+                  alignItems: "center",
+                  background: "#f8fafc",
+                  borderRadius: "14px",
+                  padding: "0.85rem",
+                  border: "1px solid #e2e8f0",
+                  marginBottom: "0.85rem",
+                }}
+              >
+                <div
+                  style={{
+                    width: "80px",
+                    height: "80px",
+                    flexShrink: 0,
+                    background: "#0f172a",
+                    borderRadius: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#ffffff",
+                    fontSize: "2rem",
+                  }}
+                  aria-label="QR Code Symbol"
+                >
+                  📷
+                </div>
+                <div style={{ flex: 1, fontSize: "0.92rem", color: "#334155" }}>
+                  <p style={{ margin: 0, lineHeight: 1.5 }}>{pScenario.body}</p>
+                </div>
+              </div>
+              {pScenario.qrUrl && (
+                <div
+                  style={{
+                    background: "#eff6ff",
+                    border: "1.5px dashed #93c5fd",
+                    borderRadius: "10px",
+                    padding: "0.6rem 0.85rem",
+                    fontSize: "0.82rem",
+                    color: "#1e40af",
+                    wordBreak: "break-all",
+                  }}
+                >
+                  <strong>🔗 Camera URL Preview:</strong>{" "}
+                  <code>{pScenario.qrUrl}</code>
+                </div>
+              )}
+            </div>
+          ) : activeCategory === "prize" ? (
+            <div
+              style={{
+                maxWidth: "480px",
+                margin: "0 auto 1.25rem",
+                background: "linear-gradient(135deg, #fffbeb 0%, #ffffff 100%)",
+                borderRadius: "18px",
+                padding: "1.25rem",
+                border: "2px solid #fde68a",
+                boxShadow: "0 4px 14px rgba(245, 158, 11, 0.12)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                <span
+                  style={{
+                    background: "#fef3c7",
+                    color: "#b45309",
+                    padding: "0.25rem 0.75rem",
+                    borderRadius: "999px",
+                    fontSize: "0.8rem",
+                    fontWeight: "800",
+                  }}
+                >
+                  {pScenario.prizeTag ?? "🎉 Prize Announcement"}
+                </span>
+                {pScenario.sender && (
+                  <span style={{ fontSize: "0.8rem", color: "#64748b" }}>
+                    From: {pScenario.sender}
+                  </span>
+                )}
+              </div>
+              {pScenario.prizeHeading && (
+                <h3
+                  style={{
+                    fontSize: "1.1rem",
+                    fontWeight: "800",
+                    color: "#78350f",
+                    margin: "0 0 0.75rem",
+                  }}
+                >
+                  {pScenario.prizeHeading}
+                </h3>
+              )}
+              <div
+                style={{
+                  background: "#ffffff",
+                  borderRadius: "12px",
+                  padding: "0.95rem",
+                  border: "1px solid #fef3c7",
+                  lineHeight: "1.65",
+                  fontSize: "0.95rem",
+                  color: "#1e293b",
+                }}
+              >
+                {pScenario.body}
+              </div>
+            </div>
+          ) : activeCategory === "impersonation" ? (
+            <div
+              style={{
+                maxWidth: "460px",
+                margin: "0 auto 1.25rem",
+                background: "#ffffff",
+                borderRadius: "18px",
+                padding: "1rem",
+                border: "1.5px solid #cbd5e1",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  borderBottom: "1px solid #f1f5f9",
+                  paddingBottom: "0.6rem",
+                  marginBottom: "0.85rem",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                  <div
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "50%",
+                      background: "#e2e8f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "1.2rem",
+                    }}
+                  >
+                    {pScenario.avatarIcon ?? "👤"}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: "700", fontSize: "0.9rem", color: "#0f172a" }}>
+                      {pScenario.senderHandle ?? pScenario.sender ?? "Chat User"}
+                    </div>
+                    <div style={{ fontSize: "0.76rem", color: "#64748b" }}>
+                      {pScenario.platform ?? "Direct Message"}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  {pScenario.verifiedBadge ? (
+                    <span
+                      style={{
+                        background: "#dcfce7",
+                        color: "#166534",
+                        fontSize: "0.74rem",
+                        fontWeight: "700",
+                        padding: "0.2rem 0.5rem",
+                        borderRadius: "999px",
+                      }}
+                    >
+                      ✓ Verified
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        background: "#fef2f2",
+                        color: "#991b1b",
+                        fontSize: "0.74rem",
+                        fontWeight: "700",
+                        padding: "0.2rem 0.5rem",
+                        borderRadius: "999px",
+                      }}
+                    >
+                      ⚠️ Unverified
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#f1f5f9",
+                  borderRadius: "14px 14px 14px 4px",
+                  padding: "0.85rem 1rem",
+                  lineHeight: "1.6",
+                  fontSize: "0.95rem",
+                  color: "#0f172a",
+                }}
+              >
+                {pScenario.body}
+              </div>
+            </div>
+          ) : activeCategory === "financial" ? (
+            <div
+              style={{
+                maxWidth: "480px",
+                margin: "0 auto 1.25rem",
+                background: "linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)",
+                borderRadius: "18px",
+                padding: "1.25rem",
+                border: "2px solid #bbf7d0",
+                boxShadow: "0 4px 14px rgba(22, 163, 74, 0.08)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                <span
+                  style={{
+                    background: "#dcfce7",
+                    color: "#15803d",
+                    padding: "0.25rem 0.75rem",
+                    borderRadius: "999px",
+                    fontSize: "0.78rem",
+                    fontWeight: "800",
+                  }}
+                >
+                  💰 {pScenario.guaranteeBadge ?? "Financial Offer"}
+                </span>
+                {pScenario.sender && (
+                  <span style={{ fontSize: "0.78rem", color: "#64748b" }}>
+                    {pScenario.sender}
+                  </span>
+                )}
+              </div>
+              {pScenario.offerHeadline && (
+                <h3
+                  style={{
+                    fontSize: "1.1rem",
+                    fontWeight: "800",
+                    color: "#14532d",
+                    margin: "0 0 0.75rem",
+                  }}
+                >
+                  {pScenario.offerHeadline}
+                </h3>
+              )}
+              <div
+                style={{
+                  background: "#ffffff",
+                  borderRadius: "12px",
+                  padding: "0.95rem",
+                  border: "1px solid #bbf7d0",
+                  lineHeight: "1.65",
+                  fontSize: "0.95rem",
+                  color: "#1e293b",
+                }}
+              >
+                {pScenario.body}
               </div>
             </div>
           ) : (
@@ -1071,9 +2378,12 @@ export function ScamHomePage() {
           )}
 
           <p style={{ fontWeight: "600", marginBottom: "0.65rem" }}>
-            {activeCategory === "sms"
-              ? "Does this text message look suspicious or safe?"
-              : "Does this email look suspicious or safe?"}
+            {activeCategory === "sms" && "Does this text message look suspicious or safe?"}
+            {activeCategory === "qr" && "Does this QR code offer look suspicious or safe?"}
+            {activeCategory === "prize" && "Does this prize announcement look suspicious or safe?"}
+            {activeCategory === "impersonation" && "Does this sender and message look suspicious or safe?"}
+            {activeCategory === "financial" && "Does this earning or financial offer look suspicious or safe?"}
+            {(activeCategory === "phishing" || !activeCategory) && "Does this email look suspicious or safe?"}
           </p>
 
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
@@ -1121,9 +2431,18 @@ export function ScamHomePage() {
                     fontSize: "0.9rem",
                   }}
                 >
-                  {activeCategory === "sms"
-                    ? "This was a scam text message. In real life, clicking links or replying to messages like this could compromise your phone, accounts, or personal safety."
-                    : "This was a phishing email. In real life, clicking links like this could expose your personal information."}
+                  {activeCategory === "sms" &&
+                    "This was a scam text message. In real life, clicking links or replying to messages like this could compromise your phone, accounts, or personal safety."}
+                  {activeCategory === "qr" &&
+                    "This was a malicious or fake QR code offer. Scanning unverified QR codes or visiting suspicious preview links can lead to malware or stolen card details."}
+                  {activeCategory === "prize" &&
+                    "This was a prize or giveaway scam. Real prizes never demand fees, gift cards, or secret passwords to claim."}
+                  {activeCategory === "impersonation" &&
+                    "This was an impersonation scam. Scammers pretend to be friends, teachers, or administrators to steal accounts or emergency money."}
+                  {activeCategory === "financial" &&
+                    "This was a deceptive financial offer. Guaranteed rapid profits, money doublers, and upfront fee jobs are traps."}
+                  {(activeCategory === "phishing" || !activeCategory) &&
+                    "This was a phishing email. In real life, clicking links like this could expose your personal information."}
                 </p>
               )}
 
@@ -1138,9 +2457,18 @@ export function ScamHomePage() {
                     fontSize: "0.9rem",
                   }}
                 >
-                  {activeCategory === "sms"
-                    ? "This text message was actually safe. It is good to be alert, but reading the message calmly and checking what it asks for helps you tell the difference."
-                    : "This email was actually safe. It is good to be careful, but reading the email calmly can help you tell the difference."}
+                  {activeCategory === "sms" &&
+                    "This text message was actually safe. It is good to be alert, but reading the message calmly and checking what it asks for helps you tell the difference."}
+                  {activeCategory === "qr" &&
+                    "This QR code was actually safe and official. Checking that it is professionally printed, on a trusted domain, and asks for no credentials lets you know it is safe."}
+                  {activeCategory === "prize" &&
+                    "This award notification was actually legitimate and safe. It comes from a verified teacher or program you actually participated in."}
+                  {activeCategory === "impersonation" &&
+                    "This announcement was actually from a verified source. Official channels with verified badges and official school links can be trusted."}
+                  {activeCategory === "financial" &&
+                    "This financial opportunity was legitimate. Regulated institutions like national banks and official school programs are safe."}
+                  {(activeCategory === "phishing" || !activeCategory) &&
+                    "This email was actually safe. It is good to be careful, but reading the email calmly can help you tell the difference."}
                 </p>
               )}
 
@@ -1171,27 +2499,32 @@ export function ScamHomePage() {
           )}
 
           {pAnswered && (
-            <div style={{ marginTop: "1rem" }}>
+            <div style={{ marginTop: "1.25rem" }}>
               {!isLastPractice ? (
-                <Button variant="secondary" onClick={handlePhishingNext}>
+                <button
+                  type="button"
+                  className="safety-start-btn"
+                  onClick={handlePhishingNext}
+                  style={{ width: "auto", padding: "0 1.75rem", minHeight: "44px" }}
+                >
                   Next question →
-                </Button>
+                </button>
               ) : (
-                <Button variant="primary" onClick={handleFinishPhishingPractice}>
-                  View my results
-                </Button>
+                <button
+                  type="button"
+                  className="safety-start-btn"
+                  onClick={handleFinishPhishingPractice}
+                  style={{ width: "auto", padding: "0 1.75rem", minHeight: "44px" }}
+                >
+                  View my results 🏆
+                </button>
               )}
             </div>
           )}
         </Card>
-
-        <div style={{ marginTop: "1rem" }}>
-          <Button variant="secondary" onClick={() => setView("home")}>
-            Back to Home
-          </Button>
-        </div>
       </div>
-    );
+    </div>
+  );
   }
 
   // ══════════════════════════════════════════════════════════════════
@@ -1204,83 +2537,167 @@ export function ScamHomePage() {
     const catLabel =
       CATEGORY_META.find((c) => c.id === activeCategory)?.label ?? "Category";
 
-    return (
-      <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
-        <p className="muted">Stay safe · Scam Alley · {catLabel}</p>
-        <h1 style={{ fontSize: "1.9rem", marginBottom: "1rem" }}>
-          {passed ? "🎉 Level complete!" : "📝 Practice round complete"}
-        </h1>
-
-        <Card title="Your results">
-          <div style={{ textAlign: "center", padding: "0.5rem 0 1.25rem" }}>
-            <p
-              style={{
-                fontSize: "3rem",
-                fontWeight: "800",
-                margin: 0,
-                color: passed ? "#16a34a" : "#b91c1c",
-              }}
+    return renderShell(
+      <div className="safety-inner-container">
+        <div className="safety-main-card">
+          <div className="safety-top-nav">
+            <button
+              type="button"
+              className="safety-back-link"
+              onClick={() => setView("home")}
             >
-              {pct}%
-            </p>
-            <p style={{ fontSize: "1.05rem", marginTop: "0.25rem" }}>
-              {phishingCorrect} correct out of {phishingTotal} questions
-            </p>
-            <p
-              style={{
-                marginTop: "0.35rem",
-                fontSize: "0.9rem",
-                color: "#64748b",
-              }}
-            >
-              Mastery threshold: {PASSING_PERCENTAGE}%
-            </p>
+              ← Back to Scam Safety Home
+            </button>
+            <span className="safety-badge-pill">
+              {catLabel} Results
+            </span>
           </div>
 
-          {/* Pass / Fail message */}
           <div
             style={{
-              background: passed ? "#eaf8ef" : "#fff0f0",
-              border: `1px solid ${passed ? "#9fd3b0" : "#e3b5b5"}`,
-              borderRadius: "10px",
-              padding: "0.85rem 1rem",
-              marginBottom: "1.25rem",
+              textAlign: "center",
+              padding: "1.25rem 1rem",
+              background: passed ? "linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%)" : "linear-gradient(180deg, #fffbeb 0%, #ffffff 100%)",
+              borderRadius: "20px",
+              border: `2px solid ${passed ? "#86efac" : "#fde68a"}`,
+              marginBottom: "1.5rem",
+              position: "relative",
+            }}
+          >
+            <img
+              src="/images/cub-wave.png"
+              alt="Cub celebrating"
+              style={{
+                width: "120px",
+                height: "150px",
+                objectFit: "contain",
+                margin: "0 auto 0.5rem",
+                display: "block",
+                filter: "drop-shadow(0 10px 16px rgba(40, 70, 110, 0.15))",
+              }}
+            />
+            <h1 style={{ fontSize: "1.85rem", fontWeight: "800", color: "#163a8a", margin: "0 0 0.5rem" }}>
+              {passed ? "🎉 Fantastic Job, Detective!" : "💡 Great Practice Effort!"}
+            </h1>
+            <p style={{ fontSize: "2.8rem", fontWeight: "800", margin: "0.25rem 0", color: passed ? "#16a34a" : "#d97706" }}>
+              {pct}%
+            </p>
+            <p style={{ fontSize: "1.05rem", fontWeight: "700", color: "#334155", margin: "0 0 0.25rem" }}>
+              {phishingCorrect} of {phishingTotal} questions answered correctly
+            </p>
+            <span
+              style={{
+                display: "inline-block",
+                fontSize: "0.84rem",
+                color: "#64748b",
+                background: "#ffffff",
+                padding: "0.25rem 0.75rem",
+                borderRadius: "999px",
+                border: "1px solid #e2e8f0",
+              }}
+            >
+              Mastery threshold: {PASSING_PERCENTAGE}% to unlock the next level
+            </span>
+          </div>
+
+          {/* Pass / Fail banner */}
+          <div
+            style={{
+              background: passed ? "#eaf8ef" : "#fffbeb",
+              border: `1.5px solid ${passed ? "#9fd3b0" : "#fcd34d"}`,
+              borderRadius: "16px",
+              padding: "1rem 1.25rem",
+              marginBottom: "1.5rem",
+              fontSize: "0.96rem",
+              lineHeight: "1.5",
+              color: passed ? "#166534" : "#92400e",
             }}
           >
             {passed ? (
               <p style={{ margin: 0 }}>
-                <strong>Well done!</strong> You have shown a strong understanding
-                of {catLabel.toLowerCase()} warning signs.{" "}
+                <strong>Well done!</strong> You have shown strong skills in spotting{" "}
+                {catLabel.toLowerCase()} warning signs.{" "}
                 {(() => {
                   const next = getNextCategory(activeCategory ?? "phishing");
                   if (next) {
                     const nextLabel =
                       CATEGORY_META.find((c) => c.id === next)?.label ?? "Next level";
-                    return `${nextLabel} is now unlocked!`;
+                    return `✨ ${nextLabel} is now unlocked!`;
                   }
-                  return "You have completed all levels in Scam Alley!";
+                  return "🏆 You have completed all levels in Scam Alley!";
                 })()}
               </p>
             ) : (
               <p style={{ margin: 0 }}>
-                <strong>Good effort!</strong> You are building your skills. Review
-                the lesson and try again — you can always improve!
+                <strong>Good effort!</strong> You are building great detective instincts. Review the lesson and try again — you need 80% to unlock the next level!
               </p>
             )}
           </div>
 
+          {/* Educational Simulation Feedback Banner */}
+          {simulationMsg && (
+            <div
+              style={{
+                padding: "12px 16px",
+                borderRadius: "14px",
+                marginBottom: "1.25rem",
+                fontSize: "0.92rem",
+                fontWeight: 600,
+                background:
+                  simulationMsg.type === "success"
+                    ? "#ecfdf5"
+                    : simulationMsg.type === "warning"
+                    ? "#fffbeb"
+                    : simulationMsg.type === "error"
+                    ? "#fef2f2"
+                    : "#eff6ff",
+                color:
+                  simulationMsg.type === "success"
+                    ? "#065f46"
+                    : simulationMsg.type === "warning"
+                    ? "#92400e"
+                    : simulationMsg.type === "error"
+                    ? "#991b1b"
+                    : "#1e40af",
+                border: `1.5px solid ${
+                  simulationMsg.type === "success"
+                    ? "#a7f3d0"
+                    : simulationMsg.type === "warning"
+                    ? "#fde68a"
+                    : simulationMsg.type === "error"
+                    ? "#fecaca"
+                    : "#bfdbfe"
+                }`,
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+              }}
+            >
+              <span style={{ fontSize: "1.2rem" }}>
+                {simulationMsg.type === "success"
+                  ? "✉️"
+                  : simulationMsg.type === "warning"
+                  ? "⚠️"
+                  : simulationMsg.type === "error"
+                  ? "❌"
+                  : "ℹ️"}
+              </span>
+              <span>{simulationMsg.text}</span>
+            </div>
+          )}
+
           {/* Concept breakdown */}
-          <p style={{ fontWeight: "600", marginBottom: "0.5rem" }}>
-            What you understand:
-          </p>
-          <ul style={{ margin: "0 0 0.75rem 1.2rem", padding: 0 }}>
+          <h2 style={{ fontSize: "1.1rem", fontWeight: "800", color: "#163a8a", margin: "0 0 0.65rem" }}>
+            Detective Clues Breakdown:
+          </h2>
+          <ul style={{ margin: "0 0 1rem", padding: "0 0 0 1.25rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
             {(Object.keys(phishingConceptScores) as Concept[])
               .filter((c) => phishingConceptScores[c].attempted > 0)
               .map((c) => {
                 const { correct, attempted } = phishingConceptScores[c];
                 const ok = correct === attempted;
                 return (
-                  <li key={c} style={{ marginBottom: "0.25rem" }}>
+                  <li key={c} style={{ fontSize: "0.92rem", color: "#334155" }}>
                     {ok ? "✅" : "⚠️"}{" "}
                     <strong>
                       {c.charAt(0).toUpperCase() + c.slice(1)}
@@ -1293,54 +2710,62 @@ export function ScamHomePage() {
           </ul>
 
           {weak.length > 0 && (
-            <>
-              <p style={{ fontWeight: "600", marginBottom: "0.4rem" }}>
-                Concepts to practise more:
+            <div style={{ background: "#fffbeb", borderRadius: "14px", padding: "0.85rem 1rem", border: "1px solid #fde68a", marginBottom: "1.25rem" }}>
+              <p style={{ fontWeight: "700", color: "#92400e", margin: "0 0 0.35rem", fontSize: "0.9rem" }}>
+                Topics to practice more:
               </p>
-              <ul style={{ margin: "0 0 0.75rem 1.2rem", padding: 0 }}>
+              <ul style={{ margin: 0, paddingLeft: "1.25rem", color: "#78350f", fontSize: "0.86rem" }}>
                 {weak.map((c) => (
                   <li key={c}>
-                    {c.charAt(0).toUpperCase() + c.slice(1)} — review
-                    the lesson section on this topic
+                    {c.charAt(0).toUpperCase() + c.slice(1)} — review the lesson tips on this topic
                   </li>
                 ))}
               </ul>
-            </>
+            </div>
           )}
 
-          <p className="muted" style={{ fontSize: "0.85rem" }}>
-            (Practice indicator only — not a formal assessment)
-          </p>
-        </Card>
-
-        {/* Navigation */}
-        <div
-          style={{
-            display: "flex",
-            gap: "0.75rem",
-            flexWrap: "wrap",
-            marginTop: "1.25rem",
-          }}
-        >
-          {passed ? (
-            <Button variant="primary" onClick={handleContinueToNextLevel}>
-              {getNextCategory(activeCategory ?? "phishing")
-                ? "Continue to next level →"
-                : "🏆 Back to Scam Alley"}
-            </Button>
-          ) : (
-            <>
-              <Button variant="primary" onClick={handleCategoryRetry}>
-                Review lesson
-              </Button>
-              <Button variant="secondary" onClick={handleStartCategoryPractice}>
-                Try practice again
-              </Button>
-            </>
-          )}
-          <Button variant="secondary" onClick={() => setView("home")}>
-            Back to Scam Safety Home
-          </Button>
+          {/* Navigation Action Buttons */}
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1.5rem" }}>
+            {passed ? (
+              <button
+                type="button"
+                className="safety-start-btn"
+                onClick={handleContinueToNextLevel}
+                style={{ width: "auto", padding: "0 1.75rem", minHeight: "44px" }}
+              >
+                {getNextCategory(activeCategory ?? "phishing")
+                  ? "Continue to next level →"
+                  : "🏆 Back to Scam Alley"}
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="safety-start-btn"
+                  onClick={handleCategoryRetry}
+                  style={{ width: "auto", padding: "0 1.5rem", minHeight: "44px" }}
+                >
+                  Review lesson
+                </button>
+                <button
+                  type="button"
+                  className="safety-back-link"
+                  onClick={handleStartCategoryPractice}
+                  style={{ minHeight: "44px", padding: "0 1.5rem", fontSize: "0.92rem" }}
+                >
+                  Try practice again ↻
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              className="safety-back-link"
+              onClick={() => setView("home")}
+              style={{ minHeight: "44px", padding: "0 1.5rem", fontSize: "0.92rem" }}
+            >
+              Back to Scam Safety Home
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -1351,8 +2776,9 @@ export function ScamHomePage() {
   // ══════════════════════════════════════════════════════════════════
   if (view === "results") {
     const pct = roundTotal === 0 ? 0 : Math.round((roundCorrect / roundTotal) * 100);
-    return (
-      <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
+    return renderShell(
+      <div className="safety-inner-container">
+        <div className="safety-main-card">
         <p className="muted" style={{ marginBottom: "0.5rem" }}>Stay safe · Scam Alley</p>
         <h1 style={{ fontSize: "2rem", marginBottom: "1rem" }}>Practice Round Complete!</h1>
 
@@ -1503,6 +2929,7 @@ export function ScamHomePage() {
           </Button>
         </div>
       </div>
+    </div>
     );
   }
 
@@ -1512,8 +2939,9 @@ export function ScamHomePage() {
   if (view === "drill") {
     const feedback = drillAction !== null ? getDrillFeedback(drillAction) : null;
 
-    return (
-      <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
+    return renderShell(
+      <div className="safety-inner-container">
+        <div className="safety-main-card">
         <p className="muted">Stay safe · Scam Alley</p>
         <h1>Email Safety Challenge</h1>
 
@@ -1682,14 +3110,16 @@ export function ScamHomePage() {
           </Button>
         </div>
       </div>
+    </div>
     );
   }
 
   // ══════════════════════════════════════════════════════════════════
   //  RENDER — LEGACY PRACTICE SCREEN
   // ══════════════════════════════════════════════════════════════════
-  return (
-    <div style={{ maxWidth: "700px", margin: "0 auto", padding: "1.5rem" }}>
+  return renderShell(
+    <div className="safety-inner-container">
+      <div className="safety-main-card">
       <p className="muted">Stay safe · Scam Alley</p>
       <h1>Scam safety practice</h1>
 
@@ -1875,5 +3305,6 @@ export function ScamHomePage() {
         </div>
       </Card>
     </div>
-  );
+  </div>
+);
 }

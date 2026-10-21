@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LevelDefinition } from '../../types/mission.types';
 
 interface EmergencyResponseProps {
@@ -14,6 +14,10 @@ export const EmergencyResponse: React.FC<EmergencyResponseProps> = ({
 }) => {
   const options = level.options || [];
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedId(null);
+  }, [level.id]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,9 +37,9 @@ export const EmergencyResponse: React.FC<EmergencyResponseProps> = ({
             requires <strong>Rs. 4,500</strong> for the antibiotic injection immediately.
           </p>
           <div className="emergency-financial-pill-row">
-            <span className="pill-cash">Available Pocket Cash: Rs. 2,000</span>
-            <span className="pill-reserve">Preserved Emergency Buffer: Rs. 3,500</span>
-            <span className="pill-total">Total Liquid Funds: Rs. 5,500</span>
+            <span className="pill-cash">Cash on Hand: Rs. 2,000</span>
+            <span className="pill-reserve">Saved Emergency Fund: Rs. 3,500</span>
+            <span className="pill-total">Total Available Funds: Rs. 5,500</span>
           </div>
         </div>
       </div>
@@ -57,7 +61,7 @@ export const EmergencyResponse: React.FC<EmergencyResponseProps> = ({
             >
               <div className="emergency-card-header">
                 <span className={`strategy-badge ${isSafeStrategy ? 'badge-safe' : 'badge-danger'}`}>
-                  {isSafeStrategy ? '🛡️ Prudent Reserve Strategy' : '⚠️ High-Risk Option'}
+                  {isSafeStrategy ? '🛡️ Smart Emergency Strategy' : '⚠️ Dangerous Risk'}
                 </span>
                 <span className="emergency-price">Rs. {opt.costLKR.toLocaleString()}</span>
               </div>

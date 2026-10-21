@@ -101,6 +101,7 @@ export class FinancialSimulationEngine {
     let discretionarySpentLKR = 0;
     const coveredEssentials: string[] = [];
     const missedEssentials: string[] = [];
+    let reserveAllocated = 0;
     const cleanedAllocations: Record<string, number> = {};
 
     for (const cat of categories) {
@@ -119,6 +120,23 @@ export class FinancialSimulationEngine {
       } else {
         discretionarySpentLKR += allocated;
       }
+
+      // Check if this category represents an emergency reserve or savings cushion
+      const catCat = cat.category as string;
+      if (
+        catCat === 'emergency_reserve' ||
+        catCat === 'savings_goal' ||
+        catCat === 'emergency_savings' ||
+        catCat === 'savings' ||
+        cat.id.toLowerCase().includes('reserve') ||
+        cat.id.toLowerCase().includes('saving') ||
+        cat.id === 'emergency_reserve' ||
+        cat.id === 'cat_emergency_reserve' ||
+        cat.id === 'cat_rec_reserve' ||
+        cat.id === 'cap_permanent_reserve'
+      ) {
+        reserveAllocated += allocated;
+      }
     }
 
     const remainingCashLKR = startingBudgetLKR - totalSpentLKR;
@@ -126,8 +144,7 @@ export class FinancialSimulationEngine {
     const budgetDeficitLKR = isBudgetFeasible ? 0 : Math.abs(remainingCashLKR);
     const essentialNeedsCovered = missedEssentials.length === 0;
 
-    // Check if there is an explicit emergency reserve category
-    const reserveAllocated = cleanedAllocations['emergency_reserve'] || 0;
+    // Total preserved emergency reserve includes protected reserve allocations + existing reserves + unallocated cash
     const totalReserveLKR =
       reserveAllocated + existingReserveLKR + Math.max(0, remainingCashLKR);
 

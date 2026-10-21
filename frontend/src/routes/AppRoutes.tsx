@@ -3,6 +3,8 @@ import { AppLayout } from "../components/layout/AppLayout";
 import { LevelsPage } from "../modules/decision-making/pages/LevelsPage";
 import { MissionBoardPage } from "../modules/gamified-learning/pages/MissionBoardPage";
 import { ScamHomePage } from "../modules/scam-safety/pages/ScamHomePage";
+import { SimulatedInboxPage } from "../modules/scam-safety/pages/SimulatedInboxPage";
+import { SimulationFeedbackPage } from "../modules/scam-safety/pages/SimulationFeedbackPage";
 import { MarketHomePage } from "../modules/stock-market/pages/MarketHomePage";
 import { MarketTerminalPage } from "../modules/stock-market/pages/MarketTerminalPage";
 import { PortfolioPage } from "../modules/stock-market/pages/PortfolioPage";
@@ -16,17 +18,7 @@ import { StudentDashboardPage } from "../pages/student/StudentDashboardPage";
 import { TeacherDashboardPage, TeacherStubPage } from "../pages/teacher/TeacherDashboardPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
 
-function ProgressPage() {
-  return (
-    <section className="card">
-      <h1>My Progress</h1>
-      <p>
-        Habit scores and session reviews will appear here after you finish
-        lessons and trades. Nothing is ranked against other children.
-      </p>
-    </section>
-  );
-}
+
 
 export function AppRoutes() {
   return (
@@ -49,6 +41,9 @@ export function AppRoutes() {
       <Route path="/guardian/quizzes" element={<GuardianStubPage title="Quiz results" />} />
       <Route path="/guardian/tips" element={<GuardianStubPage title="Recommendations" />} />
       <Route path="/market" element={<MarketHomePage />} />
+      <Route path="/safety" element={<ScamHomePage />} />
+      <Route path="/safety/inbox" element={<SimulatedInboxPage />} />
+      <Route path="/safety/simulation-feedback" element={<SimulationFeedbackPage />} />
       <Route element={<AppLayout />}>
         <Route path="/market/lessons/:n" element={<MarketLessonPage />} />
         <Route path="/market/terminal" element={<MarketTerminalPage />} />
@@ -56,8 +51,7 @@ export function AppRoutes() {
         <Route path="/market/portfolio" element={<PortfolioPage />} />
         <Route path="/choices" element={<LevelsPage />} />
         <Route path="/missions" element={<MissionBoardPage />} />
-        <Route path="/safety" element={<ScamHomePage />} />
-        <Route path="/progress" element={<ProgressPage />} />
+        <Route path="/progress" element={<MissionBoardPage initialViewMode="JOURNEY" />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
     </Routes>

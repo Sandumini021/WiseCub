@@ -9,7 +9,22 @@ export type FinancialCategory =
   | 'discretionary'
   | 'emergency_reserve'
   | 'savings_goal'
-  | 'recurring_care';
+  | 'recurring_care'
+  | 'essential_food'
+  | 'shelter_repair'
+  | 'accessory'
+  | 'snacks'
+  | 'food'
+  | 'shelter'
+  | 'savings'
+  | 'emergency_food'
+  | 'emergency_repair'
+  | 'luxury_food'
+  | 'substandard_food'
+  | 'thermal_safety'
+  | 'caloric_fuel'
+  | 'comfort_luxury'
+  | 'cosmetic';
 
 export interface FinancialAllocation {
   categoryId: string;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LevelDefinition } from '../../types/mission.types';
 
 interface TradeoffJustificationProps {
@@ -18,6 +18,11 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
 
   const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
   const [selectedRationaleId, setSelectedRationaleId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedOptionIds([]);
+    setSelectedRationaleId(null);
+  }, [level.id]);
 
   const toggleOption = (id: string) => {
     if (disabled) return;
@@ -43,7 +48,7 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
       {/* Live Financial Ledger Bar */}
       <div className={`financial-ledger-banner ${isOverBudget ? 'ledger-over' : 'ledger-ok'}`}>
         <div className="ledger-stat">
-          <span className="stat-label">Available Care Fund</span>
+          <span className="stat-label">Available Fund</span>
           <span className="stat-amount">Rs. {startingBudget.toLocaleString()}</span>
         </div>
         <div className="ledger-stat">
@@ -51,7 +56,7 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
           <span className="stat-amount">Rs. {totalCost.toLocaleString()}</span>
         </div>
         <div className="ledger-stat">
-          <span className="stat-label">Remaining Buffer</span>
+          <span className="stat-label">Remaining Savings</span>
           <span className={`stat-amount ${isOverBudget ? 'amount-negative' : 'amount-positive'}`}>
             Rs. {remainingCash.toLocaleString()}
           </span>
@@ -85,7 +90,7 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
             >
               <div className="option-card-header">
                 <span className={`option-category-badge ${opt.isEssential ? 'badge-essential' : 'badge-discretionary'}`}>
-                  {opt.isEssential ? 'Preventive Health' : 'Luxury Comfort'}
+                  {opt.isEssential ? '⭐ Preventive Care' : '🎈 Luxury Extra'}
                 </span>
                 <span className="option-price-tag">Rs. {opt.costLKR.toLocaleString()}</span>
               </div>
@@ -112,8 +117,8 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
 
       {/* Part 2: Reasoning Justification */}
       <div className="tradeoff-section-heading" style={{ marginTop: '24px' }}>
-        <h4>Step 2: Defend Your Financial Rationale</h4>
-        <p>Explain why your chosen allocation represents responsible stewardship for Barnaby:</p>
+        <h4>Step 2: Why Did You Pick This?</h4>
+        <p>Explain why your choice is the smartest move for Barnaby:</p>
       </div>
 
       <div className="rationales-list">
@@ -148,7 +153,7 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
           className="btn-confirm-decision"
           disabled={disabled || selectedOptionIds.length === 0 || !selectedRationaleId || isOverBudget}
         >
-          Submit Trade-off & Evaluate Financial Logic
+          Submit Decision & Check Results
         </button>
       </div>
     </form>

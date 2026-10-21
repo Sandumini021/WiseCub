@@ -22,7 +22,21 @@ export type CategoryScenario = {
   warningSigns: string[];
   explanation: string;
   tip: string;
+
+  // Metadata for simulated category views
+  posterHeadline?: string;
+  contextLocation?: string;
+  qrUrl?: string;
+  prizeHeading?: string;
+  prizeTag?: string;
+  platform?: string;
+  senderHandle?: string;
+  avatarIcon?: string;
+  verifiedBadge?: boolean;
+  offerHeadline?: string;
+  guaranteeBadge?: string;
 };
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  PHISHING EMAILS — LESSON CONTENT (Stage A)
@@ -370,16 +384,54 @@ export const SMS_SCENARIOS: CategoryScenario[] = [
   },
 ];
 
+export { QR_LESSON_SECTIONS, QR_SCENARIOS } from "./qrScenarios.ts";
+export { PRIZE_LESSON_SECTIONS, PRIZE_SCENARIOS } from "./prizeScenarios.ts";
+export { IMPERSONATION_LESSON_SECTIONS, IMPERSONATION_SCENARIOS } from "./impersonationScenarios.ts";
+export { FINANCIAL_LESSON_SECTIONS, FINANCIAL_SCENARIOS } from "./financialScenarios.ts";
+
+import { QR_LESSON_SECTIONS, QR_SCENARIOS } from "./qrScenarios.ts";
+import { PRIZE_LESSON_SECTIONS, PRIZE_SCENARIOS } from "./prizeScenarios.ts";
+import { IMPERSONATION_LESSON_SECTIONS, IMPERSONATION_SCENARIOS } from "./impersonationScenarios.ts";
+import { FINANCIAL_LESSON_SECTIONS, FINANCIAL_SCENARIOS } from "./financialScenarios.ts";
+
+
 export function getScenariosForCategory(
   catId: CategoryId | null
 ): CategoryScenario[] {
-  if (catId === "sms") return SMS_SCENARIOS;
-  return PHISHING_SCENARIOS;
+  switch (catId) {
+    case "sms":
+      return SMS_SCENARIOS;
+    case "qr":
+      return QR_SCENARIOS;
+    case "prize":
+      return PRIZE_SCENARIOS;
+    case "impersonation":
+      return IMPERSONATION_SCENARIOS;
+    case "financial":
+      return FINANCIAL_SCENARIOS;
+    case "phishing":
+    default:
+      return PHISHING_SCENARIOS;
+  }
 }
 
 export function getLessonSectionsForCategory(
   catId: CategoryId | null
 ): { heading: string; body: string }[] {
-  if (catId === "sms") return SMS_LESSON_SECTIONS;
-  return PHISHING_LESSON_SECTIONS;
+  switch (catId) {
+    case "sms":
+      return SMS_LESSON_SECTIONS;
+    case "qr":
+      return QR_LESSON_SECTIONS;
+    case "prize":
+      return PRIZE_LESSON_SECTIONS;
+    case "impersonation":
+      return IMPERSONATION_LESSON_SECTIONS;
+    case "financial":
+      return FINANCIAL_LESSON_SECTIONS;
+    case "phishing":
+    default:
+      return PHISHING_LESSON_SECTIONS;
+  }
 }
+

@@ -104,9 +104,17 @@ export const LearningAnalyticsModal: React.FC<LearningAnalyticsModalProps> = ({
           </div>
         </div>
 
-        {/* Adaptive Pedagogical Engine Insights */}
+        {/* Adaptive Pedagogical Engine Insights (Local Prototype Baseline) */}
         <div className="analytics-section">
-          <h3>Behavior-Based Adaptive Engine Insights</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h3>Local Prototype Baseline Heuristics (Rule-Based)</h3>
+            <span style={{ fontSize: '0.75rem', color: '#6b7280', background: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>
+              Prototype Rule Engine
+            </span>
+          </div>
+          <p className="section-note" style={{ marginBottom: '8px', fontSize: '0.8rem', color: '#6b7280' }}>
+            Evaluated via client-side threshold heuristics on current mission attempts. For global, machine-learning-driven adaptive support across all missions, consult the <strong>My Money Journey</strong> dashboard.
+          </p>
           <div className="adaptive-insight-card">
             <div className="insight-row">
               <span className="insight-tag">Scaffolding Adjustment:</span>
