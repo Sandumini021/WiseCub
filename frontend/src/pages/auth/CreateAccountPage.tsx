@@ -126,7 +126,9 @@ export function CreateAccountPage() {
         setError(err.message);
         return;
       }
-      setError("Could not create the account. The API did not accept this page origin — refresh and try again.");
+      setError(
+        "Could not create the account. Check the API is running on port 8000, then refresh. If this page URL is not localhost, open http://localhost:5173 instead.",
+      );
     }
   }
 
