@@ -68,7 +68,6 @@ function AllocationRing({
   selected: string | null;
   onPick: (key: string) => void;
 }) {
-  const size = 168;
   const r = 58;
   const c = 2 * Math.PI * r;
   let offset = 0;
