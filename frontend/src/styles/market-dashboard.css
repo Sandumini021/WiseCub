@@ -317,9 +317,63 @@
 
 .cub-says {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
-  align-items: flex-start;
+  align-items: stretch;
   background: #fff7d6;
+}
+
+.cub-says-note {
+  font-size: 0.78rem;
+}
+
+.decision-pattern-list {
+  list-style: none;
+  padding: 0;
+}
+
+.decision-pattern-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+  margin: 0 0 0.45rem;
+  padding: 0.7rem 0.8rem;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: #fff;
+  border: 1px solid #ded6ca;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.decision-pattern-card.is-on {
+  border-color: #e87935;
+  background: #fff0e5;
+}
+
+.decision-pattern-card span {
+  font-size: 0.82rem;
+  color: #475569;
+}
+
+.decision-tip-btn {
+  margin-top: 0.4rem;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  border: none;
+  border-radius: 8px;
+  background: #1b4d9e;
+  color: #fff;
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .cub-face-photo {
+    width: 88px;
+    height: 88px;
+  }
 }
 
 .lesson-page h1 {

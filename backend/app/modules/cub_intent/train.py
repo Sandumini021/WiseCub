@@ -3,27 +3,31 @@ from __future__ import annotations
 import json
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
-from pathlib import Path
-
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, confusion_matrix, precision_recall_fscore_support
 from sklearn.pipeline import FeatureUnion, Pipeline
 
 from app.modules.cub_intent.dataset import file_sha256, grouped_split, load_rows, split_has_group_leak
+from app.modules.cub_intent.expand_dataset import build_expanded_csv
 from app.modules.cub_intent.paths import (
     ARTIFACTS_DIR,
-    DATA_CSV,
+    BASELINE_METRICS_PATH,
+    COMPARISON_PATH,
     LABEL_MAPPING_PATH,
     METRICS_PATH,
     MODEL_PATH,
     SPLIT_PATH,
+    resolve_data_csv,
 )
 from app.modules.cub_intent.preprocess import preprocess
 from app.modules.cub_intent.routes import DATASET_ROUTE_CORRECTIONS, INTENT_APP_ROUTES
 
 RANDOM_STATE = 42
-MODEL_NOTE = "Synthetic sklearn baseline on the 5000-row classroom CSV. Not research-validated."
+MODEL_NOTE = (
+    "Synthetic sklearn TF-IDF + logistic regression on the expanded classroom CSV. "
+    "Grouped split by language+intent+stem. Not research-validated on real child speech."
+)
 
 
 def build_pipeline() -> Pipeline:
@@ -35,7 +39,7 @@ def build_pipeline() -> Pipeline:
                     preprocessor=preprocess,
                     analyzer="word",
                     ngram_range=(1, 2),
-                    min_df=2,
+                    min_df=1,
                     lowercase=False,
                     token_pattern=r"(?u)\b\w+\b",
                 ),
@@ -46,7 +50,7 @@ def build_pipeline() -> Pipeline:
                     preprocessor=preprocess,
                     analyzer="char",
                     ngram_range=(3, 5),
-                    min_df=2,
+                    min_df=1,
                     lowercase=False,
                 ),
             ),
@@ -124,7 +128,11 @@ def _eval_by_language(y_true: list[str], y_pred: list[str], langs: list[str], la
 
 
 def train_and_evaluate() -> dict:
-    rows = load_rows()
+    if METRICS_PATH.exists() and not BASELINE_METRICS_PATH.exists():
+        BASELINE_METRICS_PATH.write_bytes(METRICS_PATH.read_bytes())
+    build_expanded_csv()
+    data_csv = resolve_data_csv()
+    rows = load_rows(data_csv)
     split = grouped_split(rows, seed=RANDOM_STATE)
     leak = split_has_group_leak(rows, split)
     labels = sorted({row["intent"] for row in rows})
@@ -135,8 +143,8 @@ def train_and_evaluate() -> dict:
     metrics: dict = {
         "model_note": MODEL_NOTE,
         "trained_at": datetime.now(timezone.utc).isoformat(),
-        "dataset_path": str(DATA_CSV),
-        "dataset_sha256": file_sha256(DATA_CSV),
+        "dataset_path": str(data_csv),
+        "dataset_sha256": file_sha256(data_csv),
         "n_rows_loaded": len(rows),
         "n_rows_trained": len(split["train"]),
         "n_discarded": 0,
@@ -146,9 +154,10 @@ def train_and_evaluate() -> dict:
         "quality_flag_counts": dict(Counter(flag for row in rows for flag in row["quality_flags"].split(",") if flag)),
         "intents": labels,
         "interpretation": (
-            "Scores are on this synthetic, keyword-separated CSV only. "
-            "English templates often collapse to one stem per intent, so grouped English test/val "
-            "coverage is thin. Perfect F1 does not mean Cub understands real child speech."
+            "Scores are on this synthetic CSV only, including authored Singlish/Sinhala trade phrases. "
+            "Grouped splits hide exact stems from test, but templates remain easier than real child speech. "
+            "Macro-F1 is not comparable across different intent sets. Native-speaker review of SI/Singlish "
+            "is still pending. Do not treat these numbers as viva proof of classroom accuracy."
         ),
     }
     for name, indexes in split.items():
@@ -179,7 +188,7 @@ def train_and_evaluate() -> dict:
         "id_to_intent": {str(index): label for index, label in enumerate(labels)},
         "intent_app_routes": INTENT_APP_ROUTES,
         "dataset_route_corrections": DATASET_ROUTE_CORRECTIONS,
-        "confidence_threshold": 0.42,
+        "confidence_threshold": 0.28,
         "dataset_sha256": metrics["dataset_sha256"],
         "n_rows_trained": metrics["n_rows_trained"],
     }
@@ -198,7 +207,50 @@ def train_and_evaluate() -> dict:
         encoding="utf-8",
     )
     METRICS_PATH.write_text(json.dumps(_jsonable(metrics), indent=2, ensure_ascii=False), encoding="utf-8")
+    if BASELINE_METRICS_PATH.exists():
+        baseline = json.loads(BASELINE_METRICS_PATH.read_text(encoding="utf-8"))
+        comparison = _compare_metrics(baseline, metrics)
+        COMPARISON_PATH.write_text(json.dumps(_jsonable(comparison), indent=2, ensure_ascii=False), encoding="utf-8")
+        metrics["comparison_with_baseline_5000"] = comparison
+    try:
+        from app.modules.cub_intent.model import load_bundle
+
+        load_bundle.cache_clear()
+    except Exception:
+        pass
     return metrics
+
+
+def _compare_metrics(baseline: dict, current: dict) -> dict:
+    def slice_f1(block: dict | None) -> dict:
+        if not block:
+            return {}
+        overall = block.get("overall") or {}
+        by_lang = block.get("by_language") or {}
+        return {
+            "n": overall.get("n"),
+            "macro_f1": overall.get("macro_f1"),
+            "by_language": {
+                lang: {"n": lang_block.get("n"), "macro_f1": lang_block.get("macro_f1")}
+                for lang, lang_block in by_lang.items()
+            },
+        }
+
+    return {
+        "note": (
+            "Baseline used 20 template intents on the 5000-row CSV. The new run uses more intents "
+            "and authored phrases. A higher or lower macro-F1 is not proof of better child understanding. "
+            "Both runs are synthetic-data evaluation only."
+        ),
+        "baseline_dataset_sha256": baseline.get("dataset_sha256"),
+        "new_dataset_sha256": current.get("dataset_sha256"),
+        "baseline_intents": len(baseline.get("intents") or []),
+        "new_intents": len(current.get("intents") or []),
+        "baseline_test": slice_f1(baseline.get("test")),
+        "new_test": slice_f1(current.get("test")),
+        "baseline_validation": slice_f1(baseline.get("validation")),
+        "new_validation": slice_f1(current.get("validation")),
+    }
 
 
 def _jsonable(value):
@@ -244,6 +296,9 @@ def main() -> None:
     print("saved", MODEL_PATH)
     print("saved", LABEL_MAPPING_PATH)
     print("saved", METRICS_PATH)
+    if "comparison_with_baseline_5000" in metrics:
+        print("saved", COMPARISON_PATH)
+        print(json.dumps(metrics["comparison_with_baseline_5000"], indent=2))
 
 
 if __name__ == "__main__":

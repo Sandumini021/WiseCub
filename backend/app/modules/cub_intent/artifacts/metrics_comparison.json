@@ -1,0 +1,79 @@
+{
+  "note": "Baseline used 20 template intents on the 5000-row CSV. The new run uses more intents and authored phrases. A higher or lower macro-F1 is not proof of better child understanding. Both runs are synthetic-data evaluation only.",
+  "baseline_dataset_sha256": "378892e0689ed4830440e9e91569ebb89f847d2bd091c7fbf5f8a1087934d366",
+  "new_dataset_sha256": "84b716026e213f36bd13c047787aa968a9b25ab1f2f5d4cd888d6ba09d623fb0",
+  "baseline_intents": 20,
+  "new_intents": 33,
+  "baseline_test": {
+    "n": 503,
+    "macro_f1": 1.0,
+    "by_language": {
+      "en": {
+        "n": 5,
+        "macro_f1": 1.0
+      },
+      "si": {
+        "n": 253,
+        "macro_f1": 1.0
+      },
+      "singlish": {
+        "n": 245,
+        "macro_f1": 1.0
+      }
+    }
+  },
+  "new_test": {
+    "n": 586,
+    "macro_f1": 0.9252055332001131,
+    "by_language": {
+      "en": {
+        "n": 32,
+        "macro_f1": 0.8083333333333333
+      },
+      "si": {
+        "n": 268,
+        "macro_f1": 0.8411033411033411
+      },
+      "singlish": {
+        "n": 286,
+        "macro_f1": 0.8938643108651128
+      }
+    }
+  },
+  "baseline_validation": {
+    "n": 553,
+    "macro_f1": 1.0,
+    "by_language": {
+      "en": {
+        "n": 6,
+        "macro_f1": 1.0
+      },
+      "si": {
+        "n": 281,
+        "macro_f1": 1.0
+      },
+      "singlish": {
+        "n": 266,
+        "macro_f1": 1.0
+      }
+    }
+  },
+  "new_validation": {
+    "n": 602,
+    "macro_f1": 0.8603908596690809,
+    "by_language": {
+      "en": {
+        "n": 33,
+        "macro_f1": 0.6499999999999999
+      },
+      "si": {
+        "n": 276,
+        "macro_f1": 0.750963743717367
+      },
+      "singlish": {
+        "n": 293,
+        "macro_f1": 0.9293602963610983
+      }
+    }
+  }
+}

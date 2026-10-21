@@ -99,6 +99,16 @@ button {
   background: #fff7d6;
 }
 
+.cub-chat-head .cub-face-block,
+.cub-open-btn .cub-face-block {
+  min-width: 0;
+}
+
+.cub-open-btn .cub-face-photo,
+.cub-chat-head .cub-face-photo {
+  background: transparent;
+}
+
 .cub-chat-head p {
   margin: 0;
   font-size: 0.78rem;
@@ -236,6 +246,49 @@ button {
   object-fit: contain;
   border-radius: 50%;
   background: #fff7d6;
+}
+
+.cub-face-block {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: var(--cub-size, 96px);
+}
+
+.cub-face-photo {
+  width: var(--cub-size, 96px);
+  height: var(--cub-size, 96px);
+  object-fit: contain;
+  border-radius: 18px;
+  background: #fff7d6;
+  transition: opacity 0.28s ease;
+}
+
+.cub-face-block.is-speaking .cub-face-photo {
+  animation: cub-speak 0.7s ease-in-out infinite;
+}
+
+.cub-face-bubble {
+  margin: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: 14px;
+  padding: 0.55rem 0.7rem;
+  box-shadow: 0 6px 16px rgba(27, 39, 68, 0.08);
+}
+
+.cub-face-bubble strong {
+  display: block;
+  font-size: 0.82rem;
+}
+
+.cub-face-bubble p {
+  margin: 0.2rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  color: #1b2744;
 }
 
 .cub-face-img.is-speaking {

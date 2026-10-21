@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { CubMascot } from "../../../components/cub-assistant/CubMascot";
-import { childId } from "../../../pages/auth/demoSession";
+import { CubFace } from "../../../components/cub-assistant/CubFace";
+import {
+  defaultDecisionCub,
+  expressionForPattern,
+  patternMessage,
+  patternTitle,
+  tipMessage,
+} from "../../../components/cub-assistant/cubExpressions";
+import { childId, readCubLanguage } from "../../../pages/auth/demoSession";
 import { getMarketBehaviour, type BehaviourReport } from "../../../services/apiClient";
 import { portfolioAllocation } from "../data/allocation";
 import { marketSessionId, recordMarketEvent } from "../data/behaviourEvents";
@@ -27,6 +34,8 @@ export function PortfolioPage() {
   );
   const [book] = useState<DemoBook>(() => readBook());
   const [report, setReport] = useState<BehaviourReport | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const lang = readCubLanguage();
 
   const equity = totalEquity(book, prices);
   const mix = portfolioAllocation(book, prices);
@@ -152,28 +161,28 @@ export function PortfolioPage() {
         </div>
 
         <aside>
-          <section className="panel cub-says">
-            <CubMascot size={72} />
-            <div>
-              <strong>What Cub noticed</strong>
-              <p>{report?.coaching[0]?.text ?? cubNoticed(flags)}</p>
-              <p className="muted">
-                {report?.disclaimer ??
-                  "Rule-based practice notes only. Not a diagnosis. We never rank profit."}
-              </p>
-            </div>
-          </section>
+          <DecisionCubPanel report={report} selected={selected} fallback={cubNoticed(flags)} lang={lang} />
           <section className="panel">
             <h2>Decision patterns (when evidence is enough)</h2>
             {report ? (
-              <ul className="measure-list">
+              <ul className="measure-list decision-pattern-list">
                 {report.indicators
                   .filter((item) => item.level !== "insufficient_evidence")
                   .map((item) => (
                     <li key={item.behaviour}>
-                      <strong>{item.behaviour.split("_").join(" ")}</strong>
-                      {" — "}
-                      {item.level === "worth_reviewing" ? item.explanation : "Not seen in this session’s taps."}
+                      <button
+                        type="button"
+                        className={`decision-pattern-card${selected === item.behaviour ? " is-on" : ""}`}
+                        aria-pressed={selected === item.behaviour}
+                        onClick={() => setSelected(item.behaviour)}
+                      >
+                        <strong>{patternTitle(item.behaviour)}</strong>
+                        <span>
+                          {item.level === "worth_reviewing"
+                            ? item.explanation
+                            : "Not seen in this session’s taps."}
+                        </span>
+                      </button>
                     </li>
                   ))}
               </ul>
@@ -183,9 +192,13 @@ export function PortfolioPage() {
               </p>
             )}
             {report?.indicators.find((item) => item.level === "worth_reviewing") ? (
-              <p>
-                Try: {report.indicators.find((item) => item.level === "worth_reviewing")?.suggested_activity}
-              </p>
+              <button
+                type="button"
+                className="decision-tip-btn"
+                onClick={() => setSelected("learning_tip")}
+              >
+                Learning suggestion
+              </button>
             ) : null}
           </section>
           <section className="panel">
@@ -202,5 +215,52 @@ export function PortfolioPage() {
         </aside>
       </div>
     </div>
+  );
+}
+
+function DecisionCubPanel({
+  report,
+  selected,
+  fallback,
+  lang,
+}: {
+  report: BehaviourReport | null;
+  selected: string | null;
+  fallback: string;
+  lang: "en" | "si";
+}) {
+  const visible = report?.indicators.filter((item) => item.level !== "insufficient_evidence") ?? [];
+  const review = visible.filter((item) => item.level === "worth_reviewing");
+  let expression = defaultDecisionCub({
+    hasReview: review.length > 0,
+    hasVisiblePatterns: visible.length > 0,
+    lang,
+  });
+
+  if (selected === "learning_tip" && review[0]?.suggested_activity) {
+    expression = tipMessage(lang, review[0].suggested_activity);
+  } else if (selected) {
+    const item = visible.find((row) => row.behaviour === selected);
+    if (item) {
+      expression = {
+        expression: expressionForPattern(item.behaviour, item.level),
+        message:
+          item.level === "worth_reviewing"
+            ? report?.coaching.find((line) => line.behaviour === item.behaviour)?.text ??
+              patternMessage(item.behaviour, item.level, lang)
+            : patternMessage(item.behaviour, item.level, lang),
+      };
+    }
+  } else if (!report) {
+    expression = { expression: "listening", message: fallback };
+  }
+
+  return (
+    <section className="panel cub-says">
+      <CubFace expression={expression.expression} message={expression.message} size={120} lang={lang} />
+      <p className="muted cub-says-note">
+        {report?.disclaimer ?? "Rule-based practice notes only. Not a diagnosis. We never rank profit."}
+      </p>
+    </section>
   );
 }

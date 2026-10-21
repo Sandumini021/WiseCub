@@ -11,8 +11,24 @@ const UI = {
   stop: { en: "Stop", si: "නවත්වන්න" },
   mic: { en: "Speak to Cub", si: "Cubට කතා කරන්න" },
   listening: {
-    en: "Listening… speak in English, then pause. Cub will answer.",
-    si: "අහනවා… සිංහලෙන් කතා කරලා ටිකක් නවත්තන්න. Cub උත්තර දෙනවා.",
+    en: "Listening… speak, then tap Mic to stop.",
+    si: "අහනවා… කතා කරලා ආයෙත් Mic එක තියන්න.",
+  },
+  transcribing: {
+    en: "Hearing that…",
+    si: "අහනවා, ටිකක් ඉන්න…",
+  },
+  transcribeFail: {
+    en: "I could not turn that into words. Tap Mic and try again, or type a short question like “open the market”.",
+    si: "වචන බවට හරවන්න බැරි වුණා. ආයෙත් Mic එක තියන්න, නැත්නම් “වෙළෙඳපොළට යන්න” ලියන්න.",
+  },
+  apiDown: {
+    en: "Cub could not reach the hearing server. Type instead, or start the API on port 8000 and tap Mic again.",
+    si: "Cubට හඬ සර්වර් එකට යන්න බැරි වුණා. ලියලා යවන්න, නැත්නම් API එක port 8000 එකේ අරලා ආයෙත් Mic එක තියන්න.",
+  },
+  noSpeechHeard: {
+    en: "I did not catch words. Tap Mic, speak closer, then tap Mic again.",
+    si: "වචන ඇහුණේ නැහැ. Mic එක තියලා ළඟින් කතා කරලා ආයෙත් Mic එක තියන්න.",
   },
   heard: { en: "I heard", si: "ඇහුණේ" },
   stopListen: { en: "Stop listening", si: "අහන එක නවත්වන්න" },

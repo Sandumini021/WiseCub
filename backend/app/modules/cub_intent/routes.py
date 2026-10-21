@@ -43,9 +43,22 @@ DATASET_ROUTE_CORRECTIONS = {
 }
 
 INTENT_APP_ROUTES: dict[str, str | None] = {
+    "ASK_ABOUT_CHART": None,
+    "ASK_ABOUT_COMPANY": None,
     "ASK_ABOUT_NEEDS_WANTS": None,
+    "ASK_ABOUT_PORTFOLIO_MONEY": "/market/portfolio",
+    "ASK_ABOUT_PRICE": None,
     "ASK_ABOUT_SAVING": None,
+    "ASK_BEHAVIOUR_LESSON": "/market/portfolio",
     "ASK_FOR_HELP": None,
+    "CLARIFY_CONFUSION": None,
+    "FOLLOW_UP_EXPLAIN": None,
+    "HOW_TO_BUY": "/market/terminal",
+    "HOW_TO_CANCEL_ORDER": "/market/terminal",
+    "HOW_TO_SELL": "/market/terminal",
+    "HOW_TO_TRADE": None,
+    "MARKET_DROP_WHAT_TO_DO": None,
+    "OPEN_TERMINAL": "/market/terminal",
     "CHANGE_LANGUAGE_ENGLISH": None,
     "CHANGE_LANGUAGE_SINHALA": None,
     "EXPLAIN_BUDGETING": None,

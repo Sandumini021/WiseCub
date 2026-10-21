@@ -56,6 +56,15 @@ export async function apiPut<T>(path: string, body: unknown): Promise<T> {
   );
 }
 
+export async function apiPostForm<T>(path: string, body: FormData): Promise<T> {
+  return parse<T>(
+    await request(path, {
+      method: "POST",
+      body,
+    }),
+  );
+}
+
 export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   return parse<T>(
     await request(path, {

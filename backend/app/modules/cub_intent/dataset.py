@@ -5,7 +5,7 @@ import hashlib
 from collections import defaultdict
 from pathlib import Path
 
-from app.modules.cub_intent.paths import DATA_CSV
+from app.modules.cub_intent.paths import resolve_data_csv
 from app.modules.cub_intent.preprocess import canonical_stem, quality_flags
 
 
@@ -18,7 +18,7 @@ def file_sha256(path: Path) -> str:
 
 
 def load_rows(path: Path | None = None) -> list[dict[str, str]]:
-    csv_path = path or DATA_CSV
+    csv_path = path or resolve_data_csv()
     if not csv_path.exists():
         raise FileNotFoundError(f"Intent dataset not found: {csv_path}")
     with csv_path.open(encoding="utf-8-sig", newline="") as handle:

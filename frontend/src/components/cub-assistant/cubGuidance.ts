@@ -100,8 +100,8 @@ export function greetingFor(path: string, lang: CubLang = "en"): string {
     return pick(lang, PAGE_TIPS["/guardian/dashboard"]);
   }
   return pick(lang, {
-    en: "I’m Cub, a simple guide — not a trained AI model. Ask about this page, or say open the market.",
-    si: "මම Cub. සරල මඟපෙන්වන්නෙක්. ඉගැන්වූ AI මාදිලියක් නෙවෙයි. මේ පිටුව ගැන අහන්න, නැත්නම් වෙළෙඳපොළට යන්න කියන්න.",
+    en: "I’m Cub. I can explain this page or take you to an allowed room. Try “open the market”.",
+    si: "මම Cub. මේ පිටුව පහදන්න හෝ අවසර තියෙන කාමරයකට ගෙනියන්න පුළුවන්. “වෙළෙඳපොළට යන්න” කියන්න.",
   });
 }
 
@@ -229,8 +229,8 @@ export function matchCubIntent(
   if (/(what can you do|help|උදව්|කොහොමද උදව්)/.test(text)) {
     return {
       text: pick(lang, {
-        en: "I can explain this page, remind you it is pretend money, and take you to allowed rooms. I am a simple guide, not a trained AI model.",
-        si: "මේ පිටුව පහදන්න පුළුවන්, අභ්‍යාස මුදල් කියලා මතක් කරන්න පුළුවන්, අවසර තියෙන කාමරවලට ගෙනියන්න පුළුවන්. මම සරල මඟපෙන්වන්නෙක්, ඉගැන්වූ AI එකක් නෙවෙයි.",
+        en: "I can explain this page, remind you it is pretend money, and take you to allowed rooms. Say “open the market” or “I want to go to trading”.",
+        si: "මේ පිටුව පහදන්න පුළුවන්, අභ්‍යාස මුදල් කියලා මතක් කරන්න පුළුවන්, අවසර තියෙන කාමරවලට ගෙනියන්න පුළුවන්. “වෙළෙඳපොළට යන්න” කියන්න.",
       }),
     };
   }
@@ -265,7 +265,16 @@ export function matchCubIntent(
       from,
     );
   }
-  if (/(terminal|buy|sell|trade)/.test(text) && !/real/.test(text)) {
+  if (/(go to trading|want to (go to )?trad|open trading|trading floor|stock trading|කොටස් වෙළෙඳ)/.test(text)) {
+    return go(
+      lang,
+      "/market",
+      { en: "Opening the Market Floor. Virtual money only.", si: "වෙළෙඳපොළ අරිනවා. අභ්‍යාස මුදල් විතරයි." },
+      role,
+      from,
+    );
+  }
+  if (/(terminal|\bbuy\b|\bsell\b)/.test(text) && !/real/.test(text)) {
     return go(
       lang,
       "/market/terminal",
@@ -316,8 +325,8 @@ export function matchCubIntent(
 
   return {
     text: pick(lang, {
-      en: "I didn’t catch that yet. I’m a simple guide, not a trained AI model. Try a yellow button, or say “open the market”.",
-      si: "තේරුණේ නැහැ. මම සරල මඟපෙන්වන්නෙක්, ඉගැන්වූ AI එකක් නෙවෙයි. කහ බොත්තමක් තියන්න, නැත්නම් “වෙළෙඳපොළට යන්න” කියන්න.",
+      en: "I didn’t catch that yet. Try a yellow button, or say “open the market”, “how do I buy a stock”, or “mage portfolio eka pennanna”.",
+      si: "තේරුණේ නැහැ. කහ බොත්තමක් තියන්න, නැත්නම් “වෙළෙඳපොළට යන්න”, “කොටසක් ගන්නේ කොහොමද”, “මගේ portfolio එක පෙන්වන්න” කියන්න.",
     }),
   };
 }

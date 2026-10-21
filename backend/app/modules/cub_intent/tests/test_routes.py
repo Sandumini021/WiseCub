@@ -30,3 +30,9 @@ def test_teacher_quizzes_use_existing_route():
 def test_explain_intents_do_not_navigate():
     result = resolve_intent_route("EXPLAIN_SHARE", "student")
     assert result["suggested_route"] is None
+
+
+def test_buy_how_to_opens_terminal():
+    result = resolve_intent_route("HOW_TO_BUY", "student")
+    assert result["suggested_route"] == "/market/terminal"
+    assert result["navigation_blocked"] is False

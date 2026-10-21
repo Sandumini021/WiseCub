@@ -20,8 +20,24 @@ def test_student_cannot_navigate_to_teacher_classes():
 
 def test_portfolio_maps_to_market_portfolio():
     result = predict_intent("show my portfolio", "student", "/market")
-    if result["intent"] == "OPEN_PORTFOLIO" and result["reliable"]:
+    if result["reliable"] and result["intent"] in {"OPEN_PORTFOLIO", "ASK_ABOUT_PORTFOLIO_MONEY"}:
         assert result["suggested_route"] == "/market/portfolio"
+
+
+def test_singlish_buy_how_to():
+    result = predict_intent("stock ekak buy karanne kohomada?", "student", "/market")
+    assert result["used_model"] is True
+    if result["reliable"]:
+        assert result["intent"] in {"HOW_TO_BUY", "HOW_TO_TRADE", "OPEN_TERMINAL"}
+
+
+def test_clarification_and_chart_seeds():
+    confused = predict_intent("mata therenne naha", "student", "/market")
+    chart = predict_intent("me chart eka explain karanna", "student", "/market")
+    if confused["reliable"]:
+        assert confused["intent"] in {"CLARIFY_CONFUSION", "ASK_FOR_HELP", "FOLLOW_UP_EXPLAIN"}
+    if chart["reliable"]:
+        assert chart["intent"] in {"ASK_ABOUT_CHART", "EXPLAIN_CURRENT_PAGE"}
 
 
 def test_intent_endpoint():

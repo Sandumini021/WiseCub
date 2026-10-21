@@ -7,7 +7,8 @@ import { detectSpokenLang, greetingFor, matchCubIntent, matchPriorityCubIntent, 
 import { fetchCubIntent } from "./cubIntentApi";
 import { replyFromPrediction } from "./cubPredictedReply";
 import { cubUi } from "./cubUi";
-import { browserCanListen, errorNote, listenLang, makeRecognizer } from "./cubListen";
+import { browserCanListen, errorNote, listenOnce } from "./cubListen";
+import { browserCanRecord, openMicStream, startCaptureSession, transcribeWav, type CaptureSession } from "./cubMic";
 import { canSpeakSinhala, speakCub, stopCubSpeech } from "./cubSpeech";
 
 type Line = {
@@ -23,11 +24,15 @@ export function CubChatPanel() {
   const navigate = useNavigate();
   const { child } = useDemoChild();
   const listRef = useRef<HTMLDivElement>(null);
-  const recRef = useRef<ReturnType<typeof makeRecognizer>>(null);
+  const captureRef = useRef<CaptureSession | null>(null);
+  const listenAbortRef = useRef<AbortController | null>(null);
+  const listenPromiseRef = useRef<Promise<{ text: string; error?: string }> | null>(null);
+  const recordTimerRef = useRef<number | null>(null);
   const langRef = useRef<CubLang>("en");
   const pathRef = useRef(location.pathname);
   const roleRef = useRef<CubRole>("student");
   const pendingRef = useRef<string | null>(null);
+  const lastIntentRef = useRef<string | null>(null);
   const [open, setOpen] = useState(false);
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -55,7 +60,8 @@ export function CubChatPanel() {
   useEffect(() => {
     return () => {
       stopCubSpeech();
-      recRef.current?.stop();
+      listenAbortRef.current?.abort();
+      void captureRef.current?.stop();
     };
   }, []);
 
@@ -111,12 +117,23 @@ export function CubChatPanel() {
       });
       return;
     }
+    const ctx = { path: pathRef.current, role: roleRef.current, lastIntent: lastIntentRef.current };
     const predicted = await fetchCubIntent(text, roleRef.current, pathRef.current);
-    const classified = predicted ? replyFromPrediction(predicted, replyLang, { path: pathRef.current, role: roleRef.current }) : null;
+    const classified = predicted ? replyFromPrediction(predicted, replyLang, ctx) : null;
+    const guided = matchCubIntent(text, replyLang, ctx);
     const reply =
-      matchPriorityCubIntent(text, replyLang, { path: pathRef.current, role: roleRef.current }) ??
+      matchPriorityCubIntent(text, replyLang, ctx) ??
       classified ??
-      matchCubIntent(text, replyLang, { path: pathRef.current, role: roleRef.current });
+      (guided.path || guided.speakPage ? guided : null) ??
+      guided;
+    if (
+      reply.intent &&
+      reply.intent !== "LOW_CONFIDENCE" &&
+      reply.intent !== "FOLLOW_UP_EXPLAIN" &&
+      reply.intent !== "CLARIFY_CONFUSION"
+    ) {
+      lastIntentRef.current = reply.intent;
+    }
     if (reply.languageIntent === "CHANGE_LANGUAGE_ENGLISH") {
       replyLang = "en";
       setLang("en");
@@ -147,56 +164,81 @@ export function CubChatPanel() {
     setNote(next === "si" && !canSpeakSinhala() ? cubUi(next, "noSinhalaVoice") : null);
   }
 
-  function startMic() {
+  async function finishRecording() {
+    if (recordTimerRef.current) {
+      window.clearTimeout(recordTimerRef.current);
+      recordTimerRef.current = null;
+    }
+    setListening(false);
+    setNote(cubUi(langRef.current, "transcribing"));
+    listenAbortRef.current?.abort();
+    const capture = captureRef.current;
+    captureRef.current = null;
+    try {
+      const spoken = listenPromiseRef.current ? await listenPromiseRef.current : { text: "" };
+      listenPromiseRef.current = null;
+      if (spoken.text.trim()) {
+        await handleChildText(spoken.text.trim(), true);
+        try {
+          await capture?.stop();
+        } catch {
+          /* mic already closed */
+        }
+        return;
+      }
+      const wav = capture ? await capture.stop() : null;
+      if (!wav || wav.size < 2000) {
+        setNote(cubUi(langRef.current, "noSpeechHeard"));
+        return;
+      }
+      const result = await transcribeWav(wav, langRef.current);
+      if (result.error === "api") {
+        setNote(cubUi(langRef.current, "apiDown"));
+        return;
+      }
+      const text = result.text.trim();
+      if (!text) {
+        setNote(cubUi(langRef.current, "noSpeechHeard"));
+        return;
+      }
+      await handleChildText(text, true);
+    } catch {
+      setNote(cubUi(langRef.current, "transcribeFail"));
+    }
+  }
+
+  async function startMic() {
     if (listening) {
-      recRef.current?.stop();
-      setListening(false);
+      await finishRecording();
       return;
     }
-    if (!browserCanListen()) {
-      setNote(cubUi(lang, "noMic"));
-      return;
-    }
-    const rec = makeRecognizer();
-    if (!rec) {
+    if (!browserCanRecord() && !browserCanListen()) {
       setNote(cubUi(lang, "noMic"));
       return;
     }
     stopCubSpeech();
-    rec.lang = listenLang(lang);
-    rec.continuous = false;
-    rec.interimResults = true;
-    rec.maxAlternatives = 3;
-    rec.onstart = () => {
-      setListening(true);
-      setNote(cubUi(lang, "listening"));
-    };
-    rec.onresult = (event) => {
-      let said = "";
-      for (let i = event.resultIndex; i < event.results.length; i += 1) {
-        const chunk = event.results[i];
-        said = chunk[0]?.transcript ?? said;
-        if (chunk.isFinal !== false) {
-          rec.stop();
-          handleChildText(said.trim(), true);
-          return;
-        }
-      }
-      if (said) {
-        setDraft(said);
-        setNote(`${cubUi(lang, "heard")}: “${said}”`);
-      }
-    };
-    rec.onerror = (event) => {
-      setListening(false);
-      setNote(errorNote(event.error, langRef.current));
-    };
-    rec.onend = () => setListening(false);
     try {
-      rec.start();
-      recRef.current = rec;
-    } catch {
-      setNote(cubUi(lang, "micFail"));
+      setListening(true);
+      setNote(cubUi(langRef.current, "listening"));
+      const abort = new AbortController();
+      listenAbortRef.current = abort;
+      if (browserCanListen()) {
+        listenPromiseRef.current = listenOnce(langRef.current, 7000, abort.signal);
+      } else {
+        listenPromiseRef.current = Promise.resolve({ text: "" });
+      }
+      if (browserCanRecord()) {
+        const stream = await openMicStream();
+        captureRef.current = await startCaptureSession(stream);
+      }
+      recordTimerRef.current = window.setTimeout(() => {
+        void finishRecording();
+      }, 7000);
+    } catch (error) {
+      setListening(false);
+      listenAbortRef.current?.abort();
+      const blocked = error instanceof DOMException && (error.name === "NotAllowedError" || error.name === "PermissionDeniedError");
+      setNote(errorNote(blocked ? "not-allowed" : "audio-capture", lang));
     }
   }
 
