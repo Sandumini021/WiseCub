@@ -443,18 +443,46 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
               </span>
               <button
                 type="button"
-                className="btn-analytics-pill"
-                style={{ background: '#0a4d42', color: '#ffffff', borderColor: '#0a4d42', fontWeight: 700 }}
+                className="btn-analytics-pill btn-journey-pill"
                 onClick={() => setViewMode('JOURNEY')}
               >
-                📈 My Money Journey
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                  <polyline points="16 7 22 7 22 13" />
+                </svg>
+                <span>My Money Journey</span>
               </button>
               <button
                 type="button"
                 className="btn-analytics-pill"
                 onClick={() => setShowAnalyticsModal(true)}
               >
-                📊 Analytics
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#0f766e"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+                <span>Analytics</span>
               </button>
             </div>
           </div>
@@ -681,15 +709,45 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
               className="btn-confirm-decision"
               onClick={() => setShowAnalyticsModal(true)}
             >
-              📊 View Research Analytics & Export Dataset
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                style={{ marginRight: '8px', verticalAlign: '-2px' }}
+              >
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              View Research Analytics & Export Dataset
             </button>
             <button
               type="button"
-              className="btn-secondary-action"
-              style={{ background: '#0f766e', color: '#ffffff', borderColor: '#0f766e', fontWeight: 700 }}
+              className="btn-secondary-action btn-journey-pill"
               onClick={() => setViewMode('JOURNEY')}
             >
-              📈 My Money Journey
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                style={{ marginRight: '8px', verticalAlign: '-2px' }}
+              >
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                <polyline points="16 7 22 7 22 13" />
+              </svg>
+              My Money Journey
             </button>
             <button
               type="button"
