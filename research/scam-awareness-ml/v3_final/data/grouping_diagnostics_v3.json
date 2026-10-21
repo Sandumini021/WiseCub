@@ -1,0 +1,13 @@
+{
+  "sampling_method": "reproducible_length_stratified_sampling_quintiles",
+  "random_seed": 42,
+  "total_unique_spam_candidates": 641,
+  "total_unique_ham_candidates": 4435,
+  "sampled_spam_count": 300,
+  "sampled_ham_count": 300,
+  "similarity_threshold": 0.4,
+  "spam_campaign_groups": 205,
+  "ham_template_groups": 297,
+  "multi_message_spam_clusters": 47,
+  "multi_message_ham_clusters": 2
+}
