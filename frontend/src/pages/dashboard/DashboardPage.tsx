@@ -229,8 +229,8 @@ export function DashboardPage() {
           <p className="dash-kicker">Your AI buddy</p>
           <h2>Ask Cub in English or Sinhala.</h2>
           <p>
-            Tap Ask Cub at the bottom-right on any page after login. Simple explanations and
-            navigation — rule-based, not a trained model. Pretend money only.
+            Tap Ask Cub at the bottom-right on any page after login. Cub can explain pages and
+            open allowed rooms. Pretend money only.
           </p>
           <p className="dash-langs">
             <span>සිංහල</span>

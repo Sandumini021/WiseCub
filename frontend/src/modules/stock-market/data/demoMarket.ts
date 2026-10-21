@@ -1,3 +1,6 @@
+import { childId } from "../../../pages/auth/demoSession";
+import { saveModuleState } from "../../../services/apiClient";
+
 export const PRACTICE_CASH_LKR = 100_000;
 
 export const DEMO_COMPANIES = [
@@ -25,6 +28,11 @@ export const LESSONS = [
       "If the company does well, your slice can be worth more.",
       "If it does badly, your slice can be worth less.",
       "On WiseCub you only practise with virtual rupees.",
+    ],
+    beats: [
+      { t: "One slice", d: "A share is one piece of the cake — not the bakery." },
+      { t: "Price can move", d: "The slice can be worth more or less later." },
+      { t: "Pretend rupees", d: "Nothing here buys real tea or a real bank account." },
     ],
     check: {
       question: "You buy 1 of 100 slices of SUNTEA (Sunrise Tea PLC). What do you own?",
@@ -57,6 +65,11 @@ export const LESSONS = [
       "More possible return usually means more possible loss.",
       "On WiseCub a drop is practice, never a real bill.",
     ],
+    beats: [
+      { t: "Wobble", d: "Up yesterday does not mean up today." },
+      { t: "Bigger jump", d: "Names that fly can also drop hard." },
+      { t: "Practice only", d: "A fall here is a drill, never a real bill." },
+    ],
     check: {
       question: "If your SUNTEA slice falls from Rs 480 to Rs 400, what is true?",
       options: [
@@ -88,6 +101,11 @@ export const LESSONS = [
       "Cub will warn you if one ticker becomes too large a slice of your bag.",
       "We measure spreading — never who made the most pretend profit.",
     ],
+    beats: [
+      { t: "One basket", d: "All cash in SUNTEA means one headline shakes everything." },
+      { t: "Split", d: "Tea + bank + power + harbour — one story cannot knock all." },
+      { t: "Cub warn", d: "Near 40% in one name, Cub taps you on the shoulder." },
+    ],
     check: {
       question: "You spend all your virtual cash on SUNTEA only. What is the habit problem?",
       options: [
@@ -99,7 +117,7 @@ export const LESSONS = [
       yes: "Yes. All eggs in one basket. Spreading across fictional companies is the habit we practise.",
       no: "Look again. One ticker is not automatically safe, and Cub never sends real rupees.",
     },
-    finishHint: "Last lesson: how small pretend gains can grow if you leave them — and how losses can grow too.",
+    finishHint: "Next: how a tiny pretend gain can grow if you leave it — and how a loss can grow too.",
   },
   {
     n: 4 as const,
@@ -119,6 +137,11 @@ export const LESSONS = [
       "Rushing to sell after one green day skips that practice.",
       "Nothing here is a real investment or a guaranteed return.",
     ],
+    beats: [
+      { t: "Leave it", d: "A small gain can grow on top of itself if you wait." },
+      { t: "Both ways", d: "A drop can shrink the pile the same way. Time is not a shield." },
+      { t: "No promise", d: "This is practice math, never a real-wealth guarantee." },
+    ],
     check: {
       question: "You leave a small pretend gain in SUNTEA for years. What can happen?",
       options: [
@@ -130,9 +153,221 @@ export const LESSONS = [
       yes: "Exactly. Compounding can help a pile grow, and a falling price can still cut it. Time is not a shield.",
       no: "Try again. There is no real payout and no frozen price. Gains and losses can both stack over time.",
     },
-    finishHint: "All four lessons are open to review. Keep practising on the terminal with virtual money only.",
+    finishHint: "Next: what actually happens when you tap Buy.",
+  },
+  {
+    n: 5 as const,
+    title: "How a Buy Works",
+    blurb: "Cash leaves. Slices land in your bag. Nothing real is purchased.",
+    duration: "4 min",
+    icon: "buy",
+    caption: "Buy = swap virtual cash for slices at today’s pretend price.",
+    script:
+      "When you buy, practice cash leaves your wallet and slices of that company land in your bag. You pay today’s pretend price, not yesterday’s. Cub will still ask why you chose that name. No real shop, bank, or tea is involved.",
+    story: [
+      "Tap Buy on SUNTEA. Cub checks your thinking. After confirm, cash goes down and SUNTEA shares go up. That is the whole swap.",
+    ],
+    points: [
+      "You pay the price on the screen right now.",
+      "Cash falls. Holdings rise. The bag updates.",
+      "You can still walk away before confirm.",
+    ],
+    beats: [
+      { t: "Cash out", d: "Virtual rupees leave the wallet. Nothing hits a real bank." },
+      { t: "Slices in", d: "Those rupees become shares in My bag — tea, bank, power, and so on." },
+      { t: "Today’s price", d: "Ten shares × today’s number. Yesterday’s price does not apply." },
+    ],
+    check: {
+      question: "You buy 10 SUNTEA slices. What happened?",
+      options: [
+        { id: "a", label: "A real tea shop sent you tea" },
+        { id: "b", label: "Practice cash went down and you now hold 10 slices" },
+        { id: "c", label: "Cub froze the price so you cannot lose" },
+      ],
+      correct: "b",
+      yes: "Yes. Buy is a swap: cash down, slices up, at today’s pretend price.",
+      no: "Look again. No real goods move, and the price can still change after you buy.",
+    },
+    finishHint: "Next: selling — how cash comes back, and when waiting can be wiser.",
+  },
+  {
+    n: 6 as const,
+    title: "Selling Wisely",
+    blurb: "A sell locks today’s price. A red day is not a rule to tap Sell.",
+    duration: "5 min",
+    icon: "sell",
+    caption: "Sell = give the slices back and take today’s cash. That gap vs what you paid is locked in.",
+    script:
+      "Selling gives your slices back to the practice market and returns cash at today’s price. If you paid more than today, the drop is locked in. If you paid less, the gain is locked in. A red day is a signal to pause, not an order to sell. Cub will still ask why.",
+    story: [
+      "You still hold 24 SUNTEA. The number on the chart can bounce. Selling now turns that bounce off — cash is back, the story of those slices is finished.",
+    ],
+    points: [
+      "You get today’s price, not the best price of the week.",
+      "After a sell, that gain or loss is locked. Holding stays ‘paper’.",
+      "Fear of a red candle is not a plan.",
+    ],
+    beats: [
+      { t: "Cash back", d: "Slices leave the bag. Virtual cash returns at today’s print." },
+      { t: "Locked", d: "The gap versus what you paid is now done. You cannot unsell the bounce." },
+      { t: "Pause first", d: "A drop is practice. Ask Cub, compare another name, then decide." },
+    ],
+    check: {
+      question: "SUNTEA fell today. What is the wise first move?",
+      options: [
+        { id: "a", label: "Sell at once so you ‘don’t lose more’" },
+        { id: "b", label: "Pause — a red day is not a rule to sell" },
+        { id: "c", label: "Ask Cub to send real money to cover it" },
+      ],
+      correct: "b",
+      yes: "Right. Pause. Selling locks today’s number. Waiting keeps it as paper, which can still move.",
+      no: "Try again. Panic-selling is a habit we practise not doing. Cub never sends real cash.",
+    },
+    finishHint: "Next: a simple decision path you can tap through before every order.",
+  },
+  {
+    n: 7 as const,
+    title: "How to Decide",
+    blurb: "Pause, compare, answer Cub. Friends and green arrows are not a plan.",
+    duration: "5 min",
+    icon: "think",
+    caption: "A good practice order is slow: look, compare, say why, then tap.",
+    script:
+      "A decision is a small checklist, not a feeling. Look at the company note. Compare at least one other name. Answer Cub’s questions: why this, what supports it, what could go wrong, how much of your bag. Then confirm. Copying a friend or chasing a green arrow skips the lesson.",
+    story: [
+      "Before Place practice order, Cub asks four questions. They are not a test score. They slow you down so the tap is yours, not the crowd’s.",
+    ],
+    points: [
+      "Why this company — in your words.",
+      "What could go wrong — a drop is allowed.",
+      "How big a slice of the bag — Cub warns near 40%.",
+    ],
+    beats: [
+      { t: "Look", d: "Read Why it moved. It is a demo story, not a hot tip." },
+      { t: "Compare", d: "Open another ticker. Two names beat one impulse." },
+      { t: "Answer Cub", d: "Why / support / wrong / risk. Then confirm — or walk away." },
+    ],
+    check: {
+      question: "Best habit before you tap Buy?",
+      options: [
+        { id: "a", label: "Copy whoever bought SUNTEA in the crowd drill" },
+        { id: "b", label: "Pause, compare, and answer Cub’s questions" },
+        { id: "c", label: "Buy extra because the line is green" },
+      ],
+      correct: "b",
+      yes: "That’s the path. Slow taps are the skill. Green is not permission.",
+      no: "Not that one. Crowd cues and green candles are drills, not instructions.",
+    },
+    finishHint: "Next: why ‘everyone bought it’ is a made-up cue, not advice.",
+  },
+  {
+    n: 8 as const,
+    title: "Don’t Copy the Crowd",
+    blurb: "Herd drills are fake. A popular name can still drop.",
+    duration: "4 min",
+    icon: "crowd",
+    caption: "‘8 in 10 demo traders bought SUNTEA’ is a classroom cue — not real people.",
+    script:
+      "The crowd banner is a drill. Those demo traders are not classmates and not a reason to buy. Popular can still fall. Cub wants you to notice the pull, then choose with your own checklist. We never rank who copied fastest.",
+    story: [
+      "If eight pretend traders buy tea, your brain wants to join. That itch is the lesson. You can still open LNKBNK and walk away.",
+    ],
+    points: [
+      "Made-up crowd, on purpose.",
+      "Joining late is not safer.",
+      "Your bag is not a popularity contest.",
+    ],
+    beats: [
+      { t: "Fake crowd", d: "The 8-in-10 line is written for class. Nobody real bought." },
+      { t: "Itch", d: "Wanting to join is normal. Noticing it is the skill." },
+      { t: "Your tap", d: "Compare, or skip. Cub will not score you for missing a ‘hot’ name." },
+    ],
+    check: {
+      question: "Cub says 8 in 10 demo traders bought SUNTEA. What should you do?",
+      options: [
+        { id: "a", label: "Buy SUNTEA so you are not left out" },
+        { id: "b", label: "Treat it as a drill — decide with your own checklist" },
+        { id: "c", label: "It must be a real CSE tip" },
+      ],
+      correct: "b",
+      yes: "Yes. Herd text is a drill. Your checklist still wins.",
+      no: "Look again. That banner is made-up and never a CSE tip.",
+    },
+    finishHint: "Next: paper gains versus locked-in gains after you sell.",
+  },
+  {
+    n: 9 as const,
+    title: "Paper vs Locked",
+    blurb: "A number that is still in the bag can still vanish. A sell locks it.",
+    duration: "4 min",
+    icon: "lock",
+    caption: "Paper = you still hold it. Locked = you already sold.",
+    script:
+      "Paper profit or loss is the gap while you still hold the slices. It can rise or fall tomorrow. Locked means you sold, so that gap is finished and cash is back. Cub shows both so you do not treat a green bag as money in your pocket.",
+    story: [
+      "Your bag says SUNTEA is up. That is paper. Spend it in your head and a drop can snatch it. Sell, and the story of those slices ends at today’s print.",
+    ],
+    points: [
+      "Paper can disappear without a sell.",
+      "Locked will not bounce with the old slices.",
+      "We never rank children by either number.",
+    ],
+    beats: [
+      { t: "Paper", d: "Still in the bag. The chart can take it back." },
+      { t: "Locked", d: "You sold. Cash is in the wallet. That chapter is closed." },
+      { t: "Not pocket money", d: "A green tile is practice maths, not rupees to spend." },
+    ],
+    check: {
+      question: "SUNTEA is up, but you still hold it. Is that profit locked?",
+      options: [
+        { id: "a", label: "Yes — green means the cash is yours" },
+        { id: "b", label: "No — it is paper until you sell, and it can still fall" },
+        { id: "c", label: "Cub moves it to a real bank overnight" },
+      ],
+      correct: "b",
+      yes: "Correct. Paper stays shaky until a sell locks it — still virtual either way.",
+      no: "Try again. Green while you hold is paper, and nothing goes to a real bank.",
+    },
+    finishHint: "Last new habit: what to do when a price drops on purpose in the drill.",
+  },
+  {
+    n: 10 as const,
+    title: "When Prices Drop",
+    blurb: "A drop drill is practice. Pause. Selling locks the fall.",
+    duration: "4 min",
+    icon: "pause",
+    caption: "SUNTEA can fall about 9% in the drill. That is a pause light, not a siren.",
+    script:
+      "Sometimes the terminal shows a sharp pretend drop. That is a classroom drill. First move is pause. Read the note. You may hold, compare, or sell — but selling locks the fall. Cub is checking that you noticed, not that you ‘won’ the bounce.",
+    story: [
+      "A −9% banner looks loud. Loud is the point. Breathe, then choose. Walking away is a valid tap.",
+    ],
+    points: [
+      "Notice the drop before you tap.",
+      "Holding keeps it as paper.",
+      "Selling is allowed — after a pause, not as a reflex.",
+    ],
+    beats: [
+      { t: "Pause", d: "Read the drop banner. No real bill is attached." },
+      { t: "Hold or sell", d: "Hold = still paper. Sell = lock today’s lower cash." },
+      { t: "No rank", d: "Cub scores noticing, never who bought the dip fastest." },
+    ],
+    check: {
+      question: "The drill shows SUNTEA −9%. First wise move?",
+      options: [
+        { id: "a", label: "Sell instantly so the red stops" },
+        { id: "b", label: "Pause, read, then choose hold or sell on purpose" },
+        { id: "c", label: "Buy as much as you can because it must bounce" },
+      ],
+      correct: "b",
+      yes: "That’s it. Pause is the skill. Drops are not orders, and bounces are not promises.",
+      no: "Not a reflex. Instant sells and ‘must bounce’ buys skip the lesson.",
+    },
+    finishHint: "All ten lessons are open to review. Keep practising on the terminal with virtual money only.",
   },
 ];
+
+export const LESSON_COUNT = LESSONS.length;
 
 export const LESSON_ONE_SCRIPT = LESSONS[0].script;
 
@@ -148,6 +383,17 @@ export function readLessonComplete(n: number): boolean {
 
 export function saveLessonComplete(n: number) {
   window.localStorage.setItem(lessonStorageKey(n), "true");
+  const completed = LESSONS.filter((lesson) => readLessonComplete(lesson.n)).map((lesson) => lesson.n);
+  void saveModuleState(childId(), "market_lessons", {
+    completed,
+    last: n,
+    at: new Date().toISOString(),
+  }).catch(() => {
+    /* keep the local unlock if Mongo is down */
+  });
+  void import("./behaviourEvents").then(({ recordMarketEvent }) => {
+    recordMarketEvent({ type: "lesson_completed", reason: `lesson_${n}` });
+  });
 }
 
 export function readLesson1Complete(): boolean {

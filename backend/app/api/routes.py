@@ -14,6 +14,7 @@ router = APIRouter()
 ALLOWED_MODULES = {
     "child",
     "market",
+    "market_lessons",
     "choices",
     "missions",
     "safety",

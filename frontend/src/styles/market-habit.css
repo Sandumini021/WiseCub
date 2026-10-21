@@ -1,0 +1,145 @@
+.habit-launch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  justify-content: center;
+  min-height: 48px;
+  border: 2px solid #f3d48a;
+  background: #fff8e8;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 0.55rem;
+}
+
+.habit-launch.is-hot {
+  background: #f5c400;
+  border-color: #e0b000;
+  animation: habit-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes habit-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+.habit-back {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(15, 23, 42, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.habit-pop {
+  width: min(520px, 100%);
+  max-height: min(92vh, 720px);
+  overflow: auto;
+  background: #fff;
+  border-radius: 28px;
+  padding: 1.1rem 1.15rem 1.2rem;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+}
+
+.habit-kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.habit-pop h2 {
+  margin: 0.2rem 0 0.7rem;
+  font-size: 1.35rem;
+}
+
+.habit-pop .cub-face-block {
+  margin: 0 0 0.85rem;
+}
+
+.habit-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.habit-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  border: 2px solid #e5eaf3;
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 0.65rem 0.7rem;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.habit-card span {
+  font-size: 1.35rem;
+}
+
+.habit-card strong {
+  font-size: 0.88rem;
+}
+
+.habit-card em {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #64748b;
+}
+
+.habit-card.is-flag {
+  border-color: #f5c400;
+}
+
+.habit-card.is-on {
+  background: #1b2744;
+  color: #fff;
+  border-color: #1b2744;
+}
+
+.habit-card.is-on em {
+  color: #ffe27a;
+}
+
+.habit-try {
+  margin: 0.85rem 0 0.7rem;
+  padding: 0.65rem 0.75rem;
+  background: #fff8e8;
+  border-radius: 14px;
+  font-size: 0.92rem;
+}
+
+.habit-try strong {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.habit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.habit-actions .btn-gold,
+.habit-actions .btn-ghost {
+  min-height: 42px;
+}

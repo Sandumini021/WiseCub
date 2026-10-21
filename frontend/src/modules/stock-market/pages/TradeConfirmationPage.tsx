@@ -1,12 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { CubMascot } from "../../../components/cub-assistant/CubMascot";
-import { childId } from "../../../pages/auth/demoSession";
+import { speakCub } from "../../../components/cub-assistant/cubSpeech";
+import { childId, readCubLanguage } from "../../../pages/auth/demoSession";
 import { getMarketBehaviour, type BehaviourReport } from "../../../services/apiClient";
 import { marketSessionId, recordMarketEvent } from "../data/behaviourEvents";
-import { TRADE_REASONS } from "../data/crowdScenarios";
-import { applyTrade, readBook, writeBook } from "../data/demoPortfolio";
-import type { Ticker } from "../data/syntheticPrices";
+import {
+  DECISION_QUESTIONS,
+  REFLECT_OPTIONS,
+  feedbackAfterTrade,
+  pnlWords,
+} from "../data/decisionCoach";
+import { applyTrade, holdingOf, readBook, writeBook } from "../data/demoPortfolio";
+import { buildQuotes, type Ticker } from "../data/syntheticPrices";
 import "../../../styles/market-dashboard.css";
 
 type ConfirmState = {
@@ -27,8 +33,14 @@ export function TradeConfirmationPage() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filled, setFilled] = useState<ConfirmState | null>(null);
-  const [reason, setReason] = useState("");
+  const [why, setWhy] = useState("");
+  const [support, setSupport] = useState("");
+  const [wrong, setWrong] = useState("");
+  const [risk, setRisk] = useState("");
+  const [reflect, setReflect] = useState("");
   const [report, setReport] = useState<BehaviourReport | null>(null);
+  const lang = readCubLanguage();
+  const quotes = useMemo(() => buildQuotes(), []);
   const quoteCost = useMemo(() => {
     if (!draft) {
       return 0;
@@ -93,15 +105,15 @@ export function TradeConfirmationPage() {
       concentrationPct: order.concentration,
       soldFraction,
       scenarioId: order.dropScenario ?? order.crowdScenario,
-      reason: reason || undefined,
+      reason: why || undefined,
       modified: reducedAfterWarning,
       book: result.book,
     });
-    if (reason) {
+    if (why) {
       recordMarketEvent({
         type: "trade_reason_submitted",
         ticker: order.ticker,
-        reason,
+        reason: why,
       });
     }
     if (reducedAfterWarning) {
@@ -127,29 +139,62 @@ export function TradeConfirmationPage() {
   }
 
   if (done && filled) {
+    const bookNow = readBook();
+    const prices = Object.fromEntries(quotes.map((item) => [item.ticker, item.price]));
+    const last = bookNow.trades[0];
+    const holding = holdingOf(bookNow, filled.ticker);
+    const paper = holding ? (prices[filled.ticker] - holding.avgPrice) * holding.shares : 0;
+    const cubLine =
+      report?.coaching[0]?.text ??
+      feedbackAfterTrade(lang, {
+        reducedAfterWarning: Boolean(last?.reducedAfterWarning),
+        concentration: filled.concentration,
+        dropSell: Boolean(filled.dropScenario),
+        why,
+        support,
+        reflect,
+      });
     return (
       <section className="panel">
-        <h1>Practice order filled</h1>
+        <h1>{lang === "si" ? "අභ්‍යාස ඕඩර් එක fill උනා" : "Practice order filled"}</h1>
         <p>
-          {filled.shares} {filled.ticker} shares are yours on paper. Paid about Rs{" "}
-          {(filled.shares * filled.price).toLocaleString()}. Cash left Rs{" "}
-          {filled.cashAfter.toLocaleString()}.
+          {filled.shares} {filled.ticker} · {filled.side === "buy" ? "cost" : "credit"} Rs{" "}
+          {(filled.shares * filled.price).toLocaleString()}.{" "}
+          {lang === "si" ? "ඉතිරි මුදල්" : "Cash left"} Rs {filled.cashAfter.toLocaleString()}.
         </p>
-        {report?.coaching[0] ? (
-          <div className="cub-says panel">
-            <CubMascot size={64} />
-            <p>{report.coaching[0].text}</p>
-          </div>
+        {filled.side === "sell" && last?.realized !== undefined ? (
+          <p>{pnlWords(lang, "realized", last.realized)}</p>
         ) : (
-          <p>Come back later and see whether waiting was calmer than reacting.</p>
+          <p>{pnlWords(lang, "unrealized", paper)}</p>
         )}
+        <div className="cub-says panel">
+          <CubMascot size={64} />
+          <p>{cubLine}</p>
+          <button type="button" className="btn-ghost" onClick={() => speakCub(cubLine, lang)}>
+            {lang === "si" ? "අසන්න" : "Hear Cub"}
+          </button>
+        </div>
+        <fieldset className="decision-q">
+          <legend>{lang === "si" ? "මේ තීරණය ගැන හිතෙන්නේ කොහොමද?" : "How does this decision feel?"}</legend>
+          {REFLECT_OPTIONS.map((item) => (
+            <label key={item.id}>
+              <input
+                type="radio"
+                name="reflect"
+                checked={reflect === item.id}
+                onChange={() => setReflect(item.id)}
+              />{" "}
+              {item[lang]}
+            </label>
+          ))}
+        </fieldset>
         <p className="muted">{report?.disclaimer}</p>
         <div className="lesson-actions">
           <Link className="btn-gold cub-send" to="/market/terminal">
-            Back to terminal
+            {lang === "si" ? "ටර්මිනල් එකට" : "Back to terminal"}
           </Link>
           <Link className="btn-ghost" to="/market/portfolio">
-            My portfolio
+            {lang === "si" ? "Portfolio එක" : "My portfolio"}
           </Link>
         </div>
       </section>
@@ -183,25 +228,45 @@ export function TradeConfirmationPage() {
         Est. {draft.side === "buy" ? "cost" : "credit"} Rs {quoteCost.toLocaleString()}. Cash after Rs{" "}
         {draft.cashAfter.toLocaleString()}.
       </p>
-      <label>
-        Optional: why this trade? (practice only)
-        <select value={reason} onChange={(event) => setReason(event.target.value)}>
-          <option value="">Choose if you like</option>
-          {TRADE_REASONS.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      {(
+        [
+          ["why", why, setWhy],
+          ["support", support, setSupport],
+          ["wrong", wrong, setWrong],
+          ["risk", risk, setRisk],
+        ] as const
+      ).map(([key, value, setter]) => {
+        const group = DECISION_QUESTIONS[key];
+        return (
+          <fieldset key={key} className="decision-q">
+            <legend>{group[lang]}</legend>
+            {group.options.map((item) => (
+              <label key={item.id}>
+                <input type="radio" name={key} checked={value === item.id} onChange={() => setter(item.id)} />{" "}
+                {item[lang]}
+              </label>
+            ))}
+          </fieldset>
+        );
+      })}
       {error ? <p className="live-note is-try">{error}</p> : null}
       <div className="lesson-actions">
         {warn ? (
-          <button className="btn-ghost" type="button" onClick={() => commit(fewer, true)}>
+          <button
+            className="btn-ghost"
+            type="button"
+            disabled={!why || !support || !wrong || !risk}
+            onClick={() => commit(fewer, true)}
+          >
             Buy fewer shares ({fewer})
           </button>
         ) : null}
-        <button className="btn-gold" type="button" onClick={() => commit(draft.shares, false)}>
+        <button
+          className="btn-gold"
+          type="button"
+          disabled={!why || !support || !wrong || !risk}
+          onClick={() => commit(draft.shares, false)}
+        >
           {warn || dropWarn ? "Confirm anyway" : "Confirm practice order"}
         </button>
       </div>

@@ -1,4 +1,5 @@
 from app.modules.stock_market.allocation import portfolio_allocation
+from app.modules.stock_market.store import folder_for
 from app.modules.stock_market.engine import (
     LEVEL_INSUFFICIENT,
     LEVEL_NOT_OBSERVED,
@@ -104,3 +105,10 @@ def test_impulsive_burst():
     ]
     item = next(i for i in analyse_events(events)["indicators"] if i["behaviour"] == "impulsive_investing")
     assert item["level"] == LEVEL_REVIEW
+
+
+def test_logs_split_into_named_folders():
+    assert folder_for("company_viewed") == "Virtual_Stock_Market.market_views"
+    assert folder_for("buy_order_placed") == "Virtual_Stock_Market.market_orders"
+    assert folder_for("habit_card_tapped") == "Virtual_Stock_Market.market_habits"
+    assert folder_for("lesson_completed") == "Virtual_Stock_Market.market_lessons"

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  ApiError,
   getMe,
   logoutAccount,
   patchMe,
@@ -123,29 +124,46 @@ export function writeDemoChild(name: string, extras?: Partial<DemoChild>): DemoC
 }
 
 export async function writeSignupProfile(profile: SignupProfile): Promise<DemoChild> {
-  const account = await registerAccount({
-    name: profile.name.trim() || "Demo child",
-    username: profile.username.trim().toLowerCase(),
-    password: profile.password,
-    role: profile.role,
-    email: profile.email?.trim(),
-    age: profile.age,
-    avatarId: profile.avatarId,
-    language: profile.language ?? "en",
-    classCode: profile.classCode,
-    institution: profile.institution,
-  });
-  const next = applyRemoteSession(account);
-  void saveModuleState(childId(), "child", {
-    name: next.name,
-    username: next.username,
-    role: next.role,
-    email: next.email,
-    age: next.age,
-    avatarId: next.avatarId,
-    language: next.language,
-  }).catch(() => {});
-  return next;
+  try {
+    const account = await registerAccount({
+      name: profile.name.trim() || "Demo child",
+      username: profile.username.trim().toLowerCase(),
+      password: profile.password,
+      role: profile.role,
+      email: profile.email?.trim(),
+      age: profile.age,
+      avatarId: profile.avatarId,
+      language: profile.language ?? "en",
+      classCode: profile.classCode,
+      institution: profile.institution,
+    });
+    const next = applyRemoteSession(account);
+    void saveModuleState(childId(), "child", {
+      name: next.name,
+      username: next.username,
+      role: next.role,
+      email: next.email,
+      age: next.age,
+      avatarId: next.avatarId,
+      language: next.language,
+    }).catch(() => {});
+    return next;
+  } catch (err) {
+    if (err instanceof ApiError && (err.status === 409 || err.status === 400)) {
+      throw err;
+    }
+    return writeDemoChild(profile.name.trim() || "Demo child", {
+      email: profile.email?.trim(),
+      username: profile.username.trim().toLowerCase(),
+      role: profile.role,
+      age: profile.age,
+      gender: profile.gender,
+      avatarId: profile.avatarId,
+      language: profile.language ?? "en",
+      classCode: profile.classCode,
+      institution: profile.institution,
+    });
+  }
 }
 
 export function readCubLanguage(): CubLang {

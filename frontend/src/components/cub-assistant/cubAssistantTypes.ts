@@ -8,4 +8,5 @@ export type CubReply = {
   speakPage?: boolean;
   needsConfirm?: boolean;
   languageIntent?: "CHANGE_LANGUAGE_ENGLISH" | "CHANGE_LANGUAGE_SINHALA" | string;
+  intent?: string;
 };

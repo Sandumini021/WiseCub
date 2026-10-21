@@ -40,15 +40,14 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         extra = [
-            "http://localhost:5173",
-            "http://127.0.0.1:5173",
-            "http://localhost:5174",
-            "http://127.0.0.1:5174",
-            "http://localhost:5175",
-            "http://127.0.0.1:5175",
+            f"http://{host}:{port}"
+            for host in ("localhost", "127.0.0.1")
+            for port in range(5173, 5186)
         ]
         origins = [self.frontend_origin, *extra]
         return list(dict.fromkeys(origins))
+
+    cors_origin_regex: str = r"https?://(localhost|127\.0\.0\.1)(:\d+)?"
 
 
 settings = Settings()

@@ -7,6 +7,7 @@ from app.modules.stock_market.allocation import portfolio_allocation
 from app.modules.stock_market.coaching import coaching_for
 from app.modules.stock_market.engine import analyse_events
 from app.modules.stock_market.events import MarketEvent, MarketEventIn
+from app.modules.stock_market.store import events_collection, insert_event, upsert_habit_snapshot
 from app.modules.stock_market.sectors import COMPANY_SECTORS
 
 router = APIRouter()
@@ -40,8 +41,8 @@ def snapshot_from_book(data: dict[str, Any] | None) -> dict[str, Any] | None:
 async def save_market_event(body: MarketEventIn) -> dict[str, Any]:
     db = require_db()
     event = MarketEvent.from_in(body)
-    await db.market_events.insert_one(event.model_dump())
-    return {"ok": True, "at": event.at, "type": event.type}
+    stored = await insert_event(db, event)
+    return {"ok": True, "at": event.at, "type": event.type, "folder": stored["folder"]}
 
 
 @router.get("/api/market/behaviour/{child_id}")
@@ -53,7 +54,7 @@ async def read_market_behaviour(
     query: dict[str, Any] = {"child_id": child_id}
     if session_id:
         query["session_id"] = session_id
-    events = await db.market_events.find(query, {"_id": 0}).sort("at", 1).to_list(5000)
+    events = await events_collection(db).find(query, {"_id": 0}).sort("at", 1).to_list(5000)
     state = await db.module_state.find_one(
         {"child_id": child_id, "module": "market"},
         {"_id": 0},
@@ -64,4 +65,5 @@ async def read_market_behaviour(
     result["session_id"] = session_id
     result["coaching"] = coaching_for(result["indicators"])
     result["allocation"] = snapshot
+    await upsert_habit_snapshot(db, child_id, session_id, result)
     return result

@@ -25,8 +25,8 @@ const PAGE_TIPS: Record<string, Copy> = {
     si: "භාරකාර මුල් පිටුව. දරුවන් සම්බන්ධ කිරීම පසුව. වෙනත් දරුවෙකුගේ නම අනුමාන කරන්න බැහැ.",
   },
   "/market": {
-    en: "Market Floor. Pretend money only. Four lessons unlock in order. Ask what a share is, or say start lesson 1.",
-    si: "වෙළෙඳපොළ. මේක අභ්‍යාස මුදල් විතරයි. පාඩම් හතරක් පිළිවෙළින්. කොටසක් කියන්නේ මොකක්ද කියලා අහන්න.",
+    en: "Market Floor. Pretend money only. Ten short lessons. Lesson 1 opens the terminal. Ask how to sell, or how to decide.",
+    si: "වෙළෙඳපොළ. මේක අභ්‍යාස මුදල් විතරයි. කෙටි පාඩම් දහයක්. පාඩම 1 terminal එක අරිනවා. විකුණන්නේ කොහොමද කියලා අහන්න.",
   },
   "/market/lessons/1": {
     en: "Lesson 1. A share is one slice of a company. Read the pie, then the quick check.",
@@ -43,6 +43,30 @@ const PAGE_TIPS: Record<string, Copy> = {
   "/market/lessons/4": {
     en: "Lesson 4. Compounding. A small pretend gain can grow if you leave it — and a loss can grow too.",
     si: "පාඩම 4. සංයුක්ත වර්ධනය. කුඩා ලාභයක් තියාගත්තොත් වැඩිවෙන්න පුළුවන්. පාඩුවත් වැඩිවෙන්න පුළුවන්.",
+  },
+  "/market/lessons/5": {
+    en: "Lesson 5. How a buy works. Cash leaves, slices land in the bag, at today’s pretend price.",
+    si: "පාඩම 5. මිලදී ගැනීම. මුදල් අඩු වෙනවා, කොටස් බෑග් එකට එනවා. අද මිලට.",
+  },
+  "/market/lessons/6": {
+    en: "Lesson 6. Selling wisely. A sell locks today’s price. A red day is not a rule to sell.",
+    si: "පාඩම 6. නුවණින් විකුණන එක. විකුණුවොත් අද මිල lock වෙනවා. රතු දවසක් විකුණන්න ඕනේ කියලා නෙවෙයි.",
+  },
+  "/market/lessons/7": {
+    en: "Lesson 7. How to decide. Pause, compare another name, then answer Cub before you tap.",
+    si: "පාඩම 7. තීරණ ගන්නේ කොහොමද. ඉන්න, compare කරන්න, Cub එකට උත්තර දීලා ඊට පස්සේ tap කරන්න.",
+  },
+  "/market/lessons/8": {
+    en: "Lesson 8. Don’t copy the crowd. The 8-in-10 banner is a drill, not real people.",
+    si: "පාඩම 8. රැළට යන්න එපා. 8න් 10ක් කියන එක drill එකක්. ඇත්ත අය නෙවෙයි.",
+  },
+  "/market/lessons/9": {
+    en: "Lesson 9. Paper vs locked. A green bag can still fall until you sell.",
+    si: "පාඩම 9. Paper සහ locked. තියාගෙන ඉන්නකම් කොළ ලාභයක් නැතිවෙන්නත් පුළුවන්.",
+  },
+  "/market/lessons/10": {
+    en: "Lesson 10. When prices drop. Pause first. Selling locks the fall. Holding keeps it paper.",
+    si: "පාඩම 10. මිල බැස්සම. මුලින් ඉන්න. විකුණුවොත් අඩු මිල lock වෙනවා.",
   },
   "/market/terminal": {
     en: "Practice terminal. Prices are made for class. Confirm before you buy or sell. No real money.",
@@ -100,8 +124,8 @@ export function greetingFor(path: string, lang: CubLang = "en"): string {
     return pick(lang, PAGE_TIPS["/guardian/dashboard"]);
   }
   return pick(lang, {
-    en: "I’m Cub, a simple guide — not a trained AI model. Ask about this page, or say open the market.",
-    si: "මම Cub. සරල මඟපෙන්වන්නෙක්. ඉගැන්වූ AI මාදිලියක් නෙවෙයි. මේ පිටුව ගැන අහන්න, නැත්නම් වෙළෙඳපොළට යන්න කියන්න.",
+    en: "I’m Cub. I can explain this page or take you to an allowed room. Try “open the market”.",
+    si: "මම Cub. මේ පිටුව පහදන්න හෝ අවසර තියෙන කාමරයකට ගෙනියන්න පුළුවන්. “වෙළෙඳපොළට යන්න” කියන්න.",
   });
 }
 
@@ -193,11 +217,12 @@ export function matchPriorityCubIntent(
       }),
     };
   }
-  if (/(start lesson 1|lesson 1|පාඩම 1)/.test(text)) {
-    return go(lang, "/market/lessons/1", { en: "Opening Lesson 1.", si: "පාඩම 1 අරඹනවා." }, role, from);
-  }
-  if (/(lesson 2|පාඩම 2)/.test(text)) {
-    return go(lang, "/market/lessons/2", { en: "Opening Lesson 2.", si: "පාඩම 2 අරඹනවා." }, role, from);
+  const numbered = text.match(/(?:start )?lesson\s*(\d+)|පාඩම\s*(\d+)/);
+  if (numbered) {
+    const n = Number(numbered[1] || numbered[2]);
+    if (n >= 1 && n <= 10) {
+      return go(lang, `/market/lessons/${n}`, { en: `Opening Lesson ${n}.`, si: `පාඩම ${n} අරඹනවා.` }, role, from);
+    }
   }
   return null;
 }
@@ -229,8 +254,8 @@ export function matchCubIntent(
   if (/(what can you do|help|උදව්|කොහොමද උදව්)/.test(text)) {
     return {
       text: pick(lang, {
-        en: "I can explain this page, remind you it is pretend money, and take you to allowed rooms. I am a simple guide, not a trained AI model.",
-        si: "මේ පිටුව පහදන්න පුළුවන්, අභ්‍යාස මුදල් කියලා මතක් කරන්න පුළුවන්, අවසර තියෙන කාමරවලට ගෙනියන්න පුළුවන්. මම සරල මඟපෙන්වන්නෙක්, ඉගැන්වූ AI එකක් නෙවෙයි.",
+        en: "I can explain this page, remind you it is pretend money, and take you to allowed rooms. Say “open the market” or “I want to go to trading”.",
+        si: "මේ පිටුව පහදන්න පුළුවන්, අභ්‍යාස මුදල් කියලා මතක් කරන්න පුළුවන්, අවසර තියෙන කාමරවලට ගෙනියන්න පුළුවන්. “වෙළෙඳපොළට යන්න” කියන්න.",
       }),
     };
   }
@@ -250,11 +275,21 @@ export function matchCubIntent(
       }),
     };
   }
-  if (/(start lesson 1|lesson 1|පාඩම 1)/.test(text)) {
-    return go(lang, "/market/lessons/1", { en: "Opening Lesson 1.", si: "පාඩම 1 අරඹනවා." }, role, from);
+  const numbered = text.match(/(?:start )?lesson\s*(\d+)|පාඩම\s*(\d+)/);
+  if (numbered) {
+    const n = Number(numbered[1] || numbered[2]);
+    if (n >= 1 && n <= 10) {
+      return go(lang, `/market/lessons/${n}`, { en: `Opening Lesson ${n}.`, si: `පාඩම ${n} අරඹනවා.` }, role, from);
+    }
   }
-  if (/(lesson 2|පාඩම 2|what is risk)/.test(text)) {
+  if (/(what is risk)/.test(text)) {
     return go(lang, "/market/lessons/2", { en: "Opening Lesson 2.", si: "පාඩම 2 අරඹනවා." }, role, from);
+  }
+  if (/(how to sell|when (do i|to) sell|selling wise|විකුණන්නේ)/.test(text)) {
+    return go(lang, "/market/lessons/6", { en: "Opening the sell lesson.", si: "විකුණුම් පාඩම අරඹනවා." }, role, from);
+  }
+  if (/(how to decide|how do i decide|before i (buy|sell)|pause and compare)/.test(text)) {
+    return go(lang, "/market/lessons/7", { en: "Opening how to decide.", si: "තීරණ පාඩම අරඹනවා." }, role, from);
   }
   if (/(portfolio|holdings|මගේ portfolio)/.test(text)) {
     return go(
@@ -265,7 +300,16 @@ export function matchCubIntent(
       from,
     );
   }
-  if (/(terminal|buy|sell|trade)/.test(text) && !/real/.test(text)) {
+  if (/(go to trading|want to (go to )?trad|open trading|trading floor|stock trading|කොටස් වෙළෙඳ)/.test(text)) {
+    return go(
+      lang,
+      "/market",
+      { en: "Opening the Market Floor. Virtual money only.", si: "වෙළෙඳපොළ අරිනවා. අභ්‍යාස මුදල් විතරයි." },
+      role,
+      from,
+    );
+  }
+  if (/(terminal|\bbuy\b|\bsell\b)/.test(text) && !/real/.test(text)) {
     return go(
       lang,
       "/market/terminal",
@@ -316,8 +360,8 @@ export function matchCubIntent(
 
   return {
     text: pick(lang, {
-      en: "I didn’t catch that yet. I’m a simple guide, not a trained AI model. Try a yellow button, or say “open the market”.",
-      si: "තේරුණේ නැහැ. මම සරල මඟපෙන්වන්නෙක්, ඉගැන්වූ AI එකක් නෙවෙයි. කහ බොත්තමක් තියන්න, නැත්නම් “වෙළෙඳපොළට යන්න” කියන්න.",
+      en: "I didn’t catch that yet. Try a yellow button, or say “open the market”, “how do I buy a stock”, or “mage portfolio eka pennanna”.",
+      si: "තේරුණේ නැහැ. කහ බොත්තමක් තියන්න, නැත්නම් “වෙළෙඳපොළට යන්න”, “කොටසක් ගන්නේ කොහොමද”, “මගේ portfolio එක පෙන්වන්න” කියන්න.",
     }),
   };
 }
