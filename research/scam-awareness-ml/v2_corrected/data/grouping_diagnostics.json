@@ -1,0 +1,57 @@
+{
+  "similarity_threshold": 0.5,
+  "raw_file": "/Users/tharushinethra/Desktop/WiseCub/WiseCub/research/scam-awareness-ml/data/raw/SMSSpamCollection",
+  "target_spam_selected": 300,
+  "target_ham_selected": 300,
+  "spam_campaign_clusters": 230,
+  "ham_template_clusters": 295,
+  "multi_message_spam_clusters": 45,
+  "multi_message_ham_clusters": 5,
+  "representative_spam_campaigns": [
+    {
+      "cluster_id": 33,
+      "member_count": 5,
+      "sample_messages": [
+        "U 447801259231 have a secret admirer who is looking 2 make contact with U-find out who they R*reveal who thinks UR so special-call on 09058094597",
+        "U have a secret admirer who is looking 2 make contact with U-find out who they R*reveal who thinks UR so special-call on 09058094565",
+        "U have a Secret Admirer who is looking 2 make contact with U-find out who they R*reveal who thinks UR so special-call on 09065171142-stopsms-08"
+      ]
+    },
+    {
+      "cluster_id": 17,
+      "member_count": 5,
+      "sample_messages": [
+        "GENT! We are trying to contact you. Last weekends draw shows that you won a \u00a31000 prize GUARANTEED. Call 09064012160. Claim Code K52. Valid 12hrs only. 150ppm",
+        "URGENT! We are trying to contact you. Last weekends draw shows that you have won a \u00a3900 prize GUARANTEED. Call 09061701939. Claim code S89. Valid 12hrs only",
+        "URGENT! We are trying to contact U. Todays draw shows that you have won a \u00a3800 prize GUARANTEED. Call 09050001808 from land line. Claim M95. Valid12hrs only"
+      ]
+    },
+    {
+      "cluster_id": 15,
+      "member_count": 5,
+      "sample_messages": [
+        "Please call our customer service representative on 0800 169 6031 between 10am-9pm as you have WON a guaranteed \u00a31000 cash or \u00a35000 prize!",
+        "Please call our customer service representative on FREEPHONE 0808 145 4742 between 9am-11pm as you have WON a guaranteed \u00a31000 cash or \u00a35000 prize!",
+        "You have WON a guaranteed \u00a31000 cash or a \u00a32000 prize. To claim yr prize call our customer service representative on 08714712394 between 10am-7pm"
+      ]
+    },
+    {
+      "cluster_id": 71,
+      "member_count": 5,
+      "sample_messages": [
+        "PRIVATE! Your 2003 Account Statement for 07815296484 shows 800 un-redeemed S.I.M. points. Call 08718738001 Identifier Code 41782 Expires 18/11/04",
+        "PRIVATE! Your 2003 Account Statement for 07753741225 shows 800 un-redeemed S. I. M. points. Call 08715203677 Identifier Code: 42478 Expires 24/10/04",
+        "PRIVATE! Your 2003 Account Statement for shows 800 un-redeemed S. I. M. points. Call 08715203694 Identifier Code: 40533 Expires 31/10/04"
+      ]
+    },
+    {
+      "cluster_id": 78,
+      "member_count": 4,
+      "sample_messages": [
+        "You have an important customer service announcement. Call FREEPHONE 0800 542 0825 now!",
+        "You have an important customer service announcement from PREMIER.",
+        "You have an important customer service announcement from PREMIER. Call FREEPHONE 0800 542 0578 now!"
+      ]
+    }
+  ]
+}

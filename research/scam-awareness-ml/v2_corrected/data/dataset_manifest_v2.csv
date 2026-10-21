@@ -1,0 +1,716 @@
+template_group_id,row_count,binary_label,scam_category,source_type,difficulty,sample_snippet
+GRP-SYN-FIN-001,10,scam_or_suspicious,financial,synthetic,easy,Crypto Youth Wealth: Turn $15 into $150 overnight! Guaranteed automated Bitcoin 
+GRP-SYN-FIN-002,10,scam_or_suspicious,financial,synthetic,medium,Student Loan Forgiveness Grant: Clear 100% of future college debt for Westbrook 
+GRP-SYN-FIN-003,10,scam_or_suspicious,financial,synthetic,easy,Passive Income System: Earn $75 per day by watching 30-second video advertisemen
+GRP-SYN-FIN-004,10,scam_or_suspicious,financial,synthetic,easy,P2P Cash Doubler: Send $50 on cash wallet and receive $1000 back in 15 minutes! 
+GRP-SYN-FIN-005,10,scam_or_suspicious,financial,synthetic,hard,Exclusive Teen NFT Drop: Mint free digital collectible cards worth $250 on OpenS
+GRP-SYN-FIN-006,10,scam_or_suspicious,financial,synthetic,medium,High-Yield Investment Program: Institutional stock trading bot generated 35% wee
+GRP-SYN-FIN-007,10,scam_or_suspicious,financial,synthetic,easy,Credit Card Cloner Device: Make easy cash with pre-loaded debit cards of $400 ba
+GRP-SYN-FIN-008,10,scam_or_suspicious,financial,synthetic,medium,Forex Youth Academy: Learn secret forex signals from top millionaire trader in W
+GRP-SYN-FIN-009,10,scam_or_suspicious,financial,synthetic,medium,Micro-Investing Bonus: Open a youth investment portfolio and receive $750 matchi
+GRP-SYN-FIN-010,10,scam_or_suspicious,financial,synthetic,hard,Online Mystery Shopper: Get paid $45 to evaluate Subway Snacks stores. We mail y
+GRP-SYN-FIN-011,10,scam_or_suspicious,financial,synthetic,hard,Peer Loan Opportunity: Lend your allowance money to verified student borrowers a
+GRP-SYN-FIN-012,10,scam_or_suspicious,financial,synthetic,medium,Smartphone Mining App: Mine Ethereum on your iPhone without battery drain! Earn 
+GRP-SYN-FIN-013,10,scam_or_suspicious,financial,synthetic,easy,Bank Glitch Exploit: Secret ATM deposit glitch at Subway Snacks lets you withdra
+GRP-SYN-FIN-014,10,scam_or_suspicious,financial,synthetic,hard,College Tuition Fund Crowdfund: Help Riley Wilson pay emergency semester fees fo
+GRP-SYN-FIN-015,10,scam_or_suspicious,financial,synthetic,hard,Youth Startup Angel Investment: Invest $100 in next big tech app and own 5000 eq
+GRP-SYN-IMP-001,10,scam_or_suspicious,impersonation,synthetic,hard,"Hi sweetie, I dropped my phone in the sink and it's broken. Texting from a frien"
+GRP-SYN-IMP-002,10,scam_or_suspicious,impersonation,synthetic,hard,"Hey, it's Leo! I lost my phone on the bus in Kyiv and using this spare number. P"
+GRP-SYN-IMP-003,10,scam_or_suspicious,impersonation,synthetic,medium,Principal's Office: Emergency notification regarding Casey Miller at Hillcrest G
+GRP-SYN-IMP-004,10,scam_or_suspicious,impersonation,synthetic,hard,School Police Liaison: Urgent inquiry regarding an incident involving a student 
+GRP-SYN-IMP-005,10,scam_or_suspicious,impersonation,synthetic,medium,Hey Avery Brown! It's Dr. O'Connor from Civics. I am finalizing regional team en
+GRP-SYN-IMP-006,10,scam_or_suspicious,impersonation,synthetic,hard,Hi! This is Coach Tanaka from tennis. The team bus broke down near Bucharest. Ne
+GRP-SYN-IMP-007,10,scam_or_suspicious,impersonation,synthetic,hard,Your bank fraud prevention team: An unauthorized transaction of $110 was attempt
+GRP-SYN-IMP-008,10,scam_or_suspicious,impersonation,synthetic,hard,"Hello, this is Uncle Marcus's colleague from work. Your guardian was taken unwel"
+GRP-SYN-IMP-009,10,scam_or_suspicious,impersonation,synthetic,medium,Discord Trust & Safety Team: Your profile on server 'Anime Fans Club' was report
+GRP-SYN-IMP-010,10,scam_or_suspicious,impersonation,synthetic,medium,Roblox Support Desk: We detected unauthorized item duplication on your avatar pr
+GRP-SYN-IMP-011,10,scam_or_suspicious,impersonation,synthetic,medium,Steam Community Admin: An automated trade ban has been placed on your inventory 
+GRP-SYN-IMP-012,10,scam_or_suspicious,impersonation,synthetic,easy,Instagram Creator Support: Your profile was selected for blue verified badge for
+GRP-SYN-IMP-013,10,scam_or_suspicious,impersonation,synthetic,hard,Guidance Counselor Office: Follow-up required regarding Chemistry scholarship re
+GRP-SYN-IMP-014,10,scam_or_suspicious,impersonation,synthetic,medium,Hi! It's Elena on a burner phone. My phone got confiscated in 8th period. Can yo
+GRP-SYN-IMP-015,10,scam_or_suspicious,impersonation,synthetic,medium,WiseCub Tutor Bot: System maintenance for student account #50615 requires re-aut
+GRP-SYN-IMP-016,10,scam_or_suspicious,impersonation,synthetic,hard,Apple Support Agent: Lost iPhone detected in offline mode near Shenzhen. If you 
+GRP-SYN-IMP-017,10,scam_or_suspicious,impersonation,synthetic,medium,Google Account Security: Suspicious recovery request submitted for student Gmail
+GRP-SYN-IMP-018,10,scam_or_suspicious,impersonation,synthetic,hard,"Grandma's neighbor: Hello Morgan Davis, your grandmother asked me to reach out. "
+GRP-SYN-IMP-019,10,scam_or_suspicious,impersonation,synthetic,hard,High School Bursar Office: Outstanding tuition balance of $80 for Chemistry cour
+GRP-SYN-IMP-020,10,scam_or_suspicious,impersonation,synthetic,hard,Youth Employment Agency: Your summer job application at Campus Bookstore was app
+GRP-SYN-LEGIT-001,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Homework Reminder from Mr. Sterling: Chapter 12 reading questions for Computer S
+GRP-SYN-LEGIT-002,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,School Library: Your borrowed book 'Great Expectations' is due in 11 days. Renew
+GRP-SYN-LEGIT-003,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Exam Timetable Notice: Midterm schedule for Grade 9 World History is posted outs
+GRP-SYN-LEGIT-004,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Field Trip Permission: Please return signed consent slip for Economics trip on n
+GRP-SYN-LEGIT-005,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,School Nurse Notice: Hearing and vision screening for Grade 10 students at Hillc
+GRP-SYN-LEGIT-006,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Parent-Teacher Conference: Scheduled appointment with Mr. Delgado on next Wednes
+GRP-SYN-LEGIT-007,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Cafeteria Menu: Baked falafel plate available today at lunch line for Crestview 
+GRP-SYN-LEGIT-008,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Lost Property Office: Pair of running shoes found in Room 315. Collect from main
+GRP-SYN-LEGIT-009,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Student Council Meeting: Monthly general meeting this Sunday at 5:30 PM in Room 
+GRP-SYN-LEGIT-010,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,Term Report Cards: Academic reports for Lincoln High students in Civics issued t
+GRP-SYN-LEGIT-011,10,legitimate_or_benign,legitimate_or_benign,synthetic,hard,WiseCub Pocket Money: Your weekly allowance of $60.00 has been deposited to your
+GRP-SYN-LEGIT-012,10,legitimate_or_benign,legitimate_or_benign,synthetic,hard,Bank Transaction Confirmation: You spent $32.50 at 'Corner Deli' using debit car
+GRP-SYN-LEGIT-013,10,legitimate_or_benign,legitimate_or_benign,synthetic,hard,"Savings Goal Achieved: Congratulations, you reached your $175 goal for 'Art Tabl"
+GRP-SYN-LEGIT-014,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,Notice: Your automatic monthly savings transfer of $50.00 to 'Skateboard Deck' f
+GRP-SYN-LEGIT-015,10,legitimate_or_benign,legitimate_or_benign,synthetic,hard,Direct Deposit: Your weekend student wages of $130.00 from 'Student Co-op' were 
+GRP-SYN-LEGIT-016,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,ATM Cash Receipt: Withdrawal of $45.00 completed at Station Newsstand ATM on Sun
+GRP-SYN-LEGIT-017,10,legitimate_or_benign,legitimate_or_benign,synthetic,hard,Budget Milestone: Great job! You stayed under your $20 weekly budget this week. 
+GRP-SYN-LEGIT-018,10,legitimate_or_benign,legitimate_or_benign,synthetic,hard,Split Bill Payment: Noah sent you $45.00 for movie tickets at Station Newsstand 
+GRP-SYN-LEGIT-019,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,Bank Statement Ready: Your monthly e-statement for student account ending in 257
+GRP-SYN-LEGIT-020,10,legitimate_or_benign,legitimate_or_benign,synthetic,hard,Micro-Savings Round-Up: We rounded up your purchase at 'Sports Outlet' and trans
+GRP-SYN-LEGIT-021,10,legitimate_or_benign,legitimate_or_benign,synthetic,hard,Your WiseCub verification code is 769987 for account ending in 1942. This code e
+GRP-SYN-LEGIT-022,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,Your Google account security key was updated successfully on your iMac in Comput
+GRP-SYN-LEGIT-023,10,legitimate_or_benign,legitimate_or_benign,synthetic,hard,Password reset request received for your student email at Hillcrest Grammar. If 
+GRP-SYN-LEGIT-024,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,Two-Factor Authentication: Your gaming profile for Fortnite now requires an auth
+GRP-SYN-LEGIT-025,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,WiseCub Login Alert: Successful sign-in to Lincoln High portal from iMac in Comp
+GRP-SYN-LEGIT-026,10,legitimate_or_benign,legitimate_or_benign,synthetic,hard,Parent Consent Confirmed: Your guardian Grandma Rose approved simulation emails 
+GRP-SYN-LEGIT-027,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,GitHub Student Developer Pack: Academic verification for Glenwood Secondary appr
+GRP-SYN-LEGIT-028,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,School Portal PIN Changed: Your master student login PIN for Beacon Hills High w
+GRP-SYN-LEGIT-029,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,Discord Device Authorization: New login approved for user account from your MacB
+GRP-SYN-LEGIT-030,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,Apple ID Password Confirmation: The password for your student iCloud account on 
+GRP-SYN-LEGIT-031,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Hey! Mom said she will pick you up outside Northstar Academy gates at 4:45 PM to
+GRP-SYN-LEGIT-032,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Are we still meeting at Zara's house on next Wednesday to work on Economics proj
+GRP-SYN-LEGIT-033,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Can you bring my Biology textbook to Oakridge High tomorrow? I forgot it in your
+GRP-SYN-LEGIT-034,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Dad asked if you want mac and cheese for dinner tonight on next Wednesday. Text 
+GRP-SYN-LEGIT-035,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,"Hey Maya, the Algebra teacher said we can submit the assignment as partners. Do "
+GRP-SYN-LEGIT-036,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Uncle David texted to wish you good luck for your volleyball match against North
+GRP-SYN-LEGIT-037,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Don't forget Grandma's birthday dinner on Thursday at 1:30 PM at the Italian res
+GRP-SYN-LEGIT-038,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,I left my blue umbrella on the bus to St. Jude Academy this morning. Did you see
+GRP-SYN-LEGIT-039,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Hey! Did you finish reading chapter 12 of 'Lord of the Flies' yet? The plot twis
+GRP-SYN-LEGIT-040,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Mom said you need to walk the dog for 50 minutes before playing Overwatch with E
+GRP-SYN-LEGIT-041,10,legitimate_or_benign,legitimate_or_benign,synthetic,hard,City Cinema Student Club: Show your student ID card at box office on Friday to g
+GRP-SYN-LEGIT-042,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,Bookstore Loyalty: You earned 300 points on reading club card at 'Sports Outlet'
+GRP-SYN-LEGIT-043,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Library Book Club: Teen book discussion for 'A Wrinkle in Time' meets this Frida
+GRP-SYN-LEGIT-044,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,YMCA Youth Basketball: Drop-in open court session every Tuesday 10:15 AM. $2.5 e
+GRP-SYN-LEGIT-045,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,City Transit Pass: Monthly student bus pass for Shenzhen available at station co
+GRP-SYN-LEGIT-046,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,School Uniform Shop: Second-hand uniform donation sale this Saturday 9 AM - 12 P
+GRP-SYN-LEGIT-047,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Youth Art Workshop: Free watercolor painting workshop for ages 12-16 at City Art
+GRP-SYN-LEGIT-048,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Park Tree Planting: Join local volunteer tree-planting initiative in Bucharest t
+GRP-SYN-LEGIT-049,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Swimming Pool Schedule: Municipal pool public lane swimming in Hanoi open 6:30 A
+GRP-SYN-LEGIT-050,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,"Farmers Market: Fresh apples, strawberries, and homemade lemonade stalls open Sa"
+GRP-SYN-LEGIT-051,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Robotics Club: Team meeting this Tuesday after school in Room 204 to test autono
+GRP-SYN-LEGIT-052,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Debating Society: The motion for debate is 'Four-day school weeks'. Prep session
+GRP-SYN-LEGIT-053,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Chess Tournament: Term championship in Algebra room begins next Tuesday. Round 1
+GRP-SYN-LEGIT-054,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Coding Club: We are building a retro 2D platformer in Python Pygame this term! N
+GRP-SYN-LEGIT-055,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,School Choir: Final vocal warm-up for End of Term Concert takes place tomorrow a
+GRP-SYN-LEGIT-056,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Drama Club Play: Auditions for 'Annie' will be held on next Tuesday afternoon at
+GRP-SYN-LEGIT-057,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,"Astronomy Night: Weather permitting, telescope stargazing night scheduled for Su"
+GRP-SYN-LEGIT-058,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Model United Nations: Delegate country allocations for youth conference in Shenz
+GRP-SYN-LEGIT-059,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Environmental Action Group: Clean-up drive around Lincoln High creek this next M
+GRP-SYN-LEGIT-060,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,"School Newspaper: Submit articles, artwork, and opinion pieces for the issue of "
+GRP-SYN-LEGIT-061,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Track & Field Trials: steeplechase and long jump trials this next Wednesday afte
+GRP-SYN-LEGIT-062,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Soccer Match Result: Well played team! Westbrook Central won 4-2 against Northst
+GRP-SYN-LEGIT-063,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Cross Country Run: Wear running spikes for tomorrow's regional cross-country mee
+GRP-SYN-LEGIT-064,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Tennis Club: Courts 1-4 reserved for Glenwood Secondary practice on Sunday 5:30 
+GRP-SYN-LEGIT-065,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Volleyball Tournament: Inter-house volleyball tournament kicks off this Saturday
+GRP-SYN-LEGIT-066,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Gym Fitness Center: Free student orientation for cardiovascular fitness machines
+GRP-SYN-LEGIT-067,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Cycling Club: Weekend group bike ride along scenic river trail in Kyiv meeting M
+GRP-SYN-LEGIT-068,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Skatepark Session: City Skatepark lights in Shenzhen will be on until 8 PM this 
+GRP-SYN-LEGIT-069,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Table Tennis Ladder: Match challenges for table tennis ladder must be completed 
+GRP-SYN-LEGIT-070,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Badminton Doubles: Sign up for mixed doubles badminton tournament outside PE off
+GRP-SYN-LEGIT-071,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,Minecraft Education Edition: Multiplayer server for history project is online. B
+GRP-SYN-LEGIT-072,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Scratch Game Jam: High school game jam theme announced: 'AI Companions'. Submit 
+GRP-SYN-LEGIT-073,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Khan Academy Challenge: Master 3 skills in Biology this week to earn the Algebra
+GRP-SYN-LEGIT-074,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Duolingo Classroom: Spanish practice streak: 20-day milestone reached! Keep prac
+GRP-SYN-LEGIT-075,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,Roblox Studio Workshop: Intro to Lua scripting for building obstacle courses thi
+GRP-SYN-LEGIT-076,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Typing Speed Test: Grade 7 computer lab average reached 58 words per minute. Pra
+GRP-SYN-LEGIT-077,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Quizlet Flashcards: New vocabulary set for Economics module shared by Mr. Delgad
+GRP-SYN-LEGIT-078,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,GeoGuessr Geography League: School regional geography tournament round 2 live to
+GRP-SYN-LEGIT-079,10,legitimate_or_benign,legitimate_or_benign,synthetic,medium,Wikipedia Student Editing: Learn how to cite reliable academic sources in Biolog
+GRP-SYN-LEGIT-080,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Podcast Production Studio: Reserve the microphone booth for media studies projec
+GRP-SYN-LEGIT-081,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,School Orchestra: Woodwind and brass sectional rehearsal next Wednesday 7:45 PM 
+GRP-SYN-LEGIT-082,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Graphic Design Contest: Submit your digital artwork for Crestview College festiv
+GRP-SYN-LEGIT-083,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Creative Writing Club: Prompt of the week: 'The clock that ran backwards'. Share
+GRP-SYN-LEGIT-084,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Photography Club: Photo walk scheduled for autumn foliage around Kyiv botanic ga
+GRP-SYN-LEGIT-085,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Pottery & Ceramics: Glazed ceramic bowls from last week's pottery class ready fo
+GRP-SYN-LEGIT-086,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Film Appreciation Society: Screening classic sci-fi film 'Interstellar' this Tue
+GRP-SYN-LEGIT-087,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Guitar Ensemble: Acoustic guitar ensemble practice Friday 3:15 PM in Room 315. B
+GRP-SYN-LEGIT-088,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Poetry Slam: Annual student poetry slam open mic night next next Wednesday 6 PM 
+GRP-SYN-LEGIT-089,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Animation Workshop: Learn stop-motion animation using clay and tablets! 2-hour w
+GRP-SYN-LEGIT-090,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,School Brass Band: Marching band uniform fitting for upcoming parade in Kyiv tak
+GRP-SYN-LEGIT-091,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,"Career Exploration Day: Guest speakers from healthcare, software engineering, an"
+GRP-SYN-LEGIT-092,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Youth First Aid Certificate: Complete CPR and basic first aid certification cour
+GRP-SYN-LEGIT-093,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Driver Education: Theory test preparation seminar for sophomores in Lagos starti
+GRP-SYN-LEGIT-094,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Cooking & Nutrition Workshop: Learn to prepare healthy stir-fry bowls on a stude
+GRP-SYN-LEGIT-095,10,legitimate_or_benign,legitimate_or_benign,synthetic,easy,Senior Peer Mentoring: Grade 12 study mentors available in library every afterno
+GRP-SYN-PHISH-001,10,scam_or_suspicious,phishing,synthetic,medium,School IT Support: Your student password for St. Jude Academy will expire in 4 h
+GRP-SYN-PHISH-002,10,scam_or_suspicious,phishing,synthetic,hard,Urgent: An unrecognized login attempt from Manila was detected on your City Poly
+GRP-SYN-PHISH-003,10,scam_or_suspicious,phishing,synthetic,easy,Student Aid Office: You have an unclaimed book voucher of $15.00 for Biology. Cl
+GRP-SYN-PHISH-004,10,scam_or_suspicious,phishing,synthetic,easy,School Administrative Portal: Notice regarding updated grading policy for Comput
+GRP-SYN-PHISH-005,10,scam_or_suspicious,phishing,synthetic,medium,Library System Alert: You have 2 overdue textbooks for Computer Science with out
+GRP-SYN-PHISH-006,10,scam_or_suspicious,phishing,synthetic,easy,Student Council Election: Cast your electronic ballot for Student Representative
+GRP-SYN-PHISH-007,10,scam_or_suspicious,phishing,synthetic,medium,Athletics Department: Roster confirmation required for Geography sports team at 
+GRP-SYN-PHISH-008,10,scam_or_suspicious,phishing,synthetic,medium,Examination Board: The revised mock exam timetable for Geography is now availabl
+GRP-SYN-PHISH-009,10,scam_or_suspicious,phishing,synthetic,hard,Disciplinary Office: Unexplained absence logged for student on next Wednesday. S
+GRP-SYN-PHISH-010,10,scam_or_suspicious,phishing,synthetic,hard,Campus WiFi System: Security certificate upgrade required for Beacon Hills High.
+GRP-SYN-PHISH-011,10,scam_or_suspicious,phishing,synthetic,medium,Cafeteria Services: An overcharge of $95.50 was detected on student lunch card f
+GRP-SYN-PHISH-012,10,scam_or_suspicious,phishing,synthetic,easy,Your Microsoft 365 student license provided by Hillcrest Grammar expires on Thur
+GRP-SYN-PHISH-013,10,scam_or_suspicious,phishing,synthetic,hard,Regional STEM Fair: You were nominated by Mrs. Gable to represent Hillcrest Gram
+GRP-SYN-PHISH-014,10,scam_or_suspicious,phishing,synthetic,medium,Lost & Found Desk: A student wallet containing cash and ID for Westbrook Central
+GRP-SYN-PHISH-015,10,scam_or_suspicious,phishing,synthetic,medium,Digital Student ID: Physical student cards for Crestview College are being phase
+GRP-SYN-PHISH-016,10,scam_or_suspicious,phishing,synthetic,easy,Yearbook Committee: Your portrait for Hillcrest Grammar was uploaded for annual 
+GRP-SYN-PHISH-017,10,scam_or_suspicious,phishing,synthetic,easy,Campus Safety Office: Mandatory emergency drill ledger for Northstar Academy on 
+GRP-SYN-PHISH-018,10,scam_or_suspicious,phishing,synthetic,medium,Student Health Clinic: Vaccination record update requested for City Poly Prep en
+GRP-SYN-PHISH-019,10,scam_or_suspicious,phishing,synthetic,medium,Bus Transportation Hub: Route changes scheduled for Crestview College next next 
+GRP-SYN-PHISH-020,10,scam_or_suspicious,phishing,synthetic,medium,Parent-Teacher Conference: Confirmation slip required for Dr. Al-Mansoor's appoi
+GRP-SYN-PRIZE-001,10,scam_or_suspicious,prize,synthetic,easy,Grand Prize Notification: Congratulations! Your phone number was selected as 1st
+GRP-SYN-PRIZE-002,10,scam_or_suspicious,prize,synthetic,easy,Gaming Rewards Center: You won an exclusive legendary character skin and 30000 b
+GRP-SYN-PRIZE-003,10,scam_or_suspicious,prize,synthetic,easy,Lucky Customer Draw: You have been chosen to test the new Windows 11 PC for free
+GRP-SYN-PRIZE-004,10,scam_or_suspicious,prize,synthetic,medium,Holiday Giveaway: You won a 3-night resort weekend getaway to Warsaw! Call 09061
+GRP-SYN-PRIZE-005,10,scam_or_suspicious,prize,synthetic,easy,Social Media Contest: You were tagged as winner of the $2000 Tech Gift Card for 
+GRP-SYN-PRIZE-006,10,scam_or_suspicious,prize,synthetic,medium,Customer Appreciation Bonus: A mystery cash reward of $250 is waiting in your re
+GRP-SYN-PRIZE-007,10,scam_or_suspicious,prize,synthetic,easy,Weekly Spin-the-Wheel: Your mobile number won $1500 cash! Funds held for 60 hour
+GRP-SYN-PRIZE-008,10,scam_or_suspicious,prize,synthetic,medium,Smartphone Launch Giveaway: You have been selected to receive a brand-new Galaxy
+GRP-SYN-PRIZE-009,10,scam_or_suspicious,prize,synthetic,hard,Student Ambassador Bounty: You were chosen as campus brand ambassador for Hillcr
+GRP-SYN-PRIZE-010,10,scam_or_suspicious,prize,synthetic,easy,VIP Concert Ticket Draw: Two backstage VIP tickets to see Olivia Rodrigo are res
+GRP-SYN-QR-001,10,scam_or_suspicious,qr,synthetic,easy,School Cafeteria Promo: Scan the quick-response code on City Cinema counter flye
+GRP-SYN-QR-002,10,scam_or_suspicious,qr,synthetic,medium,Campus Bike Lock Hub: Rental bike #290 unlocked. To finalize return and avoid fe
+GRP-SYN-QR-003,10,scam_or_suspicious,qr,synthetic,easy,High School swimming Championship: Buy student gate tickets for Lincoln High! Sc
+GRP-SYN-QR-004,10,scam_or_suspicious,qr,synthetic,medium,Lost Student Backpack: Black Nike backpack found near Room 108. Scan code on bul
+GRP-SYN-QR-005,10,scam_or_suspicious,qr,synthetic,hard,Parking Citation: Notice #89824 issued on next Tuesday. Pay municipal parking fi
+GRP-SYN-QR-006,10,scam_or_suspicious,qr,synthetic,medium,Library Book Rental: Borrow 'Animal Farm' on your smartphone! Scan the sticker c
+GRP-SYN-QR-007,10,scam_or_suspicious,qr,synthetic,easy,Robotics Tournament Raffle: Win a new gaming console! Scan table barcode in Room
+GRP-SYN-QR-008,10,scam_or_suspicious,qr,synthetic,hard,School Locker Reassignment: Locker combination update for Room 204 required on n
+GRP-SYN-QR-009,10,scam_or_suspicious,qr,synthetic,easy,Music Festival Youth Pass: Early bird tickets for Coldplay available. Scan promo
+GRP-SYN-QR-010,10,scam_or_suspicious,qr,synthetic,medium,Charity Bake Sale: Support Hillcrest Grammar fundraiser on Thursday! Scan barcod
+GRP-SYN-QR-011,10,scam_or_suspicious,qr,synthetic,medium,Student Gym Pass: Membership validation required for cycling training. Scan entr
+GRP-SYN-QR-012,10,scam_or_suspicious,qr,synthetic,easy,Art Exhibition Voting: Vote for Casey Miller's painting! Scan artwork frame tag 
+GRP-SYN-QR-013,10,scam_or_suspicious,qr,synthetic,hard,Public Transit Bus Stop: Check live arrival times for Route 27 to Northstar Acad
+GRP-SYN-QR-014,10,scam_or_suspicious,qr,synthetic,medium,Science Lab Safety Quiz: Complete mandatory Geography quiz before practical on n
+GRP-SYN-QR-015,10,scam_or_suspicious,qr,synthetic,easy,Youth Career Fair: Register your resume with tech employers visiting Lincoln Hig
+GRP-SYN-QR-016,10,scam_or_suspicious,qr,synthetic,easy,School Merchandise Store: Order school hoodies for Westbrook Central. Scan rack 
+GRP-SYN-QR-017,10,scam_or_suspicious,qr,synthetic,medium,Lost Pet Collar: Found friendly golden retriever near Northstar Academy on Satur
+GRP-SYN-QR-018,10,scam_or_suspicious,qr,synthetic,easy,Math Tutoring Sign-up: Free peer tutoring sessions for Computer Science with Mr.
+GRP-SYN-QR-019,10,scam_or_suspicious,qr,synthetic,medium,Vending Machine Refund: Coin stuck in Campus Bookstore machine? Scan refund code
+GRP-SYN-QR-020,10,scam_or_suspicious,qr,synthetic,hard,Campus Clean-up Volunteer: Log volunteer hours for Biology credit. Scan coordina
+GRP-SYN-SMS-001,10,scam_or_suspicious,sms,synthetic,easy,QuickDrop Logistics: Parcel #492135 held at regional depot due to unpaid dispatc
+GRP-SYN-SMS-002,10,scam_or_suspicious,sms,synthetic,medium,Postal Express: Package #492207 addressed to Lagos has incomplete street digits.
+GRP-SYN-SMS-003,10,scam_or_suspicious,sms,synthetic,hard,Bank Card Security: Debit charge of $6.00 at 'Target School Supplies' detected o
+GRP-SYN-SMS-004,10,scam_or_suspicious,sms,synthetic,easy,Telco Bonus: Your mobile plan renewal for next Monday earned a reward of 75GB fr
+GRP-SYN-SMS-005,10,scam_or_suspicious,sms,synthetic,medium,Highway Toll System: Unpaid toll notice #492535 recorded on Saturday. An overdue
+GRP-SYN-SMS-006,10,scam_or_suspicious,sms,synthetic,medium,Customs Border Dispatch: Package #492663 arriving from Munich detained for unpai
+GRP-SYN-SMS-007,10,scam_or_suspicious,sms,synthetic,hard,Electric Utility Alert: Power service at your registered address is scheduled fo
+GRP-SYN-SMS-008,10,scam_or_suspicious,sms,synthetic,medium,Courier Notification: Driver attempted delivery of order #492842 at 5:30 PM on S
+GRP-SYN-SMS-009,10,scam_or_suspicious,sms,synthetic,hard,Mobile Carrier Alert: 4G network updates in Warsaw require replacement SIM for a
+GRP-SYN-SMS-010,10,scam_or_suspicious,sms,synthetic,easy,Video Stream Notice: Your family streaming subscription for City Poly Prep stude
+GRP-UCI-HAM-CAMP-001,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Go until jurong point, crazy.. Available only in bugis n great world la e buffet"
+GRP-UCI-HAM-CAMP-002,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ok lar... Joking wif u oni...
+GRP-UCI-HAM-CAMP-003,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,U dun say so early hor... U c already then say...
+GRP-UCI-HAM-CAMP-004,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Nah I don't think he goes to usf, he lives around here though"
+GRP-UCI-HAM-CAMP-005,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Even my brother is not like to speak with me. They treat me like aids patent.
+GRP-UCI-HAM-CAMP-006,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,As per your request 'Melle Melle (Oru Minnaminunginte Nurungu Vettam)' has been 
+GRP-UCI-HAM-CAMP-007,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I'm gonna be home soon and i don't want to talk about this stuff anymore tonight
+GRP-UCI-HAM-CAMP-008,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I've been searching for the right words to thank you for this breather. I promis
+GRP-UCI-HAM-CAMP-009,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I HAVE A DATE ON SUNDAY WITH WILL!!
+GRP-UCI-HAM-CAMP-010,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Oh k...i'm watching here:)
+GRP-UCI-HAM-CAMP-011,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Eh u remember how 2 spell his name... Yes i did. He v naughty make until i v wet
+GRP-UCI-HAM-CAMP-012,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Fine if thats the way u feel. Thats the way its gota b
+GRP-UCI-HAM-CAMP-013,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Is that seriously how you spell his name?
+GRP-UCI-HAM-CAMP-014,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I‘m going to try for 2 months ha ha only joking
+GRP-UCI-HAM-CAMP-015,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,So ü pay first lar... Then when is da stock comin...
+GRP-UCI-HAM-CAMP-016,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Aft i finish my lunch then i go str down lor. Ard 3 smth lor. U finish ur lunch 
+GRP-UCI-HAM-CAMP-017,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ffffffffff. Alright no way I can meet up with you sooner?
+GRP-UCI-HAM-CAMP-018,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Just forced myself to eat a slice. I'm really not hungry tho. This sucks. Mark i
+GRP-UCI-HAM-CAMP-019,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Lol your always so convincing.
+GRP-UCI-HAM-CAMP-020,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Did you catch the bus ? Are you frying an egg ? Did you make a tea? Are you eati
+GRP-UCI-HAM-CAMP-021,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"I'm back &amp; we're packing the car now, I'll let you know if there's room"
+GRP-UCI-HAM-CAMP-022,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ahhh. Work. I vaguely remember that! What does it feel like? Lol
+GRP-UCI-HAM-CAMP-023,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Wait that's still not all that clear, were you not sure about me being sarcastic"
+GRP-UCI-HAM-CAMP-024,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Yeah he got in at 2 and was v apologetic. n had fallen out and she was actin lik
+GRP-UCI-HAM-CAMP-025,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,K tell me anything about you.
+GRP-UCI-HAM-CAMP-026,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,For fear of fainting with the of all that housework you just did? Quick have a c
+GRP-UCI-HAM-CAMP-027,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Yup... Ok i go home look at the timings then i msg ü again... Xuhui going to lea
+GRP-UCI-HAM-CAMP-028,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Oops, I'll let you know when my roommate's done"
+GRP-UCI-HAM-CAMP-029,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I see the letter B on my car
+GRP-UCI-HAM-CAMP-030,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Anything lor... U decide...
+GRP-UCI-HAM-CAMP-031,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Hello! How's you and how did saturday go? I was just texting to see if you'd dec
+GRP-UCI-HAM-CAMP-032,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Pls go ahead with watts. I just wanted to be sure. Do have a great weekend. Abio
+GRP-UCI-HAM-CAMP-033,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Did I forget to tell you ? I want you , I need you, I crave you ... But most of "
+GRP-UCI-HAM-CAMP-034,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,WHO ARE YOU SEEING?
+GRP-UCI-HAM-CAMP-035,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Great! I hope you like your man well endowed. I am &lt;#&gt; inches...
+GRP-UCI-HAM-CAMP-036,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,No calls..messages..missed calls
+GRP-UCI-HAM-CAMP-037,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Didn't you get hep b immunisation in nigeria.
+GRP-UCI-HAM-CAMP-038,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Fair enough, anything going on?"
+GRP-UCI-HAM-CAMP-039,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Yeah hopefully, if tyler can't do it I could maybe ask around a bit"
+GRP-UCI-HAM-CAMP-040,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,U don't know how stubborn I am. I didn't even want to go to the hospital. I kept
+GRP-UCI-HAM-CAMP-041,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,What you thinked about me. First time you saw me in class.
+GRP-UCI-HAM-CAMP-042,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"A gram usually runs like &lt;#&gt; , a half eighth is smarter though and gets yo"
+GRP-UCI-HAM-CAMP-043,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,K fyi x has a ride early tomorrow morning but he's crashing at our place tonight
+GRP-UCI-HAM-CAMP-044,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Wow. I never realized that you were so embarassed by your accomodations. I thoug
+GRP-UCI-HAM-CAMP-045,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Do you know what Mallika Sherawat did yesterday? Find out now @ &lt;URL&gt;
+GRP-UCI-HAM-CAMP-046,2,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Sorry, I'll call later in meeting."
+GRP-UCI-HAM-CAMP-047,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Tell where you reached
+GRP-UCI-HAM-CAMP-048,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Yes..gauti and sehwag out of odi series.
+GRP-UCI-HAM-CAMP-049,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Your gonna have to pick up a $1 burger for yourself on your way home. I can't ev
+GRP-UCI-HAM-CAMP-050,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ha ha ha good joke. Girls are situation seekers.
+GRP-UCI-HAM-CAMP-051,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Its a part of checking IQ
+GRP-UCI-HAM-CAMP-052,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Sorry my roommates took forever, it ok if I come by now?"
+GRP-UCI-HAM-CAMP-053,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ok lar i double check wif da hair dresser already he said wun cut v short. He sa
+GRP-UCI-HAM-CAMP-054,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Today is ""song dedicated day.."" Which song will u dedicate for me? Send this to "
+GRP-UCI-HAM-CAMP-055,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I plane to give on this month end.
+GRP-UCI-HAM-CAMP-056,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Wah lucky man... Then can save money... Hee...
+GRP-UCI-HAM-CAMP-057,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Finished class where are you.
+GRP-UCI-HAM-CAMP-058,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,HI BABE IM AT HOME NOW WANNA DO SOMETHING? XX
+GRP-UCI-HAM-CAMP-059,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,K..k:)where are you?how did you performed?
+GRP-UCI-HAM-CAMP-060,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,U can call me now...
+GRP-UCI-HAM-CAMP-061,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I am waiting machan. Call me once you free.
+GRP-UCI-HAM-CAMP-062,2,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Thats cool. i am a gentleman and will treat you with dignity and respect.
+GRP-UCI-HAM-CAMP-063,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I like you peoples very much:) but am very shy pa.
+GRP-UCI-HAM-CAMP-064,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Does not operate after &lt;#&gt; or what
+GRP-UCI-HAM-CAMP-065,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Its not the same here. Still looking for a job. How much do Ta's earn there.
+GRP-UCI-HAM-CAMP-066,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,K. Did you call me just now ah?
+GRP-UCI-HAM-CAMP-067,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ok i am on the way to home hi hi
+GRP-UCI-HAM-CAMP-068,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,You will be in the place of that man
+GRP-UCI-HAM-CAMP-069,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"I call you later, don't have network. If urgnt, sms me."
+GRP-UCI-HAM-CAMP-070,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,For real when u getting on yo? I only need 2 more tickets and one more jacket an
+GRP-UCI-HAM-CAMP-071,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Yes I started to send requests to make it but pain came back so I'm back in bed.
+GRP-UCI-HAM-CAMP-072,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I'm really not up to it still tonight babe
+GRP-UCI-HAM-CAMP-073,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Ela kano.,il download, come wen ur free.."
+GRP-UCI-HAM-CAMP-074,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Yeah do! Don‘t stand to close tho- you‘ll catch something!
+GRP-UCI-HAM-CAMP-075,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Sorry to be a pain. Is it ok if we meet another night? I spent late afternoon in
+GRP-UCI-HAM-CAMP-076,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Smile in Pleasure Smile in Pain Smile when trouble pours like Rain Smile when su
+GRP-UCI-HAM-CAMP-077,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Havent planning to buy later. I check already lido only got 530 show in e aftern
+GRP-UCI-HAM-CAMP-078,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Watching telugu movie..wat abt u?
+GRP-UCI-HAM-CAMP-079,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,i see. When we finish we have loads of loans to pay
+GRP-UCI-HAM-CAMP-080,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Hi. Wk been ok - on hols now! Yes on for a bit of a run. Forgot that i have hair
+GRP-UCI-HAM-CAMP-081,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I see a cup of coffee animation
+GRP-UCI-HAM-CAMP-082,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Please don't text me anymore. I have nothing else to say.
+GRP-UCI-HAM-CAMP-083,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Okay name ur price as long as its legal! Wen can I pick them up? Y u ave x ams x
+GRP-UCI-HAM-CAMP-084,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I'm still looking for a car to buy. And have not gone 4the driving test yet.
+GRP-UCI-HAM-CAMP-085,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,wow. You're right! I didn't mean to do that. I guess once i gave up on boston me
+GRP-UCI-HAM-CAMP-086,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Umma my life and vava umma love you lot dear
+GRP-UCI-HAM-CAMP-087,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Thanks a lot for your wishes on my birthday. Thanks you for making my birthday t
+GRP-UCI-HAM-CAMP-088,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Aight, I'll hit you up when I get some cash"
+GRP-UCI-HAM-CAMP-089,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,How would my ip address test that considering my computer isn't a minecraft serv
+GRP-UCI-HAM-CAMP-090,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I know! Grumpy old people. My mom was like you better not be lying. Then again I
+GRP-UCI-HAM-CAMP-091,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Dont worry. I guess he's busy.
+GRP-UCI-HAM-CAMP-092,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,What is the plural of the noun research?
+GRP-UCI-HAM-CAMP-093,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Going for dinner.msg you after.
+GRP-UCI-HAM-CAMP-094,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I'm ok wif it cos i like 2 try new things. But i scared u dun like mah. Cos u sa
+GRP-UCI-HAM-CAMP-095,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Wa, ur openin sentence very formal... Anyway, i'm fine too, juz tt i'm eatin too"
+GRP-UCI-HAM-CAMP-096,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"As I entered my cabin my PA said, '' Happy B'day Boss !!''. I felt special. She "
+GRP-UCI-HAM-CAMP-097,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Goodo! Yes we must speak friday - egg-potato ratio for tortilla needed!
+GRP-UCI-HAM-CAMP-098,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Hmm...my uncle just informed me that he's paying the school directly. So pls buy
+GRP-UCI-HAM-CAMP-099,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,here is my new address -apples&pairs&all that malarky
+GRP-UCI-HAM-CAMP-100,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I am going to sao mu today. Will be done only at 12
+GRP-UCI-HAM-CAMP-101,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ü predict wat time ü'll finish buying?
+GRP-UCI-HAM-CAMP-102,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Good stuff, will do."
+GRP-UCI-HAM-CAMP-103,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Just so that you know,yetunde hasn't sent money yet. I just sent her a text not "
+GRP-UCI-HAM-CAMP-104,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Are you there in room.
+GRP-UCI-HAM-CAMP-105,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,HEY GIRL. HOW R U? HOPE U R WELL ME AN DEL R BAK! AGAIN LONG TIME NO C! GIVE ME 
+GRP-UCI-HAM-CAMP-106,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,K..k:)how much does it cost?
+GRP-UCI-HAM-CAMP-107,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Dear, will call Tmorrow.pls accomodate."
+GRP-UCI-HAM-CAMP-108,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,First answer my question.
+GRP-UCI-HAM-CAMP-109,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I only haf msn. It's yijue@hotmail.com
+GRP-UCI-HAM-CAMP-110,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,He is there. You call and meet him
+GRP-UCI-HAM-CAMP-111,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,No no. I will check all rooms befor activities
+GRP-UCI-HAM-CAMP-112,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Got c... I lazy to type... I forgot ü in lect... I saw a pouch but like not v ni
+GRP-UCI-HAM-CAMP-113,2,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Cool, text me when you're parked"
+GRP-UCI-HAM-CAMP-114,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Sir, Waiting for your mail."
+GRP-UCI-HAM-CAMP-115,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"A swt thought: ""Nver get tired of doing little things 4 lovable persons.."" Coz.."
+GRP-UCI-HAM-CAMP-116,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I know you are. Can you pls open the back?
+GRP-UCI-HAM-CAMP-117,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Yes see ya not on the dot
+GRP-UCI-HAM-CAMP-118,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Whats the staff name who is taking class for us?
+GRP-UCI-HAM-CAMP-119,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ummma.will call after check in.our life will begin from qatar so pls pray very h
+GRP-UCI-HAM-CAMP-120,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,K..i deleted my contact that why?
+GRP-UCI-HAM-CAMP-121,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Sindu got job in birla soft ..
+GRP-UCI-HAM-CAMP-122,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,The wine is flowing and i'm i have nevering..
+GRP-UCI-HAM-CAMP-123,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Yup i thk cine is better cos no need 2 go down 2 plaza mah.
+GRP-UCI-HAM-CAMP-124,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ok... Ur typical reply...
+GRP-UCI-HAM-CAMP-125,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"You are everywhere dirt, on the floor, the windows, even on my shirt. And someti"
+GRP-UCI-HAM-CAMP-126,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Aaooooright are you at work?
+GRP-UCI-HAM-CAMP-127,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I'm leaving my house now...
+GRP-UCI-HAM-CAMP-128,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Hello, my love. What are you doing? Did you get to that interview today? Are you"
+GRP-UCI-HAM-CAMP-129,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Keep yourself safe for me because I need you and I miss you already and I envy e
+GRP-UCI-HAM-CAMP-130,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,New car and house for my parents.:)i have only new job in hand:)
+GRP-UCI-HAM-CAMP-131,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I'm so in love with you. I'm excited each day i spend with you. You make me so h
+GRP-UCI-HAM-CAMP-132,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I place all ur points on e cultures module already.
+GRP-UCI-HAM-CAMP-133,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Hi frnd, which is best way to avoid missunderstding wit our beloved one's?"
+GRP-UCI-HAM-CAMP-134,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Great escape. I fancy the bridge but needs her lager. See you tomo
+GRP-UCI-HAM-CAMP-135,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Yes :)it completely in out of form:)clark also utter waste.
+GRP-UCI-HAM-CAMP-136,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Sir, I need AXIS BANK account no and bank address."
+GRP-UCI-HAM-CAMP-137,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Hmmm.. Thk sure got time to hop ard... Ya, can go 4 free abt... Muz call u to di"
+GRP-UCI-HAM-CAMP-138,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,What time you coming down later?
+GRP-UCI-HAM-CAMP-139,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Bloody hell, cant believe you forgot my surname Mr . Ill give u a clue, its span"
+GRP-UCI-HAM-CAMP-140,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Well, i'm gonna finish my bath now. Have a good...fine night."
+GRP-UCI-HAM-CAMP-141,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Let me know when you've got the money so carlos can make the call
+GRP-UCI-HAM-CAMP-142,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,U still going to the mall?
+GRP-UCI-HAM-CAMP-143,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Turns out my friends are staying for the whole show and won't be back til ~ &lt;
+GRP-UCI-HAM-CAMP-144,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Text her. If she doesnt reply let me know so i can have her log in
+GRP-UCI-HAM-CAMP-145,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Hi! You just spoke to MANEESHA V. We'd like to know if you were satisfied with t
+GRP-UCI-HAM-CAMP-146,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,You lifted my hopes with the offer of money. I am in need. Especially when the e
+GRP-UCI-HAM-CAMP-147,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Lol no. U can trust me.
+GRP-UCI-HAM-CAMP-148,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"He will, you guys close?"
+GRP-UCI-HAM-CAMP-149,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Going on nothing great.bye
+GRP-UCI-HAM-CAMP-150,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Hello handsome ! Are you finding that job ? Not being lazy ? Working towards get
+GRP-UCI-HAM-CAMP-151,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Haha awesome, be there in a minute"
+GRP-UCI-HAM-CAMP-152,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Have you got Xmas radio times. If not i will get it now
+GRP-UCI-HAM-CAMP-153,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I jus reached home. I go bathe first. But my sis using net tell u when she finis
+GRP-UCI-HAM-CAMP-154,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I'm sorry. I've joined the league of people that dont keep in touch. You mean a 
+GRP-UCI-HAM-CAMP-155,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Hi :)finally i completed the course:)
+GRP-UCI-HAM-CAMP-156,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,It will stop on itself. I however suggest she stays with someone that will be ab
+GRP-UCI-HAM-CAMP-157,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,How are you doing? Hope you've settled in for the new school year. Just wishin y
+GRP-UCI-HAM-CAMP-158,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Gud mrng dear hav a nice day
+GRP-UCI-HAM-CAMP-159,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Did u got that persons story
+GRP-UCI-HAM-CAMP-160,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,is your hamster dead? Hey so tmr i meet you at 1pm orchard mrt?
+GRP-UCI-HAM-CAMP-161,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Hi its Kate how is your evening? I hope i can see you tomorrow for a bit but i h
+GRP-UCI-HAM-CAMP-162,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Found it, ENC &lt;#&gt; , where you at?"
+GRP-UCI-HAM-CAMP-163,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I sent you &lt;#&gt; bucks
+GRP-UCI-HAM-CAMP-164,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Hello darlin ive finished college now so txt me when u finish if u can love Kate
+GRP-UCI-HAM-CAMP-165,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Your account has been refilled successfully by INR &lt;DECIMAL&gt; . Your Kerala
+GRP-UCI-HAM-CAMP-166,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Goodmorning sleeping ga.
+GRP-UCI-HAM-CAMP-167,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,U call me alter at 11 ok.
+GRP-UCI-HAM-CAMP-168,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ü say until like dat i dun buy ericsson oso cannot oredi lar...
+GRP-UCI-HAM-CAMP-169,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Aight yo, dats straight dogg"
+GRP-UCI-HAM-CAMP-170,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,You please give us connection today itself before &lt;DECIMAL&gt; or refund the 
+GRP-UCI-HAM-CAMP-171,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Both :) i shoot big loads so get ready!
+GRP-UCI-HAM-CAMP-172,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"What's up bruv, hope you had a great break. Do have a rewarding semester."
+GRP-UCI-HAM-CAMP-173,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Home so we can always chat
+GRP-UCI-HAM-CAMP-174,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,K:)k:)good:)study well.
+GRP-UCI-HAM-CAMP-175,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Yup... How ü noe leh...
+GRP-UCI-HAM-CAMP-176,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Sounds great! Are you home now?
+GRP-UCI-HAM-CAMP-177,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Finally the match heading towards draw as your prediction.
+GRP-UCI-HAM-CAMP-178,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Tired. I haven't slept well the past few nights.
+GRP-UCI-HAM-CAMP-179,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Easy ah?sen got selected means its good..
+GRP-UCI-HAM-CAMP-180,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I have to take exam with march 3
+GRP-UCI-HAM-CAMP-181,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Yeah you should. I think you can use your gt atm now to register. Not sure but i
+GRP-UCI-HAM-CAMP-182,2,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ok no prob. Take ur time.
+GRP-UCI-HAM-CAMP-183,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,There is os called ubandu which will run without installing in hard disk...you c
+GRP-UCI-HAM-CAMP-184,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,U say leh... Of course nothing happen lar. Not say v romantic jus a bit only lor
+GRP-UCI-HAM-CAMP-185,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Would really appreciate if you call me. Just need someone to talk to.
+GRP-UCI-HAM-CAMP-186,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Hey company elama po mudyadhu.
+GRP-UCI-HAM-CAMP-187,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Life is more strict than teacher... Bcoz Teacher teaches lesson &amp; then condu
+GRP-UCI-HAM-CAMP-188,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Dear good morning now only i am up
+GRP-UCI-HAM-CAMP-189,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Get down in gandhipuram and walk to cross cut road. Right side &lt;#&gt; street 
+GRP-UCI-HAM-CAMP-190,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Dear we are going to our rubber place
+GRP-UCI-HAM-CAMP-191,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Sorry battery died, yeah I'm here"
+GRP-UCI-HAM-CAMP-192,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Yes:)here tv is always available in work place..
+GRP-UCI-HAM-CAMP-193,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I have printed it oh. So &lt;#&gt; come upstairs
+GRP-UCI-HAM-CAMP-194,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Or ill be a little closer like at the bus stop on the same street
+GRP-UCI-HAM-CAMP-195,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Where are you?when wil you reach here?
+GRP-UCI-HAM-CAMP-196,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"New Theory: Argument wins d SITUATION, but loses the PERSON. So dont argue with "
+GRP-UCI-HAM-CAMP-197,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Tomarrow final hearing on my laptop case so i cant.
+GRP-UCI-HAM-CAMP-198,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,PLEASSSSSSSEEEEEE TEL ME V AVENT DONE SPORTSx
+GRP-UCI-HAM-CAMP-199,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Okay. No no, just shining on. That was meant to be signing, but that sounds bett"
+GRP-UCI-HAM-CAMP-200,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Although i told u dat i'm into baig face watches now but i really like e watch u
+GRP-UCI-HAM-CAMP-201,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,U don't remember that old commercial?
+GRP-UCI-HAM-CAMP-202,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Too late. I said i have the website. I didn't i have or dont have the slippers
+GRP-UCI-HAM-CAMP-203,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I asked you to call him now ok
+GRP-UCI-HAM-CAMP-204,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Kallis wont bat in 2nd innings.
+GRP-UCI-HAM-CAMP-205,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,It didnt work again oh. Ok goodnight then. I.ll fix and have it ready by the tim
+GRP-UCI-HAM-CAMP-206,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ranjith cal drpd Deeraj and deepak 5min hold
+GRP-UCI-HAM-CAMP-207,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Wen ur lovable bcums angry wid u, dnt take it seriously.. Coz being angry is d m"
+GRP-UCI-HAM-CAMP-208,2,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,What you doing?how are you?
+GRP-UCI-HAM-CAMP-209,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Ups which is 3days also, and the shipping company that takes 2wks. The other way"
+GRP-UCI-HAM-CAMP-210,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"I'm back, lemme know when you're ready"
+GRP-UCI-HAM-CAMP-211,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Don't necessarily expect it to be done before you get back though because I'm ju
+GRP-UCI-HAM-CAMP-212,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Mmm so yummy babe ... Nice jolt to the suzy
+GRP-UCI-HAM-CAMP-213,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Where are you lover ? I need you ...
+GRP-UCI-HAM-CAMP-214,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I‘m parked next to a MINI!!!! When are you coming in today do you think?
+GRP-UCI-HAM-CAMP-215,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Anyway i'm going shopping on my own now. Cos my sis not done yet. Dun disturb u 
+GRP-UCI-HAM-CAMP-216,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,MY NO. IN LUTON 0125698789 RING ME IF UR AROUND! H*
+GRP-UCI-HAM-CAMP-217,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Why you Dint come with us.
+GRP-UCI-HAM-CAMP-218,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Same. Wana plan a trip sometme then
+GRP-UCI-HAM-CAMP-219,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Not sure yet, still trying to get a hold of him"
+GRP-UCI-HAM-CAMP-220,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,The evo. I just had to download flash. Jealous?
+GRP-UCI-HAM-CAMP-221,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Come to mu, we're sorting out our narcotics situation"
+GRP-UCI-HAM-CAMP-222,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Night has ended for another day, morning has come in a special way. May you smil"
+GRP-UCI-HAM-CAMP-223,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Usf I guess, might as well take 1 car"
+GRP-UCI-HAM-CAMP-224,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,No objection. My bf not coming.
+GRP-UCI-HAM-CAMP-225,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Tell rob to mack his gf in the theater
+GRP-UCI-HAM-CAMP-226,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Awesome, I'll see you in a bit"
+GRP-UCI-HAM-CAMP-227,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Just sent it. So what type of food do you like?
+GRP-UCI-HAM-CAMP-228,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,All done? All handed in? Celebrations in full swing yet?
+GRP-UCI-HAM-CAMP-229,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,You got called a tool?
+GRP-UCI-HAM-CAMP-230,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Wen u miss someone, the person is definitely special for u..... But if the perso"
+GRP-UCI-HAM-CAMP-231,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ok. I asked for money how far
+GRP-UCI-HAM-CAMP-232,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Yeah I think my usual guy's still passed out from last night, if you get ahold o"
+GRP-UCI-HAM-CAMP-233,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"K, I might come by tonight then if my class lets out early"
+GRP-UCI-HAM-CAMP-234,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,hi baby im cruisin with my girl friend what r u up 2? give me a call in and hour
+GRP-UCI-HAM-CAMP-235,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"My life Means a lot to me, Not because I love my life, But because I love the pe"
+GRP-UCI-HAM-CAMP-236,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Dear,shall mail tonite.busy in the street,shall update you tonite.things are loo"
+GRP-UCI-HAM-CAMP-237,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Hey you told your name to gautham ah?
+GRP-UCI-HAM-CAMP-238,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Haf u found him? I feel so stupid da v cam was working.
+GRP-UCI-HAM-CAMP-239,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Oops. 4 got that bit.
+GRP-UCI-HAM-CAMP-240,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Are you this much buzy
+GRP-UCI-HAM-CAMP-241,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I accidentally deleted the message. Resend please.
+GRP-UCI-HAM-CAMP-242,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Unless it's a situation where YOU GO GURL would be more appropriate
+GRP-UCI-HAM-CAMP-243,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Hurt me... Tease me... Make me cry... But in the end of my life when i die plz k
+GRP-UCI-HAM-CAMP-244,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I cant pick the phone right now. Pls send a message
+GRP-UCI-HAM-CAMP-245,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Need a coffee run tomo?Can't believe it's that time of week already
+GRP-UCI-HAM-CAMP-246,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Awesome, I remember the last time we got somebody high for the first time with d"
+GRP-UCI-HAM-CAMP-247,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Shit that is really shocking and scary, cant imagine for a second. Def up for ni"
+GRP-UCI-HAM-CAMP-248,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Oh and by the way you do have more food in your fridge! Want to go out for a mea
+GRP-UCI-HAM-CAMP-249,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,He is a womdarfull actor
+GRP-UCI-HAM-CAMP-250,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Yup... From what i remb... I think should be can book...
+GRP-UCI-HAM-CAMP-251,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Jos ask if u wana meet up?
+GRP-UCI-HAM-CAMP-252,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Lol yes. Our friendship is hanging on a thread cause u won't buy stuff.
+GRP-UCI-HAM-CAMP-253,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Where are the garage keys? They aren't on the bookshelf
+GRP-UCI-HAM-CAMP-254,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Today is ACCEPT DAY..U Accept me as? Brother Sister Lover Dear1 Best1 Clos1 Lvbl
+GRP-UCI-HAM-CAMP-255,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,He says he'll give me a call when his friend's got the money but that he's defin
+GRP-UCI-HAM-CAMP-256,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Hi the way I was with u 2day, is the normal way&this is the real me. UR unique&I"
+GRP-UCI-HAM-CAMP-257,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,You made my day. Do have a great day too.
+GRP-UCI-HAM-CAMP-258,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,K.k:)advance happy pongal.
+GRP-UCI-HAM-CAMP-259,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Hmmm... Guess we can go 4 kb n power yoga... Haha, dunno we can tahan power yoga"
+GRP-UCI-HAM-CAMP-260,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Not really dude, have no friends i'm afraid :("
+GRP-UCI-HAM-CAMP-261,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Coffee cake, i guess..."
+GRP-UCI-HAM-CAMP-262,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Merry Christmas to you too babe, i love ya *kisses*"
+GRP-UCI-HAM-CAMP-263,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Hey... Why dont we just go watch x men and have lunch... Haha
+GRP-UCI-HAM-CAMP-264,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,cud u tell ppl im gona b a bit l8 cos 2 buses hav gon past cos they were full & 
+GRP-UCI-HAM-CAMP-265,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,That would be great. We'll be at the Guild. Could meet on Bristol road or somewh
+GRP-UCI-HAM-CAMP-266,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Hi da:)how is the todays class?
+GRP-UCI-HAM-CAMP-267,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"I'd say that's a good sign but, well, you know my track record at reading women"
+GRP-UCI-HAM-CAMP-268,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I'm reading the text i just sent you. Its meant to be a joke. So read it in that
+GRP-UCI-HAM-CAMP-269,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,K.k:)apo k.good movie.
+GRP-UCI-HAM-CAMP-270,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Maybe i could get book out tomo then return it immediately ..? Or something.
+GRP-UCI-HAM-CAMP-271,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Any chance you might have had with me evaporated as soon as you violated my priv
+GRP-UCI-HAM-CAMP-272,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Ta-Daaaaa! I am home babe, are you still up ?"
+GRP-UCI-HAM-CAMP-273,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Cool. So how come you havent been wined and dined before?
+GRP-UCI-HAM-CAMP-274,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Just sleeping..and surfing
+GRP-UCI-HAM-CAMP-275,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,U calling me right? Call my hand phone...
+GRP-UCI-HAM-CAMP-276,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ok that's great thanx a lot.
+GRP-UCI-HAM-CAMP-277,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,I take it the post has come then! You must have 1000s of texts now! Happy readin
+GRP-UCI-HAM-CAMP-278,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Where u been hiding stranger?
+GRP-UCI-HAM-CAMP-279,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Am not interested to do like that.
+GRP-UCI-HAM-CAMP-280,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,My sister cleared two round in birla soft yesterday.
+GRP-UCI-HAM-CAMP-281,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Gudnite....tc...practice going on
+GRP-UCI-HAM-CAMP-282,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Dis is yijue. I jus saw ur mail. In case huiming havent sent u my num. Dis is my
+GRP-UCI-HAM-CAMP-283,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,One small prestige problem now.
+GRP-UCI-HAM-CAMP-284,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Just checking in on you. Really do miss seeing Jeremiah. Do have a great month
+GRP-UCI-HAM-CAMP-285,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Nah can't help you there, I've never had an iphone"
+GRP-UCI-HAM-CAMP-286,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,If you're not in my car in an hour and a half I'm going apeshit
+GRP-UCI-HAM-CAMP-287,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"TODAY is Sorry day.! If ever i was angry with you, if ever i misbehaved or hurt "
+GRP-UCI-HAM-CAMP-288,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Yo you guys ever figure out how much we need for alcohol? Jay and I are trying t
+GRP-UCI-HAM-CAMP-289,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,&lt;#&gt; ISH MINUTES WAS 5 MINUTES AGO. WTF.
+GRP-UCI-HAM-CAMP-290,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Thank You for calling.Forgot to say Happy Onam to you Sirji.I am fine here and r
+GRP-UCI-HAM-CAMP-291,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"I'm an actor. When i work, i work in the evening and sleep late. Since i'm unemp"
+GRP-UCI-HAM-CAMP-292,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,"Hello! Just got here, st andrews-boy its a long way! Its cold. I will keep you p"
+GRP-UCI-HAM-CAMP-293,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Ha ha cool cool chikku chikku:-):-DB-)
+GRP-UCI-HAM-CAMP-294,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Check audrey's status right now
+GRP-UCI-HAM-CAMP-295,1,legitimate_or_benign,legitimate_or_benign,public_dataset,easy,Busy here. Trying to finish for new year. I am looking forward to finally meetin
+GRP-UCI-SPAM-CAMP-001,1,scam_or_suspicious,prize,public_dataset,medium,Free entry in 2 a wkly comp to win FA Cup final tkts 21st May 2005. Text FA to 8
+GRP-UCI-SPAM-CAMP-002,1,scam_or_suspicious,sms,public_dataset,medium,FreeMsg Hey there darling it's been 3 week's now and no word back! I'd like some
+GRP-UCI-SPAM-CAMP-003,1,scam_or_suspicious,prize,public_dataset,medium,WINNER!! As a valued network customer you have been selected to receivea £900 pr
+GRP-UCI-SPAM-CAMP-004,2,scam_or_suspicious,sms,public_dataset,medium,Had your mobile 11 months or more? U R entitled to Update to the latest colour m
+GRP-UCI-SPAM-CAMP-005,1,scam_or_suspicious,prize,public_dataset,medium,"SIX chances to win CASH! From 100 to 20,000 pounds txt> CSH11 and send to 87575."
+GRP-UCI-SPAM-CAMP-006,1,scam_or_suspicious,prize,public_dataset,medium,"URGENT! You have won a 1 week FREE membership in our £100,000 Prize Jackpot! Txt"
+GRP-UCI-SPAM-CAMP-007,1,scam_or_suspicious,sms,public_dataset,medium,"XXXMobileMovieClub: To use your credit, click the WAP link in the next txt messa"
+GRP-UCI-SPAM-CAMP-008,1,scam_or_suspicious,sms,public_dataset,medium,England v Macedonia - dont miss the goals/team news. Txt ur national team to 870
+GRP-UCI-SPAM-CAMP-009,1,scam_or_suspicious,sms,public_dataset,medium,Thanks for your subscription to Ringtone UK your mobile will be charged £5/month
+GRP-UCI-SPAM-CAMP-010,1,scam_or_suspicious,sms,public_dataset,medium,07732584351 - Rodger Burns - MSG = We tried to call you re your reply to our sms
+GRP-UCI-SPAM-CAMP-011,1,scam_or_suspicious,sms,public_dataset,medium,SMS. ac Sptv: The New Jersey Devils and the Detroit Red Wings play Ice Hockey. C
+GRP-UCI-SPAM-CAMP-012,1,scam_or_suspicious,sms,public_dataset,medium,Congrats! 1 year special cinema pass for 2 is yours. call 09061209465 now! C Sup
+GRP-UCI-SPAM-CAMP-013,1,scam_or_suspicious,prize,public_dataset,medium,"As a valued customer, I am pleased to advise you that following recent review of"
+GRP-UCI-SPAM-CAMP-014,1,scam_or_suspicious,prize,public_dataset,medium,"Urgent UR awarded a complimentary trip to EuroDisinc Trav, Aco&Entry41 Or £1000."
+GRP-UCI-SPAM-CAMP-015,1,scam_or_suspicious,sms,public_dataset,medium,"Did you hear about the new ""Divorce Barbie""? It comes with all of Ken's stuff!"
+GRP-UCI-SPAM-CAMP-016,5,scam_or_suspicious,prize,public_dataset,medium,Please call our customer service representative on 0800 169 6031 between 10am-9p
+GRP-UCI-SPAM-CAMP-017,1,scam_or_suspicious,sms,public_dataset,medium,"Your free ringtone is waiting to be collected. Simply text the password ""MIX"" to"
+GRP-UCI-SPAM-CAMP-018,5,scam_or_suspicious,prize,public_dataset,medium,GENT! We are trying to contact you. Last weekends draw shows that you won a £100
+GRP-UCI-SPAM-CAMP-019,3,scam_or_suspicious,prize,public_dataset,medium,You are a winner U have been specially selected 2 receive £1000 cash or a 4* hol
+GRP-UCI-SPAM-CAMP-020,1,scam_or_suspicious,prize,public_dataset,medium,PRIVATE! Your 2004 Account Statement for 07742676969 shows 786 unredeemed Bonus 
+GRP-UCI-SPAM-CAMP-021,1,scam_or_suspicious,prize,public_dataset,medium,URGENT! Your Mobile No. was awarded £2000 Bonus Caller Prize on 5/9/03 This is o
+GRP-UCI-SPAM-CAMP-022,2,scam_or_suspicious,prize,public_dataset,medium,Todays Voda numbers ending 7548 are selected to receive a $350 award. If you hav
+GRP-UCI-SPAM-CAMP-023,2,scam_or_suspicious,sms,public_dataset,medium,Sunshine Quiz Wkly Q! Win a top Sony DVD player if u know which country the Alga
+GRP-UCI-SPAM-CAMP-024,2,scam_or_suspicious,sms,public_dataset,medium,Want 2 get laid tonight? Want real Dogging locations sent direct 2 ur mob? Join 
+GRP-UCI-SPAM-CAMP-025,1,scam_or_suspicious,sms,public_dataset,medium,You'll not rcv any more msgs from the chat svc. For FREE Hardcore services text 
+GRP-UCI-SPAM-CAMP-026,1,scam_or_suspicious,sms,public_dataset,medium,"FreeMsg Why haven't you replied to my text? I'm Randy, sexy, female and live loc"
+GRP-UCI-SPAM-CAMP-027,1,scam_or_suspicious,sms,public_dataset,medium,Customer service annoncement. You have a New Years delivery waiting for you. Ple
+GRP-UCI-SPAM-CAMP-028,1,scam_or_suspicious,sms,public_dataset,medium,-PLS STOP bootydelious (32/F) is inviting you to be her friend. Reply YES-434 or
+GRP-UCI-SPAM-CAMP-029,1,scam_or_suspicious,sms,public_dataset,medium,BangBabes Ur order is on the way. U SHOULD receive a Service Msg 2 download UR c
+GRP-UCI-SPAM-CAMP-030,1,scam_or_suspicious,sms,public_dataset,medium,Are you unique enough? Find out from 30th August. www.areyouunique.co.uk
+GRP-UCI-SPAM-CAMP-031,2,scam_or_suspicious,sms,public_dataset,medium,"500 New Mobiles from 2004, MUST GO! Txt: NOKIA to No: 89545 & collect yours toda"
+GRP-UCI-SPAM-CAMP-032,1,scam_or_suspicious,sms,public_dataset,medium,Will u meet ur dream partner soon? Is ur career off 2 a flyng start? 2 find out 
+GRP-UCI-SPAM-CAMP-033,1,scam_or_suspicious,sms,public_dataset,medium,Text & meet someone sexy today. U can find a date or even flirt its up to U. Joi
+GRP-UCI-SPAM-CAMP-034,5,scam_or_suspicious,sms,public_dataset,medium,U 447801259231 have a secret admirer who is looking 2 make contact with U-find o
+GRP-UCI-SPAM-CAMP-035,3,scam_or_suspicious,prize,public_dataset,medium,Congratulations ur awarded either £500 of CD gift vouchers & Free entry 2 our £1
+GRP-UCI-SPAM-CAMP-036,1,scam_or_suspicious,sms,public_dataset,medium,We tried to contact you re your reply to our offer of a Video Handset? 750 anyti
+GRP-UCI-SPAM-CAMP-037,1,scam_or_suspicious,sms,public_dataset,medium,Hey I am really horny want to chat or see me naked text hot to 69698 text charge
+GRP-UCI-SPAM-CAMP-038,1,scam_or_suspicious,sms,public_dataset,medium,Ur ringtone service has changed! 25 Free credits! Go to club4mobiles.com to choo
+GRP-UCI-SPAM-CAMP-039,1,scam_or_suspicious,sms,public_dataset,medium,Ringtone Club: Get the UK singles chart on your mobile each week and choose any 
+GRP-UCI-SPAM-CAMP-040,1,scam_or_suspicious,prize,public_dataset,medium,HMV BONUS SPECIAL 500 pounds of genuine HMV vouchers to be won. Just answer 4 ea
+GRP-UCI-SPAM-CAMP-041,1,scam_or_suspicious,prize,public_dataset,medium,T-Mobile customer you may now claim your FREE CAMERA PHONE upgrade & a pay & go 
+GRP-UCI-SPAM-CAMP-042,1,scam_or_suspicious,sms,public_dataset,medium,"SMS. ac Blind Date 4U!: Rodds1 is 21/m from Aberdeen, United Kingdom. Check Him "
+GRP-UCI-SPAM-CAMP-043,1,scam_or_suspicious,sms,public_dataset,medium,"TheMob> Check out our newest selection of content, Games, Tones, Gossip, babes a"
+GRP-UCI-SPAM-CAMP-044,1,scam_or_suspicious,sms,public_dataset,medium,"Think ur smart ? Win £200 this week in our weekly quiz, text PLAY to 85222 now!T"
+GRP-UCI-SPAM-CAMP-045,1,scam_or_suspicious,sms,public_dataset,medium,Call Germany for only 1 pence per minute! Call from a fixed line via access numb
+GRP-UCI-SPAM-CAMP-046,1,scam_or_suspicious,sms,public_dataset,medium,Valentines Day Special! Win over £1000 in our quiz and take your partner on the 
+GRP-UCI-SPAM-CAMP-047,1,scam_or_suspicious,sms,public_dataset,medium,Fancy a shag? I do.Interested? sextextuk.com txt XXUK SUZY to 69876. Txts cost 1
+GRP-UCI-SPAM-CAMP-048,4,scam_or_suspicious,prize,public_dataset,medium,Ur cash-balance is currently 500 pounds - to maximize ur cash-in now send GO to 
+GRP-UCI-SPAM-CAMP-049,1,scam_or_suspicious,sms,public_dataset,medium,"Update_Now - Xmas Offer! Latest Motorola, SonyEricsson & Nokia & FREE Bluetooth!"
+GRP-UCI-SPAM-CAMP-050,1,scam_or_suspicious,sms,public_dataset,medium,Here is your discount code RP176781. To stop further messages reply stop. www.re
+GRP-UCI-SPAM-CAMP-051,1,scam_or_suspicious,sms,public_dataset,medium,"Thanks for your Ringtone Order, Reference T91. You will be charged GBP 4 per wee"
+GRP-UCI-SPAM-CAMP-052,1,scam_or_suspicious,sms,public_dataset,medium,"Double mins and txts 4 6months FREE Bluetooth on Orange. Available on Sony, Noki"
+GRP-UCI-SPAM-CAMP-053,2,scam_or_suspicious,sms,public_dataset,medium,4mths half price Orange line rental & latest camera phones 4 FREE. Had your phon
+GRP-UCI-SPAM-CAMP-054,1,scam_or_suspicious,sms,public_dataset,medium,FREE RINGTONE text FIRST to 87131 for a poly or text GET to 87131 for a true ton
+GRP-UCI-SPAM-CAMP-055,1,scam_or_suspicious,sms,public_dataset,medium,100 dating service cal;l 09064012103 box334sk38ch
+GRP-UCI-SPAM-CAMP-056,1,scam_or_suspicious,prize,public_dataset,medium,FREE entry into our £250 weekly competition just text the word WIN to 80086 NOW.
+GRP-UCI-SPAM-CAMP-057,1,scam_or_suspicious,sms,public_dataset,medium,Send a logo 2 ur lover - 2 names joined by a heart. Txt LOVE NAME1 NAME2 MOBNO e
+GRP-UCI-SPAM-CAMP-058,2,scam_or_suspicious,sms,public_dataset,medium,Someone has contacted our dating service and entered your phone because they fan
+GRP-UCI-SPAM-CAMP-059,3,scam_or_suspicious,prize,public_dataset,medium,URGENT! Your Mobile number has been awarded with a £2000 prize GUARANTEED. Call 
+GRP-UCI-SPAM-CAMP-060,1,scam_or_suspicious,sms,public_dataset,medium,Congrats! Nokia 3650 video camera phone is your Call 09066382422 Calls cost 150p
+GRP-UCI-SPAM-CAMP-061,1,scam_or_suspicious,sms,public_dataset,medium,"Loan for any purpose £500 - £75,000. Homeowners + Tenants welcome. Have you been"
+GRP-UCI-SPAM-CAMP-062,2,scam_or_suspicious,prize,public_dataset,medium,"UpgrdCentre Orange customer, you may now claim your FREE CAMERA PHONE upgrade fo"
+GRP-UCI-SPAM-CAMP-063,1,scam_or_suspicious,prize,public_dataset,medium,okmail: Dear Dave this is your final notice to collect your 4* Tenerife Holiday 
+GRP-UCI-SPAM-CAMP-064,1,scam_or_suspicious,sms,public_dataset,medium,FREE MESSAGE Activate your 500 FREE Text Messages by replying to this message wi
+GRP-UCI-SPAM-CAMP-065,1,scam_or_suspicious,prize,public_dataset,medium,+123 Congratulations - in this week's competition draw u have won the £1450 priz
+GRP-UCI-SPAM-CAMP-066,2,scam_or_suspicious,prize,public_dataset,medium,"You are guaranteed the latest Nokia Phone, a 40GB iPod MP3 player or a £500 priz"
+GRP-UCI-SPAM-CAMP-067,1,scam_or_suspicious,sms,public_dataset,medium,Boltblue tones for 150p Reply POLY# or MONO# eg POLY3 1. Cha Cha Slide 2. Yeah 3
+GRP-UCI-SPAM-CAMP-068,1,scam_or_suspicious,sms,public_dataset,medium,Your credits have been topped up for http://www.bubbletext.com Your renewal Pin 
+GRP-UCI-SPAM-CAMP-069,2,scam_or_suspicious,prize,public_dataset,medium,"URGENT!: Your Mobile No. was awarded a £2,000 Bonus Caller Prize on 02/09/03! Th"
+GRP-UCI-SPAM-CAMP-070,4,scam_or_suspicious,prize,public_dataset,medium,Today's Offer! Claim ur £150 worth of discount vouchers! Text YES to 85023 now! 
+GRP-UCI-SPAM-CAMP-071,1,scam_or_suspicious,sms,public_dataset,medium,You will recieve your tone within the next 24hrs. For Terms and conditions pleas
+GRP-UCI-SPAM-CAMP-072,5,scam_or_suspicious,sms,public_dataset,medium,PRIVATE! Your 2003 Account Statement for shows 800 un-redeemed S. I. M. points. 
+GRP-UCI-SPAM-CAMP-073,1,scam_or_suspicious,sms,public_dataset,medium,from www.Applausestore.com MonthlySubscription@50p/msg max6/month T&CsC web age1
+GRP-UCI-SPAM-CAMP-074,2,scam_or_suspicious,prize,public_dataset,medium,"You have won ?1,000 cash or a ?2,000 prize! To claim, call09050000327. T&C: RSTM"
+GRP-UCI-SPAM-CAMP-075,1,scam_or_suspicious,prize,public_dataset,medium,"our mobile number has won £5000, to claim calls us back or ring the claims hot l"
+GRP-UCI-SPAM-CAMP-076,1,scam_or_suspicious,sms,public_dataset,medium,We tried to contact you re your reply to our offer of 750 mins 150 textand a new
+GRP-UCI-SPAM-CAMP-077,1,scam_or_suspicious,sms,public_dataset,medium,For ur chance to win a £250 wkly shopping spree TXT: SHOP to 80878. T's&C's www.
+GRP-UCI-SPAM-CAMP-078,1,scam_or_suspicious,sms,public_dataset,medium,You have been specially selected to receive a 2000 pound award! Call 08712402050
+GRP-UCI-SPAM-CAMP-079,4,scam_or_suspicious,sms,public_dataset,medium,You have an important customer service announcement from PREMIER. Call FREEPHONE
+GRP-UCI-SPAM-CAMP-080,1,scam_or_suspicious,sms,public_dataset,medium,XCLUSIVE@CLUBSAISAI 2MOROW 28/5 SOIREE SPECIALE ZOUK WITH NICHOLS FROM PARIS.FRE
+GRP-UCI-SPAM-CAMP-081,1,scam_or_suspicious,sms,public_dataset,medium,22 days to kick off! For Euro2004 U will be kept up to date with the latest news
+GRP-UCI-SPAM-CAMP-082,2,scam_or_suspicious,sms,public_dataset,medium,New TEXTBUDDY Chat 2 horny guys in ur area 4 just 25p Free 2 receive Search post
+GRP-UCI-SPAM-CAMP-083,2,scam_or_suspicious,prize,public_dataset,medium,todays vodafone numbers ending with 0089(my last four digits) are selected to re
+GRP-UCI-SPAM-CAMP-084,2,scam_or_suspicious,prize,public_dataset,medium,"Dear Voucher Holder, 2 claim this weeks offer, at your PC go to http://www.e-tlp"
+GRP-UCI-SPAM-CAMP-085,1,scam_or_suspicious,sms,public_dataset,medium,88800 and 89034 are premium phone services call 08718711108
+GRP-UCI-SPAM-CAMP-086,1,scam_or_suspicious,sms,public_dataset,medium,"SMS. ac sun0819 posts HELLO:""You seem cool, wanted to say hi. HI!!!"" Stop? Send "
+GRP-UCI-SPAM-CAMP-087,1,scam_or_suspicious,sms,public_dataset,medium,Get ur 1st RINGTONE FREE NOW! Reply to this msg with TONE. Gr8 TOP 20 tones to y
+GRP-UCI-SPAM-CAMP-088,1,scam_or_suspicious,sms,public_dataset,medium,Hi I'm sue. I am 20 years old and work as a lapdancer. I love sex. Text me live 
+GRP-UCI-SPAM-CAMP-089,2,scam_or_suspicious,sms,public_dataset,medium,<Forwarded from 448712404000>Please CALL 08712404000 immediately as there is an 
+GRP-UCI-SPAM-CAMP-090,1,scam_or_suspicious,sms,public_dataset,medium,"To review and KEEP the fantastic Nokia N-Gage game deck with Club Nokia, go 2 ww"
+GRP-UCI-SPAM-CAMP-091,1,scam_or_suspicious,sms,public_dataset,medium,08714712388 between 10am-7pm Cost 10p
+GRP-UCI-SPAM-CAMP-092,2,scam_or_suspicious,prize,public_dataset,medium,RGENT! This is the 2nd attempt to contact U!U have WON £1250 CALL 09071512433 b4
+GRP-UCI-SPAM-CAMP-093,1,scam_or_suspicious,sms,public_dataset,medium,Email AlertFrom: Jeri StewartSize: 2KBSubject: Low-cost prescripiton drvgsTo lis
+GRP-UCI-SPAM-CAMP-094,2,scam_or_suspicious,sms,public_dataset,medium,Hi. Customer Loyalty Offer:The NEW Nokia6650 Mobile from ONLY £10 at TXTAUCTION!
+GRP-UCI-SPAM-CAMP-095,1,scam_or_suspicious,sms,public_dataset,medium,U are subscribed to the best Mobile Content Service in the UK for £3 per 10 days
+GRP-UCI-SPAM-CAMP-096,1,scam_or_suspicious,sms,public_dataset,medium,"Do you realize that in about 40 years, we'll have thousands of old ladies runnin"
+GRP-UCI-SPAM-CAMP-097,1,scam_or_suspicious,sms,public_dataset,medium,"Romantic Paris. 2 nights, 2 flights from £79 Book now 4 next year. Call 08704439"
+GRP-UCI-SPAM-CAMP-098,1,scam_or_suspicious,prize,public_dataset,medium,Urgent Ur £500 guaranteed award is still unclaimed! Call 09066368327 NOW closing
+GRP-UCI-SPAM-CAMP-099,1,scam_or_suspicious,prize,public_dataset,medium,UR awarded a City Break and could WIN a £200 Summer Shopping spree every WK. Txt
+GRP-UCI-SPAM-CAMP-100,1,scam_or_suspicious,sms,public_dataset,medium,Ever thought about living a good life with a perfect partner? Just txt back NAME
+GRP-UCI-SPAM-CAMP-101,1,scam_or_suspicious,sms,public_dataset,medium,"5 Free Top Polyphonic Tones call 087018728737, National Rate. Get a toppoly tune"
+GRP-UCI-SPAM-CAMP-102,3,scam_or_suspicious,sms,public_dataset,medium,FREE for 1st week! No1 Nokia tone 4 ur mobile every week just txt NOKIA to 8077 
+GRP-UCI-SPAM-CAMP-103,2,scam_or_suspicious,prize,public_dataset,medium,You have won a guaranteed £200 award or even £1000 cashto claim UR award call fr
+GRP-UCI-SPAM-CAMP-104,1,scam_or_suspicious,sms,public_dataset,medium,"U were outbid by simonwatson5120 on the Shinco DVD Plyr. 2 bid again, visit sms."
+GRP-UCI-SPAM-CAMP-105,2,scam_or_suspicious,sms,public_dataset,medium,"SMSSERVICES. for yourinclusive text credits, pls goto www.comuk.net login= 3qxj9"
+GRP-UCI-SPAM-CAMP-106,1,scam_or_suspicious,sms,public_dataset,medium,25p 4 alfie Moon's Children in need song on ur mob. Tell ur m8s. Txt Tone charit
+GRP-UCI-SPAM-CAMP-107,1,scam_or_suspicious,sms,public_dataset,medium,U have a secret admirer. REVEAL who thinks U R So special. Call 09065174042. To 
+GRP-UCI-SPAM-CAMP-108,2,scam_or_suspicious,sms,public_dataset,medium,Do you want 750 anytime any network mins 150 text and a NEW video phone for only
+GRP-UCI-SPAM-CAMP-109,1,scam_or_suspicious,sms,public_dataset,medium,We tried to contact you re our offer of New Video Phone 750 anytime any network 
+GRP-UCI-SPAM-CAMP-110,1,scam_or_suspicious,prize,public_dataset,medium,Urgent! call 09066350750 from your landline. Your complimentary 4* Ibiza Holiday
+GRP-UCI-SPAM-CAMP-111,1,scam_or_suspicious,sms,public_dataset,medium,Talk sexy!! Make new friends or fall in love in the worlds most discreet text da
+GRP-UCI-SPAM-CAMP-112,1,scam_or_suspicious,prize,public_dataset,medium,Congratulations ur awarded either a yrs supply of CDs from Virgin Records or a M
+GRP-UCI-SPAM-CAMP-113,1,scam_or_suspicious,sms,public_dataset,medium,Hello. We need some posh birds and chaps to user trial prods for champneys. Can 
+GRP-UCI-SPAM-CAMP-114,1,scam_or_suspicious,sms,public_dataset,medium,What do U want for Xmas? How about 100 free text messages & a new video phone wi
+GRP-UCI-SPAM-CAMP-115,1,scam_or_suspicious,prize,public_dataset,medium,"Shop till u Drop, IS IT YOU, either 10K, 5K, £500 Cash or £100 Travel voucher, C"
+GRP-UCI-SPAM-CAMP-116,1,scam_or_suspicious,sms,public_dataset,medium,Reminder: You have not downloaded the content you have already paid for. Goto ht
+GRP-UCI-SPAM-CAMP-117,1,scam_or_suspicious,sms,public_dataset,medium,"all the lastest from Stereophonics, Marley, Dizzee Racal, Libertines and The Str"
+GRP-UCI-SPAM-CAMP-118,1,scam_or_suspicious,sms,public_dataset,medium,"January Male Sale! Hot Gay chat now cheaper, call 08709222922. National rate fro"
+GRP-UCI-SPAM-CAMP-119,1,scam_or_suspicious,prize,public_dataset,medium,money!!! you r a lucky winner ! 2 claim your prize text money 2 88600 over £1mil
+GRP-UCI-SPAM-CAMP-120,1,scam_or_suspicious,prize,public_dataset,medium,"Dear Matthew please call 09063440451 from a landline, your complimentary 4*Lux T"
+GRP-UCI-SPAM-CAMP-121,1,scam_or_suspicious,prize,public_dataset,medium,Urgent! call 09061749602 from Landline. Your complimentary 4* Tenerife Holiday o
+GRP-UCI-SPAM-CAMP-122,1,scam_or_suspicious,sms,public_dataset,medium,How about getting in touch with folks waiting for company? Just txt back your NA
+GRP-UCI-SPAM-CAMP-123,1,scam_or_suspicious,sms,public_dataset,medium,Filthy stories and GIRLS waiting for your
+GRP-UCI-SPAM-CAMP-124,1,scam_or_suspicious,sms,public_dataset,medium,Congrats! 2 mobile 3G Videophones R yours. call 09063458130 now! videochat wid y
+GRP-UCI-SPAM-CAMP-125,1,scam_or_suspicious,sms,public_dataset,medium,Panasonic & BluetoothHdset FREE. Nokia FREE. Motorola FREE & DoubleMins & Double
+GRP-UCI-SPAM-CAMP-126,2,scam_or_suspicious,sms,public_dataset,medium,Guess what! Somebody you know secretly fancies you! Wanna find out who it is? Gi
+GRP-UCI-SPAM-CAMP-127,1,scam_or_suspicious,sms,public_dataset,medium,We know someone who you know that fancies you. Call 09058097218 to find out who.
+GRP-UCI-SPAM-CAMP-128,1,scam_or_suspicious,sms,public_dataset,medium,"1000's flirting NOW! Txt GIRL or BLOKE & ur NAME & AGE, eg GIRL ZOE 18 to 8007 t"
+GRP-UCI-SPAM-CAMP-129,1,scam_or_suspicious,sms,public_dataset,medium,18 days to Euro2004 kickoff! U will be kept informed of all the latest news and 
+GRP-UCI-SPAM-CAMP-130,1,scam_or_suspicious,prize,public_dataset,medium,EASTENDERS TV Quiz. What FLOWER does DOT compare herself to? D= VIOLET E= TULIP 
+GRP-UCI-SPAM-CAMP-131,1,scam_or_suspicious,sms,public_dataset,medium,We have new local dates in your area - Lots of new people registered in YOUR ARE
+GRP-UCI-SPAM-CAMP-132,1,scam_or_suspicious,sms,public_dataset,medium,Someone U know has asked our dating service 2 contact you! Cant Guess who? CALL 
+GRP-UCI-SPAM-CAMP-133,3,scam_or_suspicious,sms,public_dataset,medium,Dear 0776xxxxxxx U've been invited to XCHAT. This is our final attempt to contac
+GRP-UCI-SPAM-CAMP-134,1,scam_or_suspicious,prize,public_dataset,medium,You are awarded a SiPix Digital Camera! call 09061221061 from landline. Delivery
+GRP-UCI-SPAM-CAMP-135,3,scam_or_suspicious,sms,public_dataset,medium,Dear Subscriber ur draw 4 £100 gift voucher will b entered on receipt of a corre
+GRP-UCI-SPAM-CAMP-136,2,scam_or_suspicious,sms,public_dataset,medium,"URGENT, IMPORTANT INFORMATION FOR O2 USER. TODAY IS YOUR LUCKY DAY! 2 FIND OUT W"
+GRP-UCI-SPAM-CAMP-137,1,scam_or_suspicious,prize,public_dataset,medium,"449050000301 You have won a £2,000 price! To claim, call 09050000301."
+GRP-UCI-SPAM-CAMP-138,1,scam_or_suspicious,sms,public_dataset,medium,"Bored of speed dating? Try SPEEDCHAT, txt SPEEDCHAT to 80155, if you don't like "
+GRP-UCI-SPAM-CAMP-139,1,scam_or_suspicious,sms,public_dataset,medium,For taking part in our mobile survey yesterday! You can now have 500 texts 2 use
+GRP-UCI-SPAM-CAMP-140,1,scam_or_suspicious,sms,public_dataset,medium,Dont forget you can place as many FREE Requests with 1stchoice.co.uk as you wish
+GRP-UCI-SPAM-CAMP-141,1,scam_or_suspicious,sms,public_dataset,medium,I don't know u and u don't know me. Send CHAT to 86688 now and let's find each o
+GRP-UCI-SPAM-CAMP-142,1,scam_or_suspicious,sms,public_dataset,medium,"Thank you, winner notified by sms. Good Luck! No future marketing reply STOP to "
+GRP-UCI-SPAM-CAMP-143,1,scam_or_suspicious,sms,public_dataset,medium,1000's of girls many local 2 u who r virgins 2 this & r ready 2 4fil ur every se
+GRP-UCI-SPAM-CAMP-144,1,scam_or_suspicious,sms,public_dataset,medium,Got what it takes 2 take part in the WRC Rally in Oz? U can with Lucozade Energy
+GRP-UCI-SPAM-CAMP-145,1,scam_or_suspicious,sms,public_dataset,medium,Sex up ur mobile with a FREE sexy pic of Jordan! Just text BABE to 88600. Then e
+GRP-UCI-SPAM-CAMP-146,2,scam_or_suspicious,sms,public_dataset,medium,You have 1 new voicemail. Please call 08719181503
+GRP-UCI-SPAM-CAMP-147,1,scam_or_suspicious,sms,public_dataset,medium,WIN a year supply of CDs 4 a store of ur choice worth £500 & enter our £100 Week
+GRP-UCI-SPAM-CAMP-148,1,scam_or_suspicious,prize,public_dataset,medium,"As a SIM subscriber, you are selected to receive a Bonus! Get it delivered to yo"
+GRP-UCI-SPAM-CAMP-149,1,scam_or_suspicious,sms,public_dataset,medium,No. 1 Nokia Tone 4 ur mob every week! Just txt NOK to 87021. 1st Tone FREE ! so 
+GRP-UCI-SPAM-CAMP-150,1,scam_or_suspicious,sms,public_dataset,medium,Reply with your name and address and YOU WILL RECEIVE BY POST a weeks completely
+GRP-UCI-SPAM-CAMP-151,2,scam_or_suspicious,prize,public_dataset,medium,FREE entry into our £250 weekly comp just send the word ENTER to 84128 NOW. 18 T
+GRP-UCI-SPAM-CAMP-152,1,scam_or_suspicious,sms,public_dataset,medium,"Hungry gay guys feeling hungry and up 4 it, now. Call 08718730555 just 10p/min. "
+GRP-UCI-SPAM-CAMP-153,1,scam_or_suspicious,sms,public_dataset,medium,Can U get 2 phone NOW? I wanna chat 2 set up meet Call me NOW on 09096102316 U c
+GRP-UCI-SPAM-CAMP-154,1,scam_or_suspicious,sms,public_dataset,medium,network operator. The service is free. For T & C's visit 80488.biz
+GRP-UCI-SPAM-CAMP-155,1,scam_or_suspicious,sms,public_dataset,medium,Enjoy the jamster videosound gold club with your credits for 2 new videosounds+2
+GRP-UCI-SPAM-CAMP-156,1,scam_or_suspicious,sms,public_dataset,medium,"Get 3 Lions England tone, reply lionm 4 mono or lionp 4 poly. 4 more go 2 www.ri"
+GRP-UCI-SPAM-CAMP-157,1,scam_or_suspicious,sms,public_dataset,medium,"Win the newest “Harry Potter and the Order of the Phoenix (Book 5) reply HARRY, "
+GRP-UCI-SPAM-CAMP-158,1,scam_or_suspicious,sms,public_dataset,medium,Ur balance is now £500. Ur next question is: Who sang 'Uptown Girl' in the 80's 
+GRP-UCI-SPAM-CAMP-159,1,scam_or_suspicious,sms,public_dataset,medium,"FREE2DAY sexy St George's Day pic of Jordan!Txt PIC to 89080 dont miss out, then"
+GRP-UCI-SPAM-CAMP-160,2,scam_or_suspicious,sms,public_dataset,medium,"HOT LIVE FANTASIES call now 08707509020 Just 20p per min NTT Ltd, PO Box 1327 Cr"
+GRP-UCI-SPAM-CAMP-161,1,scam_or_suspicious,sms,public_dataset,medium,"Bears Pic Nick, and Tom, Pete and ... Dick. In fact, all types try gay chat with"
+GRP-UCI-SPAM-CAMP-162,1,scam_or_suspicious,sms,public_dataset,medium,Double Mins & Double Txt & 1/2 price Linerental on Latest Orange Bluetooth mobil
+GRP-UCI-SPAM-CAMP-163,1,scam_or_suspicious,sms,public_dataset,medium,For sale - arsenal dartboard. Good condition but no doubles or trebles!
+GRP-UCI-SPAM-CAMP-164,2,scam_or_suspicious,prize,public_dataset,medium,Free 1st week entry 2 TEXTPOD 4 a chance 2 win 40GB iPod or £250 cash every wk. 
+GRP-UCI-SPAM-CAMP-165,1,scam_or_suspicious,sms,public_dataset,medium,Summers finally here! Fancy a chat or flirt with sexy singles in yr area? To get
+GRP-UCI-SPAM-CAMP-166,1,scam_or_suspicious,sms,public_dataset,medium,CLAIRE here am havin borin time & am now alone U wanna cum over 2nite? Chat now 
+GRP-UCI-SPAM-CAMP-167,1,scam_or_suspicious,sms,public_dataset,medium,Bought one ringtone and now getting texts costing 3 pound offering more tones et
+GRP-UCI-SPAM-CAMP-168,3,scam_or_suspicious,prize,public_dataset,medium,"URGENT! Your mobile No *********** WON a £2,000 Bonus Caller Prize on 02/06/03! "
+GRP-UCI-SPAM-CAMP-169,1,scam_or_suspicious,sms,public_dataset,medium,Hi its LUCY Hubby at meetins all day Fri & I will B alone at hotel U fancy cumin
+GRP-UCI-SPAM-CAMP-170,1,scam_or_suspicious,sms,public_dataset,medium,"Your account has been credited with 500 FREE Text Messages. To activate, just tx"
+GRP-UCI-SPAM-CAMP-171,1,scam_or_suspicious,sms,public_dataset,medium,"SMS. ac JSco: Energy is high, but u may not know where 2channel it. 2day ur lead"
+GRP-UCI-SPAM-CAMP-172,1,scam_or_suspicious,sms,public_dataset,medium,Thanks for the Vote. Now sing along with the stars with Karaoke on your mobile. 
+GRP-UCI-SPAM-CAMP-173,1,scam_or_suspicious,sms,public_dataset,medium,Our brand new mobile music service is now live. The free music player will arriv
+GRP-UCI-SPAM-CAMP-174,2,scam_or_suspicious,prize,public_dataset,medium,You have won a Nokia 7250i. This is what you get when you win our FREE auction. 
+GRP-UCI-SPAM-CAMP-175,1,scam_or_suspicious,sms,public_dataset,medium,"Hello from Orange. For 1 month's free access to games, news and sport, plus 10 f"
+GRP-UCI-SPAM-CAMP-176,1,scam_or_suspicious,sms,public_dataset,medium,SMS AUCTION - A BRAND NEW Nokia 7250 is up 4 auction today! Auction is FREE 2 jo
+GRP-UCI-SPAM-CAMP-177,1,scam_or_suspicious,sms,public_dataset,medium,RT-KIng Pro Video Club>> Need help? info@ringtoneking.co.uk or call 08701237397 
+GRP-UCI-SPAM-CAMP-178,1,scam_or_suspicious,sms,public_dataset,medium,500 free text msgs. Just text ok to 80488 and we'll credit your account
+GRP-UCI-SPAM-CAMP-179,1,scam_or_suspicious,prize,public_dataset,medium,You have been selected to stay in 1 of 250 top British hotels - FOR NOTHING! Hol
+GRP-UCI-SPAM-CAMP-180,1,scam_or_suspicious,sms,public_dataset,medium,"Eerie Nokia tones 4u, rply TONE TITLE to 8007 eg TONE DRACULA to 8007 Titles: GH"
+GRP-UCI-SPAM-CAMP-181,1,scam_or_suspicious,sms,public_dataset,medium,"0A$NETWORKS allow companies to bill for SMS, so they are responsible for their """
+GRP-UCI-SPAM-CAMP-182,1,scam_or_suspicious,sms,public_dataset,medium,FreeMsg:Feelin kinda lnly hope u like 2 keep me company! Jst got a cam moby wann
+GRP-UCI-SPAM-CAMP-183,1,scam_or_suspicious,prize,public_dataset,medium,For ur chance to win a £250 cash every wk TXT: ACTION to 80608. T's&C's www.movi
+GRP-UCI-SPAM-CAMP-184,1,scam_or_suspicious,sms,public_dataset,medium,Hi if ur lookin 4 saucy daytime fun wiv busty married woman Am free all next wee
+GRP-UCI-SPAM-CAMP-185,1,scam_or_suspicious,sms,public_dataset,medium,Monthly password for wap. mobsi.com is 391784. Use your wap phone not PC.
+GRP-UCI-SPAM-CAMP-186,1,scam_or_suspicious,sms,public_dataset,medium,Free Top ringtone -sub to weekly ringtone-get 1st week free-send SUBPOLY to 8161
+GRP-UCI-SPAM-CAMP-187,1,scam_or_suspicious,sms,public_dataset,medium,"Free msg. Sorry, a service you ordered from 81303 could not be delivered as you "
+GRP-UCI-SPAM-CAMP-188,1,scam_or_suspicious,sms,public_dataset,medium,Hard LIVE 121 chat just 60p/min. Choose your girl and connect LIVE. Call 0909464
+GRP-UCI-SPAM-CAMP-189,1,scam_or_suspicious,sms,public_dataset,medium,WOW! The Boys R Back. TAKE THAT 2007 UK Tour. Win VIP Tickets & pre-book with VI
+GRP-UCI-SPAM-CAMP-190,1,scam_or_suspicious,prize,public_dataset,medium,"Hi, this is Mandy Sullivan calling from HOTMIX FM...you are chosen to receive £5"
+GRP-UCI-SPAM-CAMP-191,1,scam_or_suspicious,prize,public_dataset,medium,UR GOING 2 BAHAMAS! CallFREEFONE 08081560665 and speak to a live operator to cla
+GRP-UCI-SPAM-CAMP-192,1,scam_or_suspicious,sms,public_dataset,medium,Buy Space Invaders 4 a chance 2 win orig Arcade Game console. Press 0 for Games 
+GRP-UCI-SPAM-CAMP-193,1,scam_or_suspicious,prize,public_dataset,medium,BIG BROTHER ALERT! The computer has selected u for 10k cash or #150 voucher. Cal
+GRP-UCI-SPAM-CAMP-194,1,scam_or_suspicious,prize,public_dataset,medium,"WIN: We have a winner! Mr. T. Foley won an iPod! More exciting prizes soon, so k"
+GRP-UCI-SPAM-CAMP-195,1,scam_or_suspicious,sms,public_dataset,medium,"Hottest pics straight to your phone!! See me getting Wet and Wanting, just for y"
+GRP-UCI-SPAM-CAMP-196,1,scam_or_suspicious,prize,public_dataset,medium,Hack Chat. Get backdoor entry into 121 chat rooms at a fraction of the cost. Rep
+GRP-UCI-SPAM-CAMP-197,1,scam_or_suspicious,sms,public_dataset,medium,"FREE NOKIA Or Motorola with upto 12mths 1/2price linerental, 500 FREE x-net mins"
+GRP-UCI-SPAM-CAMP-198,1,scam_or_suspicious,prize,public_dataset,medium,This is the 2nd time we have tried 2 contact u. U have won the 750 Pound prize. 
+GRP-UCI-SPAM-CAMP-199,1,scam_or_suspicious,sms,public_dataset,medium,Would you like to see my XXX pics they are so hot they were nearly banned in the
+GRP-UCI-SPAM-CAMP-200,2,scam_or_suspicious,prize,public_dataset,medium,Urgent! Please call 09061743810 from landline. Your ABTA complimentary 4* Teneri
+GRP-UCI-SPAM-CAMP-201,1,scam_or_suspicious,sms,public_dataset,medium,CALL 09090900040 & LISTEN TO EXTREME DIRTY LIVE CHAT GOING ON IN THE OFFICE RIGH
+GRP-UCI-SPAM-CAMP-202,1,scam_or_suspicious,sms,public_dataset,medium,"FreeMsg Hey U, i just got 1 of these video/pic fones, reply WILD to this txt & i"
+GRP-UCI-SPAM-CAMP-203,1,scam_or_suspicious,prize,public_dataset,medium,Free entry in 2 a weekly comp for a chance to win an ipod. Txt POD to 80182 to g
+GRP-UCI-SPAM-CAMP-204,1,scam_or_suspicious,prize,public_dataset,medium,Call from 08702490080 - tells u 2 call 09066358152 to claim £5000 prize. U have 
+GRP-UCI-SPAM-CAMP-205,1,scam_or_suspicious,sms,public_dataset,medium,More people are dogging in your area now. Call 09090204448 and join like minded 
+GRP-UCI-SPAM-CAMP-206,2,scam_or_suspicious,prize,public_dataset,medium,URGENT!! Your 4* Costa Del Sol Holiday or £5000 await collection. Call 090500900
+GRP-UCI-SPAM-CAMP-207,1,scam_or_suspicious,sms,public_dataset,medium,it to 80488. Your 500 free text messages are valid until 31 December 2005.
+GRP-UCI-SPAM-CAMP-208,1,scam_or_suspicious,sms,public_dataset,medium,Reply to win £100 weekly! Where will the 2006 FIFA World Cup be held? Send STOP 
+GRP-UCI-SPAM-CAMP-209,1,scam_or_suspicious,sms,public_dataset,medium,Free tones Hope you enjoyed your new content. text stop to 61610 to unsubscribe.
+GRP-UCI-SPAM-CAMP-210,1,scam_or_suspicious,sms,public_dataset,medium,TheMob>Yo yo yo-Here comes a new selection of hot downloads for our members to g
+GRP-UCI-SPAM-CAMP-211,1,scam_or_suspicious,prize,public_dataset,medium,Great News! Call FREEFONE 08006344447 to claim your guaranteed £1000 CASH or £20
+GRP-UCI-SPAM-CAMP-212,2,scam_or_suspicious,sms,public_dataset,medium,U can WIN £100 of Music Gift Vouchers every week starting NOW Txt the word DRAW 
+GRP-UCI-SPAM-CAMP-213,1,scam_or_suspicious,sms,public_dataset,medium,Call 09094100151 to use ur mins! Calls cast 10p/min (mob vary). Service provided
+GRP-UCI-SPAM-CAMP-214,1,scam_or_suspicious,sms,public_dataset,medium,Sexy Singles are waiting for you! Text your AGE followed by your GENDER as withe
+GRP-UCI-SPAM-CAMP-215,1,scam_or_suspicious,prize,public_dataset,medium,FreeMsg: Claim ur 250 SMS messages-Text OK to 84025 now!Use web2mobile 2 ur mate
+GRP-UCI-SPAM-CAMP-216,1,scam_or_suspicious,sms,public_dataset,medium,85233 FREE>Ringtone!Reply REAL
+GRP-UCI-SPAM-CAMP-217,1,scam_or_suspicious,sms,public_dataset,medium,Well done ENGLAND! Get the official poly ringtone or colour flag on yer mobile! 
+GRP-UCI-SPAM-CAMP-218,1,scam_or_suspicious,prize,public_dataset,medium,Sunshine Hols. To claim ur med holiday send a stamped self address envelope to D
+GRP-UCI-SPAM-CAMP-219,1,scam_or_suspicious,sms,public_dataset,medium,Your B4U voucher w/c 27/03 is MARSMS. Log onto www.B4Utele.com for discount cred
+GRP-UCI-SPAM-CAMP-220,1,scam_or_suspicious,sms,public_dataset,medium,FreeMsg: Hey - I'm Buffy. 25 and love to satisfy men. Home alone feeling randy. 
+GRP-UCI-SPAM-CAMP-221,1,scam_or_suspicious,sms,public_dataset,medium,FREE camera phones with linerental from 4.49/month with 750 cross ntwk mins. 1/2
+GRP-UCI-SPAM-CAMP-222,2,scam_or_suspicious,sms,public_dataset,medium,"Thanks for your ringtone order, ref number K718. Your mobile will be charged £4."
+GRP-UCI-SPAM-CAMP-223,1,scam_or_suspicious,sms,public_dataset,medium,Hi ya babe x u 4goten bout me?' scammers getting smart..Though this is a regular
+GRP-UCI-SPAM-CAMP-224,1,scam_or_suspicious,sms,public_dataset,medium,Back 2 work 2morro half term over! Can U C me 2nite 4 some sexy passion B4 I hav
+GRP-UCI-SPAM-CAMP-225,1,scam_or_suspicious,sms,public_dataset,medium,SplashMobile: Choose from 1000s of gr8 tones each wk! This is a subscrition serv
+GRP-UCI-SPAM-CAMP-226,1,scam_or_suspicious,sms,public_dataset,medium,Not heard from U4 a while. Call 4 rude chat private line 01223585334 to cum. Wan
+GRP-UCI-SPAM-CAMP-227,1,scam_or_suspicious,sms,public_dataset,medium,88066 FROM 88066 LOST 3POUND HELP
+GRP-UCI-SPAM-CAMP-228,1,scam_or_suspicious,sms,public_dataset,medium,Had your mobile 11mths ? Update for FREE to Oranges latest colour camera mobiles
+GRP-UCI-SPAM-CAMP-229,1,scam_or_suspicious,sms,public_dataset,medium,You have 1 new message. Please call 08718738034.
+GRP-UCI-SPAM-CAMP-230,1,scam_or_suspicious,sms,public_dataset,medium,<Forwarded from 21870000>Hi - this is your Mailbox Messaging SMS alert. You have
