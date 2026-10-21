@@ -525,16 +525,19 @@ export function ScamHomePage() {
   async function handleToggleConsent() {
     const id = getChildId();
     if (!id || !guardian) return;
-    const nextConsent = !guardian.consent_confirmed;
+    const isCurrentlyActive = Boolean(guardian.consent_confirmed && guardian.simulation_enabled);
+    const nextActive = !isCurrentlyActive;
     setGuardianSaving(true);
     try {
       await updateGuardianConsent(id, {
-        consent_confirmed: nextConsent,
-        simulation_enabled: nextConsent ? guardian.simulation_enabled : false,
+        consent_confirmed: nextActive,
+        simulation_enabled: nextActive,
       });
       setGuardianMsg({
         type: "success",
-        text: nextConsent ? "Consent confirmed." : "Consent withdrawn. Simulations disabled.",
+        text: nextActive
+          ? "Consent confirmed and educational simulations re-enabled!"
+          : "Consent withdrawn. Simulations disabled.",
       });
       loadGuardianAndSimulations(id);
     } catch {
@@ -1425,11 +1428,13 @@ export function ScamHomePage() {
                     statusText = "Delivery Failed";
                     canRetry = isEligibleToDispatch;
                   } else if (sim.status === "unverified") {
-                    statusBadgeClass = "unverified";
-                    statusText = "Awaiting Verification";
+                    statusBadgeClass = isEligibleToDispatch ? "pending" : "unverified";
+                    statusText = isEligibleToDispatch ? "Ready to Dispatch" : "Awaiting Verification";
+                    canRetry = isEligibleToDispatch;
                   } else if (sim.status === "consent_required" || sim.status === "disabled") {
-                    statusBadgeClass = "unverified";
-                    statusText = "Consent Disabled";
+                    statusBadgeClass = isEligibleToDispatch ? "pending" : "unverified";
+                    statusText = isEligibleToDispatch ? "Ready to Dispatch" : "Consent Disabled";
+                    canRetry = isEligibleToDispatch;
                   }
                 } else if (isPassed) {
                   if (!guardian?.configured) {
