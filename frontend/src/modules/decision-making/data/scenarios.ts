@@ -1,0 +1,825 @@
+import type { ScenarioDefinition } from "../types/decisionMaking";
+import { PHONE_SCENARIO } from "./phoneScenario";
+
+const BIRTHDAY: ScenarioDefinition = {
+  levelId: 1,
+  title: "Birthday money",
+  situation:
+    "You receive Rs. 5,000 as birthday money. Nothing is owed today. A bigger goal you have mentioned would cost about Rs. 8,000.",
+  facts: [
+    { label: "Birthday money", value: "Rs. 5,000" },
+    { label: "Money owed today", value: "Rs. 0" },
+    { label: "Bigger goal (example)", value: "About Rs. 8,000" },
+    { label: "Due date", value: "No fixed deadline in this scenario" },
+  ],
+  waitAssumption:
+    "The Rs. 8,000 goal is a scenario example so you can compare spending now with saving. It is not a required purchase.",
+  moneyScale: 8000,
+  sixMonthAssumptions: [
+    "This comparison is a teaching sketch, not a prediction of your real life.",
+    "No interest or extra fees are added, because none are stated in the scenario.",
+    "Spending the gift now assumes you do not replace that money later.",
+    "None of these paths is labelled as the only correct choice.",
+  ],
+  options: [
+    {
+      id: "A",
+      title: "Spend the gift now",
+      shortLabel: "Spend now",
+      summary: "Use the birthday money on something you want today.",
+      bullets: [
+        "Spend the Rs. 5,000 now.",
+        "Nothing is left from this gift.",
+        "You do not take on debt.",
+      ],
+      immediate: "You enjoy the gift immediately and have Rs. 0 left from it.",
+      future:
+        "A later goal would need new money, because this gift would already be spent.",
+      snapshot: {
+        label: "Spend now",
+        savings: 0,
+        debt: 0,
+        stateLabel: "Gift",
+        state: "Spent today",
+        note: "No debt. The Rs. 5,000 gift is gone unless you earn or receive more.",
+      },
+    },
+    {
+      id: "B",
+      title: "Save most and spend a little",
+      shortLabel: "Split it",
+      summary: "Keep most of the gift and use a small part now.",
+      bullets: [
+        "Spend Rs. 1,000 on something small.",
+        "Keep Rs. 4,000.",
+        "You still need about Rs. 4,000 more for the example Rs. 8,000 goal.",
+      ],
+      immediate: "You enjoy a small treat and still have Rs. 4,000 set aside.",
+      future:
+        "The remaining money can go toward a goal, but it does not cover an Rs. 8,000 goal by itself.",
+      snapshot: {
+        label: "Split the gift",
+        savings: 4000,
+        debt: 0,
+        stateLabel: "Gift",
+        state: "Rs. 1,000 used, Rs. 4,000 kept",
+        note: "No debt. The example goal is still short by about Rs. 4,000.",
+      },
+    },
+    {
+      id: "C",
+      title: "Save the full gift",
+      shortLabel: "Save it",
+      summary: "Put all of the birthday money toward a later goal.",
+      bullets: [
+        "Save the full Rs. 5,000.",
+        "Skip spending it today.",
+        "You avoid debt, and the example goal is still short by Rs. 3,000.",
+      ],
+      immediate: "You keep Rs. 5,000 and do not buy something with the gift today.",
+      future:
+        "Waiting protects the money, but you give up using it for something you might want now.",
+      snapshot: {
+        label: "Save the gift",
+        savings: 5000,
+        debt: 0,
+        stateLabel: "Gift",
+        state: "Fully saved",
+        note: "No debt. About Rs. 3,000 more would still be needed for the example goal.",
+      },
+    },
+  ],
+};
+
+const FRIEND_LOAN: ScenarioDefinition = {
+  levelId: 2,
+  title: "Friend wants a loan",
+  situation:
+    "You have Rs. 3,000 saved. A friend asks to borrow Rs. 2,000 and says they will repay you next month.",
+  facts: [
+    { label: "Your savings", value: "Rs. 3,000" },
+    { label: "Amount requested", value: "Rs. 2,000" },
+    { label: "What you would keep if you lend it all", value: "Rs. 1,000" },
+    { label: "Repayment promise", value: "Next month — a promise, not a guarantee" },
+  ],
+  waitAssumption:
+    "“Next month” is what your friend said. This scenario does not prove the money will come back.",
+  moneyScale: 3000,
+  sixMonthAssumptions: [
+    "This comparison is a teaching sketch, not a prediction of your friendship or your finances.",
+    "Lent money is not shown as returned, because no repayment has actually happened.",
+    "Saying no keeps your savings, and it can still affect how your friend feels.",
+    "None of these paths is labelled as the only correct choice.",
+  ],
+  options: [
+    {
+      id: "A",
+      title: "Lend the full Rs. 2,000",
+      shortLabel: "Lend it all",
+      summary: "Help your friend with the full amount they asked for.",
+      bullets: [
+        "Give your friend Rs. 2,000.",
+        "Keep Rs. 1,000.",
+        "You are relying on their promise to repay.",
+      ],
+      immediate: "Your friend has the money, and your savings drop to Rs. 1,000.",
+      future:
+        "If repayment is late or does not happen, you may not be able to use that Rs. 2,000 yourself.",
+      snapshot: {
+        label: "Lend it all",
+        savings: 1000,
+        debt: 0,
+        stateLabel: "Loan to friend",
+        state: "Rs. 2,000 lent, not yet repaid",
+        note: "You do not owe anyone. The Rs. 2,000 is with your friend and is not guaranteed to return.",
+      },
+    },
+    {
+      id: "B",
+      title: "Lend a smaller amount",
+      shortLabel: "Lend less",
+      summary: "Offer Rs. 800, which leaves most of your savings intact.",
+      bullets: [
+        "Lend Rs. 800 instead of Rs. 2,000.",
+        "Keep Rs. 2,200.",
+        "Be clear that this is the amount you can offer.",
+      ],
+      immediate: "You help with part of the request and keep Rs. 2,200.",
+      future:
+        "Your friend may still need more money. The Rs. 800 is also not guaranteed to come back.",
+      snapshot: {
+        label: "Lend less",
+        savings: 2200,
+        debt: 0,
+        stateLabel: "Loan to friend",
+        state: "Rs. 800 lent, not yet repaid",
+        note: "You do not owe anyone. Only Rs. 800 is at risk if repayment does not happen.",
+      },
+    },
+    {
+      id: "C",
+      title: "Do not lend the money",
+      shortLabel: "Do not lend",
+      summary: "Keep your savings and offer a kind of help that is not cash.",
+      bullets: [
+        "Keep the Rs. 3,000.",
+        "Explain that you cannot lend it.",
+        "You could still help in another way, such as planning or company.",
+      ],
+      immediate: "Your savings stay at Rs. 3,000, and your friend does not receive the loan.",
+      future:
+        "You avoid the repayment risk. Your friend may feel disappointed, so how you explain it matters.",
+      snapshot: {
+        label: "Do not lend",
+        savings: 3000,
+        debt: 0,
+        stateLabel: "Loan to friend",
+        state: "No money lent",
+        note: "Savings stay with you. This choice can still affect the friendship.",
+      },
+    },
+  ],
+};
+
+const BUY_NOW: ScenarioDefinition = {
+  levelId: 3,
+  title: "Buy now, pay later",
+  situation:
+    "You have Rs. 3,000 saved. Headphones you want cost Rs. 8,000. A buy-now-pay-later offer asks for Rs. 2,000 today and then Rs. 2,200 three more times.",
+  facts: [
+    { label: "Your savings", value: "Rs. 3,000" },
+    { label: "Full price if you pay once", value: "Rs. 8,000" },
+    { label: "Pay-later total", value: "Rs. 8,600 (Rs. 600 more than the cash price)" },
+    { label: "Due after the first payment", value: "Rs. 6,600, in this example" },
+  ],
+  waitAssumption:
+    "The extra Rs. 600 and the three later payments are assumptions for this offer. A real offer could differ.",
+  moneyScale: 8600,
+  sixMonthAssumptions: [
+    "This comparison is a teaching sketch, not a shop quote.",
+    "The pay-later path still shows Rs. 6,600 owing if no later payments are defined.",
+    "Waiting assumes you do not get the headphones today.",
+    "The cheaper pair is an example product at Rs. 2,500, not a real listing.",
+    "None of these paths is labelled as the only correct choice.",
+  ],
+  options: [
+    {
+      id: "A",
+      title: "Use buy now, pay later",
+      shortLabel: "Pay later",
+      summary: "Take the headphones today and owe the later payments.",
+      bullets: [
+        "Pay Rs. 2,000 from savings today.",
+        "Keep Rs. 1,000.",
+        "You would still owe Rs. 6,600.",
+      ],
+      immediate: "You get the headphones now, with Rs. 6,600 still to pay.",
+      future:
+        "Those later payments continue even if you want to spend the money on something else.",
+      snapshot: {
+        label: "Pay later",
+        savings: 1000,
+        debt: 6600,
+        stateLabel: "Headphones",
+        state: "Yours now, payments still due",
+        note: "Rs. 6,600 stays owed until a real payment schedule is completed.",
+      },
+    },
+    {
+      id: "B",
+      title: "Wait and pay the full price",
+      shortLabel: "Wait",
+      summary: "Do not take the offer. Save until you can pay Rs. 8,000.",
+      bullets: [
+        "Keep your Rs. 3,000.",
+        "Do not start the pay-later plan.",
+        "You still need Rs. 5,000 more before you can pay the cash price.",
+      ],
+      immediate: "You do not get the headphones today, and you do not owe a payment plan.",
+      future:
+        "Waiting avoids the extra Rs. 600, but you have to manage without the headphones until you can pay.",
+      snapshot: {
+        label: "Wait",
+        savings: 3000,
+        debt: 0,
+        stateLabel: "Headphones",
+        state: "Not bought yet",
+        note: "No debt. You are still Rs. 5,000 short of the Rs. 8,000 cash price.",
+      },
+    },
+    {
+      id: "C",
+      title: "Buy a cheaper pair now",
+      shortLabel: "Cheaper pair",
+      summary: "Choose headphones that cost Rs. 2,500 and pay in full.",
+      bullets: [
+        "Pay Rs. 2,500 today.",
+        "Keep Rs. 500.",
+        "You do not join the payment plan.",
+      ],
+      immediate: "You get a cheaper pair and keep Rs. 500, with nothing left to pay.",
+      future:
+        "You avoid later payments. The cheaper pair may not be the one you wanted most.",
+      snapshot: {
+        label: "Cheaper pair",
+        savings: 500,
+        debt: 0,
+        stateLabel: "Headphones",
+        state: "Cheaper pair paid in full",
+        note: "No debt. This uses an example price of Rs. 2,500.",
+      },
+    },
+  ],
+};
+
+const FESTIVAL: ScenarioDefinition = {
+  levelId: 4,
+  title: "Tuition and a festival",
+  situation:
+    "You have Rs. 5,000. School tuition of Rs. 4,500 is due soon. A festival with friends would cost about Rs. 2,000.",
+  facts: [
+    { label: "Your savings", value: "Rs. 5,000" },
+    { label: "Tuition due", value: "Rs. 4,500" },
+    { label: "Festival example cost", value: "About Rs. 2,000" },
+    { label: "If you pay only tuition", value: "Rs. 500 left" },
+  ],
+  waitAssumption:
+    "The festival cost is an example. The scenario does not include a fine for late tuition, because no fine was stated.",
+  moneyScale: 5000,
+  sixMonthAssumptions: [
+    "This comparison is a teaching sketch, not a school bill.",
+    "Any tuition still unpaid is shown as still due, because no later payment is defined.",
+    "The festival is treated as optional enjoyment, not as a school requirement.",
+    "None of these paths is labelled as the only correct choice.",
+  ],
+  options: [
+    {
+      id: "A",
+      title: "Pay tuition and skip the festival",
+      shortLabel: "Tuition first",
+      summary: "Cover the school cost and do not spend on the festival.",
+      bullets: [
+        "Pay Rs. 4,500 for tuition.",
+        "Keep Rs. 500.",
+        "Skip the Rs. 2,000 festival.",
+      ],
+      immediate: "Tuition is covered and you have Rs. 500 left.",
+      future: "You miss the festival. You do not leave a school bill unpaid.",
+      snapshot: {
+        label: "Tuition first",
+        savings: 500,
+        debt: 0,
+        stateLabel: "School and festival",
+        state: "Tuition paid, festival skipped",
+        note: "Nothing is left owing for tuition in this path.",
+      },
+    },
+    {
+      id: "B",
+      title: "Go to the festival and pay only part of tuition",
+      shortLabel: "Festival first",
+      summary: "Spend Rs. 2,000 on the festival and put Rs. 3,000 toward tuition.",
+      bullets: [
+        "Spend about Rs. 2,000 on the festival.",
+        "Pay Rs. 3,000 toward tuition.",
+        "Rs. 1,500 of tuition is still unpaid.",
+      ],
+      immediate: "You can join the festival, but Rs. 1,500 of tuition is still due.",
+      future:
+        "You will need a plan for the remaining tuition. This scenario does not add a late fee.",
+      snapshot: {
+        label: "Festival first",
+        savings: 0,
+        debt: 1500,
+        stateLabel: "School and festival",
+        state: "Festival attended, tuition short",
+        note: "Rs. 1,500 of tuition is still due. No late fee is included because none was stated.",
+      },
+    },
+    {
+      id: "C",
+      title: "Pay tuition and use a small festival budget",
+      shortLabel: "Small budget",
+      summary: "Pay the school cost and keep the celebration much smaller.",
+      bullets: [
+        "Pay Rs. 4,500 for tuition.",
+        "Use Rs. 300 of the remainder for a small festival plan.",
+        "Keep Rs. 200.",
+      ],
+      immediate: "Tuition is covered, and you still have a small way to join in.",
+      future:
+        "The smaller plan may not match everything your friends are doing. The school cost is handled.",
+      snapshot: {
+        label: "Small budget",
+        savings: 200,
+        debt: 0,
+        stateLabel: "School and festival",
+        state: "Tuition paid, small festival budget used",
+        note: "The Rs. 300 festival budget is an example, not a ticket price.",
+      },
+    },
+  ],
+};
+
+const SALARY: ScenarioDefinition = {
+  levelId: 6,
+  title: "First salary",
+  situation:
+    "Your first salary is Rs. 12,000. About Rs. 6,000 covers needs such as transport and food. You also want to save for a short course.",
+  facts: [
+    { label: "Salary", value: "Rs. 12,000" },
+    { label: "Estimated needs", value: "About Rs. 6,000" },
+    { label: "Left after needs", value: "About Rs. 6,000" },
+    { label: "Course goal", value: "Not priced in this scenario — you choose how much to set aside" },
+  ],
+  waitAssumption:
+    "The Rs. 6,000 needs figure is an estimate for this month. Real needs can be higher or lower.",
+  moneyScale: 12000,
+  sixMonthAssumptions: [
+    "This comparison looks at one salary, not six months of income.",
+    "No tax, rent, or course price is added, because those amounts are not given.",
+    "Cutting needs below Rs. 6,000 is an assumption and may not be realistic.",
+    "None of these paths is labelled as the only correct choice.",
+  ],
+  options: [
+    {
+      id: "A",
+      title: "Cover needs, then spend the rest",
+      shortLabel: "Spend the rest",
+      summary: "Pay for needs and use what remains on things you want.",
+      bullets: [
+        "Use about Rs. 6,000 for needs.",
+        "Spend the other Rs. 6,000.",
+        "Nothing is set aside for the course.",
+      ],
+      immediate: "Needs are covered and you can enjoy the rest of the salary.",
+      future: "The course goal does not move forward with this month’s pay.",
+      snapshot: {
+        label: "Spend the rest",
+        savings: 0,
+        debt: 0,
+        stateLabel: "This month’s pay",
+        state: "Needs covered, nothing saved",
+        note: "No debt. The course goal gets Rs. 0 from this salary.",
+      },
+    },
+    {
+      id: "B",
+      title: "Cover needs, save, then wants",
+      shortLabel: "Plan the split",
+      summary: "Set aside Rs. 3,000 after needs and keep Rs. 3,000 for wants.",
+      bullets: [
+        "Use about Rs. 6,000 for needs.",
+        "Save Rs. 3,000 for the course.",
+        "Keep Rs. 3,000 for other spending.",
+      ],
+      immediate: "Needs, a saving goal, and some spending all have a share.",
+      future:
+        "The course gets Rs. 3,000 this month. You have less free spending than option A.",
+      snapshot: {
+        label: "Plan the split",
+        savings: 3000,
+        debt: 0,
+        stateLabel: "This month’s pay",
+        state: "Needs covered and Rs. 3,000 saved",
+        note: "No debt. Wants are limited to about Rs. 3,000 in this example.",
+      },
+    },
+    {
+      id: "C",
+      title: "Save aggressively",
+      shortLabel: "Save most",
+      summary: "Cut spending hard so you can save Rs. 7,000.",
+      bullets: [
+        "Reduce needs-and-wants spending to Rs. 5,000.",
+        "Save Rs. 7,000.",
+        "This assumes you can safely spend less than the Rs. 6,000 needs estimate.",
+      ],
+      immediate: "You save a large amount, if the lower spending is actually possible.",
+      future:
+        "The course grows faster, but cutting needs can be difficult or unwise if the estimate was realistic.",
+      snapshot: {
+        label: "Save most",
+        savings: 7000,
+        debt: 0,
+        stateLabel: "This month’s pay",
+        state: "Rs. 7,000 saved, spending cut to Rs. 5,000",
+        note: "This path assumes you can live on less than the Rs. 6,000 needs estimate.",
+      },
+    },
+  ],
+};
+
+const FAMILY: ScenarioDefinition = {
+  levelId: 7,
+  title: "Lending to family",
+  situation:
+    "You have Rs. 10,000 saved for a school trip that costs Rs. 7,500. A family member asks for Rs. 8,000 in help.",
+  facts: [
+    { label: "Your savings", value: "Rs. 10,000" },
+    { label: "School trip", value: "Rs. 7,500" },
+    { label: "Amount requested", value: "Rs. 8,000" },
+    { label: "Spare if the trip is kept", value: "Rs. 2,500" },
+  ],
+  waitAssumption:
+    "If you treat the help as a loan, repayment is not guaranteed unless money actually comes back.",
+  moneyScale: 10000,
+  sixMonthAssumptions: [
+    "This comparison is a teaching sketch, not a family obligation.",
+    "Money you give or lend is not shown as returned.",
+    "The school trip price stays Rs. 7,500 because no other fare is given.",
+    "None of these paths is labelled as the only correct choice.",
+  ],
+  options: [
+    {
+      id: "A",
+      title: "Give the Rs. 8,000",
+      shortLabel: "Give it",
+      summary: "Provide the full amount your family member asked for.",
+      bullets: [
+        "Give Rs. 8,000.",
+        "Keep Rs. 2,000.",
+        "The Rs. 7,500 trip is no longer covered.",
+      ],
+      immediate: "Your family member receives the help, and the trip fund is short.",
+      future:
+        "You would need Rs. 5,500 more to afford the trip. Getting the Rs. 8,000 back is not promised.",
+      snapshot: {
+        label: "Give it",
+        savings: 2000,
+        debt: 0,
+        stateLabel: "Trip fund",
+        state: "Trip no longer covered",
+        note: "You do not owe a lender. The trip is short by Rs. 5,500, and the gift is not shown as repaid.",
+      },
+    },
+    {
+      id: "B",
+      title: "Offer Rs. 1,500 you can spare",
+      shortLabel: "Offer a limit",
+      summary: "Help with an amount that still leaves the trip covered.",
+      bullets: [
+        "Offer Rs. 1,500.",
+        "Keep Rs. 8,500.",
+        "The trip still fits, with Rs. 1,000 left over.",
+      ],
+      immediate: "You help within a limit and can still pay for the trip.",
+      future:
+        "Your family member may need more than Rs. 1,500. Say clearly whether this money is a gift or a loan.",
+      snapshot: {
+        label: "Offer a limit",
+        savings: 8500,
+        debt: 0,
+        stateLabel: "Trip fund",
+        state: "Trip still covered",
+        note: "Rs. 1,500 is no longer in your savings. Repayment is not assumed.",
+      },
+    },
+    {
+      id: "C",
+      title: "Do not give the money",
+      shortLabel: "Keep the fund",
+      summary: "Protect the trip savings and offer help that is not cash.",
+      bullets: [
+        "Keep the Rs. 10,000.",
+        "The trip stays covered.",
+        "Explain the limit kindly.",
+      ],
+      immediate: "The trip fund stays intact, and no cash help is given.",
+      future: "The family request is unanswered in money terms. Your explanation still matters.",
+      snapshot: {
+        label: "Keep the fund",
+        savings: 10000,
+        debt: 0,
+        stateLabel: "Trip fund",
+        state: "Untouched",
+        note: "The trip remains affordable. This choice can still be hard to say.",
+      },
+    },
+  ],
+};
+
+const SURPRISE: ScenarioDefinition = {
+  levelId: 8,
+  title: "An unexpected expense",
+  situation:
+    "You have Rs. 4,000 saved for a goal. A school bag and a bus pass suddenly cost Rs. 2,500.",
+  facts: [
+    { label: "Savings for your goal", value: "Rs. 4,000" },
+    { label: "Unexpected cost", value: "Rs. 2,500" },
+    { label: "Left if you pay from savings", value: "Rs. 1,500" },
+    { label: "Other income this month", value: "Not included, because none is stated" },
+  ],
+  waitAssumption:
+    "No emergency fund beyond the Rs. 4,000 is included. Borrowing would create a new amount to repay.",
+  moneyScale: 4000,
+  sixMonthAssumptions: [
+    "This comparison is a teaching sketch for one unexpected bill.",
+    "Borrowed money stays owed because no repayment amount is defined.",
+    "Putting Rs. 500 back assumes you can cut other spending by that amount.",
+    "None of these paths is labelled as the only correct choice.",
+  ],
+  options: [
+    {
+      id: "A",
+      title: "Pay from savings and pause the goal",
+      shortLabel: "Use savings",
+      summary: "Cover the surprise cost and accept a smaller goal balance.",
+      bullets: [
+        "Pay Rs. 2,500 from savings.",
+        "Keep Rs. 1,500.",
+        "Pause adding more until you can rebuild.",
+      ],
+      immediate: "The bag and bus pass are paid, and the goal drops to Rs. 1,500.",
+      future: "You avoid new debt. Reaching the original goal will take longer.",
+      snapshot: {
+        label: "Use savings",
+        savings: 1500,
+        debt: 0,
+        stateLabel: "Goal balance",
+        state: "Bill paid, goal paused",
+        note: "No new borrowing. Rs. 2,500 of the goal has been used.",
+      },
+    },
+    {
+      id: "B",
+      title: "Pay the bill and cut other spending",
+      shortLabel: "Adjust the plan",
+      summary: "Pay the bill, then set aside Rs. 500 by spending less elsewhere.",
+      bullets: [
+        "Pay Rs. 2,500 from savings.",
+        "Cut about Rs. 500 of other spending and put it back.",
+        "End with Rs. 2,000 toward the goal.",
+      ],
+      immediate: "The surprise is paid and part of the goal is rebuilt.",
+      future:
+        "This works only if you can actually cut Rs. 500. That cut is a scenario assumption.",
+      snapshot: {
+        label: "Adjust the plan",
+        savings: 2000,
+        debt: 0,
+        stateLabel: "Goal balance",
+        state: "Bill paid, Rs. 500 put back",
+        note: "The Rs. 500 rebuild assumes you can reduce other spending.",
+      },
+    },
+    {
+      id: "C",
+      title: "Borrow so the goal stays untouched",
+      shortLabel: "Borrow",
+      summary: "Keep all Rs. 4,000 saved and borrow the Rs. 2,500.",
+      bullets: [
+        "Leave the Rs. 4,000 goal alone.",
+        "Borrow Rs. 2,500 for the bag and bus pass.",
+        "You would owe Rs. 2,500.",
+      ],
+      immediate: "The goal balance stays at Rs. 4,000, and a new debt starts.",
+      future: "You still need a way to repay Rs. 2,500 while continuing the goal.",
+      snapshot: {
+        label: "Borrow",
+        savings: 4000,
+        debt: 2500,
+        stateLabel: "Goal balance",
+        state: "Goal untouched, bill borrowed",
+        note: "Rs. 2,500 remains owed because no repayment schedule is defined.",
+      },
+    },
+  ],
+};
+
+const BIG_GOAL: ScenarioDefinition = {
+  levelId: 9,
+  title: "Saving for a big goal",
+  situation:
+    "You have Rs. 5,000 saved toward a Rs. 15,000 trip. If you save Rs. 2,500 a month, the remaining Rs. 10,000 would take about four months. A concert this month costs Rs. 3,000.",
+  facts: [
+    { label: "Saved so far", value: "Rs. 5,000" },
+    { label: "Trip goal", value: "Rs. 15,000" },
+    { label: "Still needed", value: "Rs. 10,000" },
+    { label: "Concert", value: "Rs. 3,000" },
+  ],
+  waitAssumption:
+    "Saving Rs. 2,500 a month is a scenario assumption, not a guaranteed income. Four months is 10,000 ÷ 2,500.",
+  moneyScale: 15000,
+  sixMonthAssumptions: [
+    "This comparison does not invent six months of perfect saving.",
+    "Going to the concert lowers today’s balance. Later months are not added unless stated.",
+    "A smaller outing at Rs. 1,000 is an example, not a real ticket.",
+    "None of these paths is labelled as the only correct choice.",
+  ],
+  options: [
+    {
+      id: "A",
+      title: "Go to the concert",
+      shortLabel: "Go",
+      summary: "Use Rs. 3,000 of the trip fund for the concert.",
+      bullets: [
+        "Spend Rs. 3,000 now.",
+        "Keep Rs. 2,000 toward the trip.",
+        "You would then need Rs. 13,000 more.",
+      ],
+      immediate: "You attend the concert and the trip fund drops to Rs. 2,000.",
+      future:
+        "At the assumed Rs. 2,500 a month, Rs. 13,000 would take a little over five months, not four.",
+      snapshot: {
+        label: "Go to the concert",
+        savings: 2000,
+        debt: 0,
+        stateLabel: "Trip fund",
+        state: "Concert attended",
+        note: "No debt. The goal is Rs. 13,000 away after this choice.",
+      },
+    },
+    {
+      id: "B",
+      title: "Skip the concert and stay on plan",
+      shortLabel: "Stay on plan",
+      summary: "Leave the Rs. 5,000 untouched.",
+      bullets: [
+        "Do not spend on the concert.",
+        "Keep Rs. 5,000.",
+        "The remaining Rs. 10,000 still matches the four-month example.",
+      ],
+      immediate: "The trip plan stays on track, and you miss the concert.",
+      future: "You give up a present event to keep the later goal closer.",
+      snapshot: {
+        label: "Stay on plan",
+        savings: 5000,
+        debt: 0,
+        stateLabel: "Trip fund",
+        state: "Concert skipped",
+        note: "No debt. About Rs. 10,000 is still needed.",
+      },
+    },
+    {
+      id: "C",
+      title: "Choose a smaller outing",
+      shortLabel: "Smaller outing",
+      summary: "Spend Rs. 1,000 instead of Rs. 3,000.",
+      bullets: [
+        "Spend Rs. 1,000 on a smaller plan.",
+        "Keep Rs. 4,000.",
+        "The trip then needs Rs. 11,000 more.",
+      ],
+      immediate: "You still do something social and keep most of the fund.",
+      future:
+        "The goal moves back a little. At Rs. 2,500 a month, Rs. 11,000 is still more than four months.",
+      snapshot: {
+        label: "Smaller outing",
+        savings: 4000,
+        debt: 0,
+        stateLabel: "Trip fund",
+        state: "Smaller outing chosen",
+        note: "The Rs. 1,000 outing is an example price.",
+      },
+    },
+  ],
+};
+
+const COMPLEX: ScenarioDefinition = {
+  levelId: 10,
+  title: "A difficult choice",
+  situation:
+    "You have Rs. 6,000. School materials cost Rs. 2,500 and are due this week. A sibling asks to borrow Rs. 2,000. A game you want costs Rs. 3,000.",
+  facts: [
+    { label: "Your savings", value: "Rs. 6,000" },
+    { label: "School materials", value: "Rs. 2,500, due this week" },
+    { label: "Sibling’s request", value: "Rs. 2,000" },
+    { label: "Game", value: "Rs. 3,000" },
+  ],
+  waitAssumption:
+    "Doing all three at the full amounts would cost Rs. 7,500, which is more than your Rs. 6,000. A cheaper game at Rs. 1,500 is only an example.",
+  moneyScale: 7500,
+  sixMonthAssumptions: [
+    "This comparison is a teaching sketch for one week of competing needs.",
+    "Borrowed money stays owed because no repayment plan is defined.",
+    "Money lent to your sibling is not shown as repaid.",
+    "None of these paths is labelled as the only correct choice.",
+  ],
+  options: [
+    {
+      id: "A",
+      title: "Buy the game and borrow for school",
+      shortLabel: "Game now",
+      summary: "Buy the game, lend your sibling Rs. 2,000, and borrow what school still needs.",
+      bullets: [
+        "Buy the Rs. 3,000 game.",
+        "Lend Rs. 2,000 to your sibling.",
+        "Borrow Rs. 1,500 so the Rs. 2,500 school bill can still be paid.",
+      ],
+      immediate:
+        "You get the game and help your sibling, but you owe Rs. 1,500 and have Rs. 1,000 left.",
+      future:
+        "School is paid only because of the loan. You still have to repay Rs. 1,500, and the sibling loan may not come back.",
+      snapshot: {
+        label: "Game now",
+        savings: 1000,
+        debt: 1500,
+        stateLabel: "This week",
+        state: "Game bought, sibling lent Rs. 2,000, school borrowed",
+        note: "You owe Rs. 1,500. The Rs. 2,000 lent to your sibling is not counted as money you still have.",
+      },
+    },
+    {
+      id: "B",
+      title: "Pay for school and keep a buffer",
+      shortLabel: "School and buffer",
+      summary: "Cover school, offer a smaller amount to your sibling, and skip the game.",
+      bullets: [
+        "Pay Rs. 2,500 for school materials.",
+        "Offer your sibling Rs. 500 instead of Rs. 2,000.",
+        "Keep Rs. 3,000 and skip the game.",
+      ],
+      immediate: "School is paid without a new loan, and most of your savings remain.",
+      future:
+        "You miss the game. Your sibling receives less than they asked for, so you should explain the limit.",
+      snapshot: {
+        label: "School and buffer",
+        savings: 3000,
+        debt: 0,
+        stateLabel: "This week",
+        state: "School paid, small family offer, no game",
+        note: "No new debt. Rs. 500 shared with your sibling is not assumed to return.",
+      },
+    },
+    {
+      id: "C",
+      title: "Give each goal a smaller share",
+      shortLabel: "Split three ways",
+      summary: "Pay school, lend less, and choose a cheaper game example.",
+      bullets: [
+        "Pay the full Rs. 2,500 school bill.",
+        "Lend Rs. 1,000 instead of Rs. 2,000.",
+        "Spend Rs. 1,500 on a cheaper game example and keep Rs. 1,000.",
+      ],
+      immediate: "All three areas get something, and you do not borrow.",
+      future:
+        "Nobody gets the full original wish. The cheaper game price is an assumption.",
+      snapshot: {
+        label: "Split three ways",
+        savings: 1000,
+        debt: 0,
+        stateLabel: "This week",
+        state: "School paid, partial loan, cheaper game",
+        note: "No new debt. The Rs. 1,500 game price is an example so the three costs can fit.",
+      },
+    },
+  ],
+};
+
+const SCENARIOS: ScenarioDefinition[] = [
+  BIRTHDAY,
+  FRIEND_LOAN,
+  BUY_NOW,
+  FESTIVAL,
+  PHONE_SCENARIO,
+  SALARY,
+  FAMILY,
+  SURPRISE,
+  BIG_GOAL,
+  COMPLEX,
+];
+
+export function getScenario(levelId: number): ScenarioDefinition | undefined {
+  return SCENARIOS.find((scenario) => scenario.levelId === levelId);
+}
