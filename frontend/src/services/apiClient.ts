@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE_URL) || "http://localhost:8000";
 
 export class ApiError extends Error {
   status: number;
@@ -52,6 +52,15 @@ export async function apiPut<T>(path: string, body: unknown): Promise<T> {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+    }),
+  );
+}
+
+export async function apiPostForm<T>(path: string, body: FormData): Promise<T> {
+  return parse<T>(
+    await request(path, {
+      method: "POST",
+      body,
     }),
   );
 }
@@ -223,3 +232,339 @@ export function getMarketBehaviour(childId: string, sessionId?: string) {
   const query = sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : "";
   return apiGet<BehaviourReport>(`/api/market/behaviour/${childId}${query}`);
 }
+
+export type MarketAnalysis = {
+  symbol: string;
+  requested: string;
+  mapped_from_demo: boolean;
+  name: string;
+  region: string | null;
+  currency: string | null;
+  as_of: string;
+  last_close: number;
+  trend: "upward" | "downward" | "sideways" | string;
+  title: string;
+  explanation: string;
+  risk: string;
+  probabilities: Record<string, number> | null;
+  indicators: {
+    ret_1?: number;
+    ret_5?: number;
+    ma5?: number;
+    ma20?: number;
+    close_ma20?: number;
+    vol_20?: number;
+    hl_range?: number;
+  };
+  model: {
+    file: string;
+    selected?: string;
+    test_accuracy?: number;
+    test_macro_f1?: number;
+    trained_at?: string;
+  };
+  disclaimer: string;
+};
+
+export function getMarketAssets() {
+  return apiGet<{ assets: Array<{ symbol: string; exchange: string; region: string; currency: string }> }>(
+    "/api/market/assets",
+  );
+}
+
+export function getMarketHistory(symbol: string, limit = 180) {
+  return apiGet<{ symbol: string; points: Array<{ date: string; close: number }> }>(
+    `/api/market/history/${encodeURIComponent(symbol)}?limit=${limit}`,
+  );
+}
+
+export function getMarketAnalysis(symbol: string) {
+  return apiGet<MarketAnalysis>(`/api/market/analysis/${encodeURIComponent(symbol)}`);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  SCAM SAFETY GUARDIAN & SIMULATION API
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type SmtpSummary = {
+  configured: boolean;
+  host?: string | null;
+  port: number;
+  from_email: string;
+  use_tls: boolean;
+  auth_configured: boolean;
+};
+
+export type GuardianDetails = {
+  child_id: string;
+  configured: boolean;
+  parent_name: string;
+  email: string;
+  relationship: string;
+  consent_confirmed: boolean;
+  simulation_enabled: boolean;
+  verification_status: "unconfigured" | "pending" | "verified";
+  verification_method?: "unconfigured" | "simulated_dev_assist" | "email_link" | string;
+  verified_at: string | null;
+  updated_at?: string;
+  smtp_configured?: boolean;
+  smtp_summary?: SmtpSummary;
+  verification_token_dev?: string;
+};
+
+export type LevelSimulationStatus = {
+  simulation_id?: string;
+  category_id: string;
+  level_number?: string;
+  score?: number;
+  status:
+    | "sent"
+    | "not_configured"
+    | "failed"
+    | "not_passed"
+    | "no_guardian"
+    | "consent_required"
+    | "unverified"
+    | "disabled"
+    | "pending";
+  detail?: string;
+  parent_email?: string;
+  created_at?: string;
+};
+
+export type AllSimulationsResponse = {
+  child_id: string;
+  by_category: Record<string, LevelSimulationStatus | null>;
+  total_simulations: number;
+  history: LevelSimulationStatus[];
+  smtp_configured?: boolean;
+  smtp_summary?: SmtpSummary;
+};
+
+export type SimulationFollowUp = {
+  question: string;
+  options: string[];
+  correct_index?: number;
+  explanation?: string;
+};
+
+export type SimulationFeedback = {
+  simulation_id: string;
+  category_id: string;
+  level_title: string;
+  scenario_name: string;
+  sender_name?: string;
+  sender_email?: string;
+  call_to_action?: string;
+  display_link_text?: string;
+  simulated_body: string;
+  red_flags: string[];
+  learning_goal: string;
+  score?: number;
+  created_at?: string;
+  link_clicked?: boolean;
+  educational_link_clicked?: boolean;
+  reported_as_suspicious?: boolean;
+  initial_classification?: string;
+  outcome?: string;
+  follow_up?: SimulationFollowUp;
+  follow_up_completed?: boolean;
+  follow_up_correct?: boolean;
+  follow_up_selected_index?: number;
+};
+
+export type SimulatedInboxItem = {
+  simulation_id: string;
+  category_id: string;
+  level_number: string;
+  level_title: string;
+  scenario_id: string;
+  scenario_name: string;
+  sender_name: string;
+  sender_email: string;
+  subject: string;
+  preview: string;
+  body: string;
+  call_to_action: string;
+  display_link_text: string;
+  created_at: string;
+  inbox_opened: boolean;
+  link_clicked: boolean;
+  reported_as_suspicious: boolean;
+  initial_classification: "unanswered" | "suspicious" | "safe" | "clicked_unsafe_link";
+  outcome: "pending_decision" | "safely_reported" | "unsafe_link_clicked" | "marked_safe";
+  debrief_viewed: boolean;
+  follow_up_completed: boolean;
+  follow_up_correct?: boolean;
+};
+
+export type SimulatedInboxResponse = {
+  child_id: string;
+  items: SimulatedInboxItem[];
+  total: number;
+  unread_count: number;
+};
+
+export type SimulationEventResponse = {
+  ok: boolean;
+  simulation_id: string;
+  event_type: "inbox_opened" | "link_clicked" | "reported_suspicious" | "marked_safe";
+  outcome: string;
+  initial_classification: string;
+  link_clicked: boolean;
+  reported_as_suspicious: boolean;
+  redirect_url?: string;
+  message?: string;
+};
+
+export type FollowUpSubmitResponse = {
+  ok: boolean;
+  simulation_id: string;
+  selected_index: number;
+  correct_index: number;
+  is_correct: boolean;
+  explanation: string;
+  learning_goal: string;
+};
+
+export type LevelLearningMetric = {
+  category_id: string;
+  title: string;
+  level_number: string;
+  attempts: number;
+  correctly_reported: number;
+  unsafe_clicks: number;
+  debrief_completed: number;
+  latest_outcome?: string | null;
+};
+
+export type SafetyLearningMetrics = {
+  child_id: string;
+  total_simulations: number;
+  completed_decisions: number;
+  pending_decisions: number;
+  correctly_reported_count: number;
+  unsafe_clicks_count: number;
+  marked_safe_count: number;
+  suspicious_recognition_rate: number;
+  safe_avoidance_rate: number;
+  debrief_completion_count: number;
+  debrief_completion_rate: number;
+  follow_up_completed_count: number;
+  follow_up_correct_count: number;
+  follow_up_accuracy: number;
+  by_level: Record<string, LevelLearningMetric>;
+  recent_attempts: Array<Record<string, unknown>>;
+};
+
+export function getGuardianDetails(childId: string) {
+  return apiGet<GuardianDetails>(`/api/safety/guardian/${childId}`);
+}
+
+export function saveGuardianDetails(
+  childId: string,
+  body: {
+    parent_name: string;
+    email: string;
+    relationship?: string;
+    consent_confirmed: boolean;
+    simulation_enabled: boolean;
+  },
+) {
+  return apiPut<GuardianDetails>(`/api/safety/guardian/${childId}`, body);
+}
+
+export function verifyGuardianEmail(
+  childId: string,
+  token: string = "",
+  isSimulatedDevVerification: boolean = false,
+) {
+  return apiPost<{ ok: boolean; verification_status: string; verification_method?: string }>(
+    `/api/safety/guardian/${childId}/verify`,
+    { token, is_simulated_dev_verification: isSimulatedDevVerification },
+  );
+}
+
+export function updateGuardianConsent(
+  childId: string,
+  body: { consent_confirmed: boolean; simulation_enabled: boolean },
+) {
+  return apiPost<{ ok: boolean; consent_confirmed: boolean; simulation_enabled: boolean }>(
+    `/api/safety/guardian/${childId}/consent`,
+    body,
+  );
+}
+
+export function triggerLevelSimulation(
+  childId: string,
+  body: {
+    category_id: string;
+    score: number;
+    attempt_id: string;
+    red_flags_identified?: string[];
+    force_retry?: boolean;
+  },
+) {
+  return apiPost<{
+    eligible: boolean;
+    duplicate?: boolean;
+    retried?: boolean;
+    simulation_id?: string;
+    category_id: string;
+    level_number?: string;
+    status: string;
+    parent_email?: string;
+    detail?: string;
+    feedback_url?: string;
+  }>(`/api/safety/simulation/trigger/${childId}`, body);
+}
+
+export function triggerPassedLevelSimulation(childId: string, categoryId: string) {
+  return apiPost<{
+    eligible: boolean;
+    duplicate?: boolean;
+    retried?: boolean;
+    simulation_id?: string;
+    category_id: string;
+    level_number?: string;
+    status: string;
+    parent_email?: string;
+    detail?: string;
+    feedback_url?: string;
+  }>(`/api/safety/simulation/trigger-passed/${childId}/${categoryId}`, {});
+}
+
+export function getSimulationStatuses(childId: string) {
+  return apiGet<AllSimulationsResponse>(`/api/safety/simulation/status/${childId}`);
+}
+
+export function getSimulationFeedback(simulationId: string) {
+  return apiGet<SimulationFeedback>(`/api/safety/simulation/feedback/${simulationId}`);
+}
+
+export function getSimulatedInbox(childId: string) {
+  return apiGet<SimulatedInboxResponse>(`/api/safety/simulation/inbox/${childId}`);
+}
+
+export function recordSimulationEvent(
+  simulationId: string,
+  eventType: "inbox_opened" | "link_clicked" | "reported_suspicious" | "marked_safe",
+  selectedClassification?: "suspicious" | "safe",
+) {
+  return apiPost<SimulationEventResponse>(`/api/safety/simulation/event/${simulationId}`, {
+    event_type: eventType,
+    selected_classification: selectedClassification,
+  });
+}
+
+export function submitSimulationFollowUp(simulationId: string, selectedIndex: number) {
+  return apiPost<FollowUpSubmitResponse>(`/api/safety/simulation/follow-up/${simulationId}`, {
+    selected_index: selectedIndex,
+  });
+}
+
+export function getSafetyLearningMetrics(childId: string) {
+  return apiGet<SafetyLearningMetrics>(`/api/safety/simulation/metrics/${childId}`);
+}
+
+

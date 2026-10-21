@@ -11,6 +11,12 @@ export const CUB_ROUTE_ALLOWLIST = [
   "/market/lessons/2",
   "/market/lessons/3",
   "/market/lessons/4",
+  "/market/lessons/5",
+  "/market/lessons/6",
+  "/market/lessons/7",
+  "/market/lessons/8",
+  "/market/lessons/9",
+  "/market/lessons/10",
   "/market/terminal",
   "/market/confirm",
   "/market/portfolio",
@@ -19,6 +25,13 @@ export const CUB_ROUTE_ALLOWLIST = [
   "/safety",
   "/progress",
   "/profile",
+  "/tax",
+  "/tax/learn",
+  "/tax/simulate",
+  "/tax/challenge",
+  "/tax/decisions",
+  "/tax/quiz",
+  "/tax/sri-lanka",
   "/teacher/dashboard",
   "/teacher/classes",
   "/teacher/students",
@@ -42,7 +55,7 @@ export function isAllowedCubRoute(path: string) {
   if (ALLOWED.has(path)) {
     return true;
   }
-  return /^\/market\/lessons\/\d+$/.test(path);
+  return /^\/market\/lessons\/\d+$/.test(path) || /^\/tax(\/[\w-]+)*$/.test(path);
 }
 
 export function canOpenRoute(role: CubRole | undefined, path: string) {

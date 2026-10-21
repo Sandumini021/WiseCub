@@ -3,12 +3,20 @@
   padding: 1.4rem;
   display: grid;
   place-items: center;
+  position: relative;
   background:
     radial-gradient(circle at 8% 12%, #ffe7a8 0 90px, transparent 91px),
     radial-gradient(circle at 92% 10%, #b7d4ff 0 120px, transparent 121px),
     radial-gradient(circle at 88% 88%, #ffd9a0 0 140px, transparent 141px),
     radial-gradient(circle at 6% 86%, #c9b6ff 0 100px, transparent 101px),
     linear-gradient(180deg, #fff6ea 0%, #f4f7ff 100%);
+}
+
+.signup-lang {
+  position: absolute;
+  top: 1rem;
+  right: 1.2rem;
+  z-index: 3;
 }
 
 .signup-card {

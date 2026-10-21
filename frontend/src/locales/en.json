@@ -27,12 +27,16 @@
     "safety": {
       "title": "Scam Safety",
       "blurb": "Spot fake messages inside WiseCub. Nothing is sent to a real inbox."
+    },
+    "tax": {
+      "title": "Cub’s Tax Practice Lab",
+      "blurb": "Learn tax ideas with practice numbers and labelled Sri Lanka 2025/2026 figures."
     }
   },
   "cub": {
     "name": "Cub",
-    "placeholder": "Hi, I’m Cub. Ask me in English or Sinhala. I am a simple guide, not a trained AI model.",
-    "hello": "Hi, I’m Cub. Ask me in English or Sinhala. I am a simple guide, not a trained AI model.",
+    "placeholder": "Hi, I’m Cub. Ask me in English or Sinhala. Say open the market if you want to practise trading.",
+    "hello": "Hi, I’m Cub. Ask me in English or Sinhala. Say open the market if you want to practise trading.",
     "label": "Cub the learning companion",
     "ask": "Ask Cub"
   },

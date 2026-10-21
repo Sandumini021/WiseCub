@@ -1,0 +1,17 @@
+[
+  "open",
+  "high",
+  "low",
+  "close",
+  "volume",
+  "ret_1",
+  "ret_5",
+  "ma5",
+  "ma10",
+  "ma20",
+  "close_ma5",
+  "close_ma10",
+  "close_ma20",
+  "vol_20",
+  "hl_range"
+]

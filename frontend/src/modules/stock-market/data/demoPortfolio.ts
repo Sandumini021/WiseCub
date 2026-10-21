@@ -17,6 +17,7 @@ export type DemoTrade = {
   price: number;
   at: string;
   reducedAfterWarning?: boolean;
+  realized?: number;
 };
 
 export type DemoBook = {
@@ -90,6 +91,7 @@ export function applyTrade(
     return { ok: false, error: "Choose at least 1 share." };
   }
   const cost = shares * input.price;
+  let realized: number | undefined;
   const next: DemoBook = {
     cash: book.cash,
     holdings: book.holdings.map((row) => ({ ...row })),
@@ -113,6 +115,7 @@ export function applyTrade(
     if (!row || row.shares < shares) {
       return { ok: false, error: "You do not own that many shares to sell." };
     }
+    realized = Math.round((input.price - row.avgPrice) * shares * 100) / 100;
     next.cash = Math.round((next.cash + cost) * 100) / 100;
     row.shares -= shares;
     if (row.shares === 0) {
@@ -128,6 +131,7 @@ export function applyTrade(
     price: input.price,
     at: new Date().toISOString(),
     reducedAfterWarning: input.reducedAfterWarning,
+    realized,
   });
   return { ok: true, book: next };
 }
@@ -135,6 +139,17 @@ export function applyTrade(
 export function holdingValue(book: DemoBook, ticker: Ticker, price: number) {
   const row = holdingOf(book, ticker);
   return (row?.shares ?? 0) * price;
+}
+
+export function unrealizedPnL(book: DemoBook, prices: Record<string, number>) {
+  return book.holdings.reduce((sum, row) => {
+    const price = prices[row.ticker] ?? row.avgPrice;
+    return sum + (price - row.avgPrice) * row.shares;
+  }, 0);
+}
+
+export function realizedPnL(book: DemoBook) {
+  return book.trades.reduce((sum, trade) => sum + (trade.realized ?? 0), 0);
 }
 
 export function totalEquity(book: DemoBook, prices: Record<string, number>) {

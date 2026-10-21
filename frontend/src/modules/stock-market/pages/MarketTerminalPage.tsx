@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { readCubLanguage } from "../../../pages/auth/demoSession";
+import { CubCoachCard } from "../components/CubCoachCard";
+import { pickCoach, type CoachCard } from "../data/decisionCoach";
 import { flushQueuedEvents, recordMarketEvent } from "../data/behaviourEvents";
 import { CROWD_SCENARIO, DROP_SCENARIO } from "../data/crowdScenarios";
 import { DEMO_COMPANIES, readLesson1Complete } from "../data/demoMarket";
@@ -16,22 +19,66 @@ import {
   type Ticker,
 } from "../data/syntheticPrices";
 import { StockPriceChart } from "../components/StockPriceChart";
+import { MarketInsightsPanel } from "../components/MarketInsightsPanel";
 import "../../../styles/market-dashboard.css";
+import "../../../styles/market-lesson.css";
 
 const RANGES = ["1D", "1W", "1M", "1Y"] as const;
 
+const MARK: Record<string, string> = {
+  SUNTEA: "🍃",
+  LNKBNK: "🏦",
+  CEYPOW: "⚡",
+  HARBOR: "🚢",
+  GRNNRG: "🌱",
+};
+
+function rupees(value: number) {
+  return `Rs ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+}
+
+function MiniSpark({ points, down }: { points: number[]; down: boolean }) {
+  if (points.length < 2) {
+    return null;
+  }
+  const w = 72;
+  const h = 28;
+  const min = Math.min(...points);
+  const span = Math.max(...points) - min || 1;
+  const line = points
+    .map((value, index) => {
+      const x = (index / (points.length - 1)) * w;
+      const y = h - ((value - min) / span) * (h - 4) - 2;
+      return `${x},${y}`;
+    })
+    .join(" ");
+  return (
+    <svg className="tk-spark" viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
+      <polyline fill="none" stroke={down ? "#dc2626" : "#16a34a"} strokeWidth="2.5" points={line} />
+    </svg>
+  );
+}
+
 export function MarketTerminalPage() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const quotes = useMemo(() => buildQuotes(), []);
+  const lang = readCubLanguage();
   const [unlocked, setUnlocked] = useState(false);
   const [book, setBook] = useState<DemoBook | null>(null);
-  const [ticker, setTicker] = useState<Ticker>("SUNTEA");
+  const requested = params.get("ticker") as Ticker | null;
+  const [ticker, setTicker] = useState<Ticker>(
+    requested && quotes.some((item) => item.ticker === requested) ? requested : "SUNTEA",
+  );
   const [range, setRange] = useState<(typeof RANGES)[number]>("1W");
   const [side, setSide] = useState<"buy" | "sell">("buy");
   const [shares, setShares] = useState(10);
   const [error, setError] = useState<string | null>(null);
   const [crowdSeen, setCrowdSeen] = useState(false);
   const [dropSeen, setDropSeen] = useState(false);
+  const [viewed, setViewed] = useState<Ticker[]>(["SUNTEA"]);
+  const [coach, setCoach] = useState<CoachCard | null>(null);
+  const [whyOpen, setWhyOpen] = useState(false);
 
   useEffect(() => {
     setUnlocked(readLesson1Complete());
@@ -73,6 +120,34 @@ export function MarketTerminalPage() {
     ? concentrationAfter(book, { side, ticker, shares, price: quote.price }, prices)
     : { percent: 0, error: "Loading…", cashAfter: 0 };
   const owned = book ? (holdingOf(book, ticker)?.shares ?? 0) : 0;
+  const compared = viewed.length >= 2;
+  const others = quotes.filter((item) => item.ticker !== ticker);
+
+  useEffect(() => {
+    if (!book || !unlocked) {
+      return;
+    }
+    setCoach(
+      pickCoach({
+        lang,
+        path: "terminal",
+        changePct: quote.changePct,
+        concentration: preview.percent,
+        side,
+        tradeCount: book.trades.length,
+        viewedCompany: viewed.includes(ticker),
+        dropSell: side === "sell" && ticker === DROP_SCENARIO.ticker,
+        compared,
+      }),
+    );
+  }, [book, unlocked, quote.changePct, preview.percent, side, ticker, viewed, compared, lang]);
+
+  function openTicker(next: Ticker, price: number) {
+    setTicker(next);
+    setWhyOpen(false);
+    setViewed((current) => (current.includes(next) ? current : [...current, next]));
+    recordMarketEvent({ type: "company_viewed", ticker: next, price });
+  }
 
   function placeOrder() {
     if (!book) {
@@ -118,57 +193,74 @@ export function MarketTerminalPage() {
     return <p>Loading practice account…</p>;
   }
 
-  return (
-    <div className="terminal">
-      <p className="muted">
-        <Link to="/market">← Market Floor</Link> · Practice account · OPEN · virtual only
-      </p>
-      <div className="terminal-head">
-        <h1>Market terminal</h1>
-        <p className="cash-pill">Cash Rs {book.cash.toLocaleString()}</p>
-        <Link className="btn-ghost" to="/market/portfolio">
-          My portfolio
-        </Link>
-      </div>
+  const cashAfter = preview.error ? "—" : rupees(preview.cashAfter ?? 0);
+  const concWarn = preview.percent >= 40 && !preview.error && side === "buy";
 
+  return (
+    <div className="terminal tk-shell">
+      <header className="tk-top">
+        <p className="tk-crumb">
+          <Link to="/market">← Floor</Link>
+          <span>Practice · virtual</span>
+        </p>
+        <h1>Terminal</h1>
+        <p className="cash-pill">Cash {rupees(book.cash)}</p>
+        <Link className="btn-ghost" to="/market/portfolio">
+          Bag
+        </Link>
+      </header>
+
+      {coach ? (
+        <CubCoachCard compact card={coach} lang={lang} onDismiss={() => setCoach(null)} />
+      ) : null}
       {crowdSeen ? (
-        <p className="warn-box" role="status">
-          {CROWD_SCENARIO.text}
+        <p className="tk-banner" role="status">
+          Crowd drill · 8 in 10 demo buys on SUNTEA (made-up)
         </p>
       ) : null}
       {side === "sell" && ticker === DROP_SCENARIO.ticker ? (
-        <p className="warn-box" role="status">
-          {DROP_SCENARIO.text}
+        <p className="tk-banner is-drop" role="status">
+          Drop drill · SUNTEA −9% pretend price
         </p>
       ) : null}
 
-      <div className="ticker-bar" role="list">
-        {quotes.map((item) => (
-          <button
-            key={item.ticker}
-            type="button"
-            role="listitem"
-            className={`ticker-btn${item.ticker === ticker ? " is-on" : ""}`}
-            onClick={() => {
-              setTicker(item.ticker);
-              recordMarketEvent({ type: "company_viewed", ticker: item.ticker, price: item.price });
-            }}
-          >
-            {item.ticker} {item.changePct >= 0 ? "▲" : "▼"}
-          </button>
-        ))}
+      <div className="tk-tape" role="list">
+        {quotes.map((item) => {
+          const down = item.changePct < 0;
+          return (
+            <button
+              key={item.ticker}
+              type="button"
+              role="listitem"
+              className={`tk-chip${item.ticker === ticker ? " is-on" : ""}${down ? " is-down" : " is-up"}`}
+              onClick={() => openTicker(item.ticker, item.price)}
+            >
+              <span aria-hidden="true">{MARK[item.ticker]}</span>
+              <strong>{item.ticker}</strong>
+              <em>
+                {down ? "▼" : "▲"} {Math.abs(item.changePct).toFixed(1)}%
+              </em>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="terminal-grid">
-        <section className="panel">
-          <p className="muted">{company?.sector} · fictional name</p>
-          <h2>
-            {company?.name} ({quote.ticker})
-          </h2>
-          <p className={`px ${falling ? "is-down" : "is-up"}`}>
-            Rs {quote.price.toFixed(2)} {falling ? "▼" : "▲"} {Math.abs(quote.changePct).toFixed(1)}%
-            today
-          </p>
+      <div className="terminal-grid tk-grid">
+        <section className="tk-board">
+          <div className={`tk-quote${falling ? " is-down" : " is-up"}`}>
+            <p className="tk-sector">
+              {MARK[quote.ticker]} {company?.sector} · demo
+            </p>
+            <h2>
+              {company?.name} <span>{quote.ticker}</span>
+            </h2>
+            <p className="px">
+              Rs {quote.price.toFixed(2)}
+              <small>
+                {falling ? "▼" : "▲"} {Math.abs(quote.changePct).toFixed(1)}%
+              </small>
+            </p>
+          </div>
           <div className="range-row">
             {RANGES.map((item) => (
               <button
@@ -196,27 +288,60 @@ export function MarketTerminalPage() {
               <dd>Rs {quote.low.toFixed(2)}</dd>
             </div>
             <div>
-              <dt>Volume</dt>
+              <dt>Vol</dt>
               <dd>{quote.volume.toLocaleString()}</dd>
             </div>
           </dl>
-          <p>
-            <strong>Why it moved (age 13 version):</strong> {quote.why}
-          </p>
+
+          <button type="button" className={`tk-why${whyOpen ? " is-open" : ""}`} onClick={() => setWhyOpen((v) => !v)}>
+            <span>Why it moved</span>
+            <em>demo story</em>
+          </button>
+          {whyOpen ? <p className="tk-why-body">{quote.why}</p> : null}
+
+          <div className="tk-compare" aria-label="Compare another company">
+            <p className="tk-label">Tap to compare · 10 shares</p>
+            <div className="tk-compare-row">
+              {others.map((item) => {
+                const down = item.changePct < 0;
+                return (
+                  <button
+                    key={item.ticker}
+                    type="button"
+                    className="tk-vs"
+                    onClick={() => openTicker(item.ticker, item.price)}
+                  >
+                    <span className="tk-vs-head">
+                      {MARK[item.ticker]} {item.ticker}
+                    </span>
+                    <MiniSpark points={item.history.slice(-12)} down={down} />
+                    <strong className={down ? "is-down" : "is-up"}>
+                      {down ? "▼" : "▲"} {Math.abs(item.changePct).toFixed(1)}%
+                    </strong>
+                    <small>{rupees(10 * item.price)}</small>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <MarketInsightsPanel ticker={ticker} />
         </section>
 
-        <aside>
-          <section className="panel">
-            <h2>Order ticket</h2>
-            <div className="side-toggle">
-              <button type="button" className={side === "buy" ? "is-on" : ""} onClick={() => setSide("buy")}>
+        <aside className="tk-side">
+          <section className={`tk-ticket is-${side}`}>
+            <p className="tk-label">Order · no real money</p>
+            <div className="side-toggle tk-toggle">
+              <button type="button" className={side === "buy" ? "is-on is-buy" : ""} onClick={() => setSide("buy")}>
                 Buy
               </button>
-              <button type="button" className={side === "sell" ? "is-on" : ""} onClick={() => setSide("sell")}>
+              <button type="button" className={side === "sell" ? "is-on is-sell" : ""} onClick={() => setSide("sell")}>
                 Sell
               </button>
             </div>
-            <label>
+            <p className="tk-own">
+              {MARK[quote.ticker]} You hold <strong>{owned}</strong>
+            </p>
+            <label className="tk-shares">
               Shares
               <span className="stepper">
                 <button type="button" onClick={() => setShares((n) => Math.max(1, n - 1))}>
@@ -233,34 +358,56 @@ export function MarketTerminalPage() {
                 </button>
               </span>
             </label>
-            <p>Est. cost Rs {cost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
-            <p>
-              Cash after {preview.error ? "—" : `Rs ${preview.cashAfter?.toLocaleString()}`}
-            </p>
-            <p>You own {owned} {quote.ticker} now.</p>
-            {preview.percent >= 40 && !preview.error && side === "buy" ? (
-              <p className="warn-box">
-                Cub: this would put about {preview.percent.toFixed(0)}% of your practice money in one
-                company.
+            <div className="tk-meter">
+              <div>
+                <span>Cost</span>
+                <strong>{rupees(cost)}</strong>
+              </div>
+              <div>
+                <span>Cash after</span>
+                <strong>{cashAfter}</strong>
+              </div>
+            </div>
+            {concWarn ? (
+              <p className="tk-conc" role="status">
+                ~{preview.percent.toFixed(0)}% would sit in one name
               </p>
             ) : null}
             {error || preview.error ? <p className="live-note is-try">{error ?? preview.error}</p> : null}
-            <button className="btn-gold" type="button" onClick={placeOrder}>
-              Place practice order
+            <button className="btn-gold tk-go" type="button" onClick={placeOrder}>
+              {side === "buy" ? "Buy" : "Sell"} {shares} {quote.ticker}
             </button>
-            <p className="muted">No real money moves.</p>
           </section>
-          <section className="panel">
-            <h2>My positions</h2>
+
+          <section className="tk-pos">
+            <p className="tk-label">Positions</p>
             {book.holdings.length === 0 ? (
-              <p className="muted">None yet. Buy a few slices to practise.</p>
+              <p className="tk-empty">Empty bag. Buy a slice to practise.</p>
             ) : (
-              <ul className="holding-list">
-                {book.holdings.map((row) => (
-                  <li key={row.ticker}>
-                    {row.ticker} ×{row.shares}
-                  </li>
-                ))}
+              <ul className="tk-pos-list">
+                {book.holdings.map((row) => {
+                  const live = quotes.find((item) => item.ticker === row.ticker);
+                  const down = (live?.changePct ?? 0) < 0;
+                  return (
+                    <li key={row.ticker}>
+                      <button
+                        type="button"
+                        className={row.ticker === ticker ? "is-on" : ""}
+                        onClick={() => live && openTicker(row.ticker, live.price)}
+                      >
+                        <span>
+                          {MARK[row.ticker]} {row.ticker}
+                        </span>
+                        <em>×{row.shares}</em>
+                        {live ? (
+                          <small className={down ? "is-down" : "is-up"}>
+                            {down ? "▼" : "▲"} {Math.abs(live.changePct).toFixed(1)}%
+                          </small>
+                        ) : null}
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>

@@ -1,0 +1,401 @@
+.tax-lab {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 92% 8%, #ffe7a8 0 120px, transparent 121px),
+    radial-gradient(circle at 8% 18%, #c9dfff 0 140px, transparent 141px),
+    linear-gradient(180deg, #fff7ea 0%, #f7fbff 22%, #fff 100%);
+  color: #163a8a;
+  padding-bottom: 3rem;
+}
+
+.tax-head,
+.tax-home,
+.tax-split,
+.tax-card,
+.tax-learn,
+.tax-quiz,
+.tax-foot,
+.tax-note,
+.tax-err,
+.tax-ok,
+.tax-warn {
+  width: min(1100px, calc(100% - 2.4rem));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tax-head {
+  padding-top: 0.8rem;
+}
+
+.tax-head h1 {
+  margin: 0.2rem 0 0.7rem;
+  font-size: 1.85rem;
+}
+
+.tax-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  color: #5c6b80;
+  font-size: 0.88rem;
+}
+
+.tax-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tax-nav a {
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  background: #fff;
+  color: #1b2744;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 0.85rem;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+.tax-nav a.active {
+  background: #1b2744;
+  color: #fff;
+}
+
+.tax-hero {
+  display: grid;
+  grid-template-columns: 1.3fr auto;
+  gap: 1rem;
+  align-items: end;
+  padding: 1.2rem 1.3rem;
+  border-radius: 28px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 90% 10%, #fdba74 0 90px, transparent 91px),
+    linear-gradient(120deg, #1b2744 0%, #163a8a 50%, #0f766e 100%);
+  margin: 0.9rem auto;
+  width: min(1100px, calc(100% - 2.4rem));
+}
+
+.tax-hero h2 {
+  margin: 0.15rem 0 0.25rem;
+}
+
+.tax-hero p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.tax-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(72px, 1fr));
+  gap: 0.4rem;
+}
+
+.tax-hero-stats span {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.75rem;
+}
+
+.tax-hero-stats b {
+  display: block;
+  font-size: 1.25rem;
+}
+
+.tax-cards {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.7rem;
+  padding: 0;
+}
+
+.tax-cards a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-height: 132px;
+  padding: 1rem;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+  text-decoration: none;
+  color: inherit;
+}
+
+.tax-cards em {
+  font-style: normal;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #0f766e;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tax-cards span {
+  color: #5c6b80;
+}
+
+.tax-cub {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.6rem;
+  align-items: center;
+  background: #fff8e8;
+  border-radius: 22px;
+  padding: 0.75rem;
+  margin: 0.8rem 0;
+}
+
+.tax-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-top: 0.9rem;
+}
+
+.tax-card {
+  background: #fff;
+  border-radius: 22px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.tax-result {
+  background: #fff;
+  border-radius: 22px;
+  padding: 1rem 1.1rem;
+  border-top: 5px solid #f5c400;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.tax-result.is-verified {
+  border-top-color: #163a8a;
+}
+
+.tax-result dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+
+.tax-result dt {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.tax-result dd {
+  margin: 0;
+  font-weight: 800;
+}
+
+.tax-bars p {
+  margin: 0.35rem 0 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tax-bars i {
+  display: block;
+  height: 10px;
+  border-radius: 99px;
+}
+
+.tax-bars .is-gross {
+  background: #dbeafe;
+}
+
+.tax-bars .is-tax {
+  background: #f97316;
+  min-width: 0;
+}
+
+.tax-mode {
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.tax-warn,
+.tax-err,
+.tax-ok,
+.tax-note {
+  padding: 0.5rem 0.8rem;
+  border-radius: 12px;
+  margin: 0.7rem auto;
+}
+
+.tax-warn,
+.tax-err {
+  background: #fee2e2;
+}
+
+.tax-ok {
+  background: #dcfce7;
+}
+
+.tax-note {
+  background: #fff8e8;
+  color: #5c4a10;
+}
+
+.tax-opt,
+.tax-learn label,
+.tax-lab label {
+  display: block;
+  margin: 0.45rem 0;
+}
+
+.tax-opt {
+  border: 1px solid #e5eaf3;
+  border-radius: 14px;
+  padding: 0.55rem 0.7rem;
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+.tax-opt.is-on,
+.tax-guess label.is-on {
+  background: #1b2744;
+  color: #fff;
+  border-color: #1b2744;
+}
+
+.tax-lab input[type="range"] {
+  width: 100%;
+}
+
+.tax-lab select,
+.tax-lab input[type="number"] {
+  min-height: 42px;
+  margin-left: 0.4rem;
+  border: 2px solid #e5eaf3;
+  border-radius: 12px;
+  padding: 0 0.6rem;
+  font: inherit;
+}
+
+.tax-lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0;
+  list-style: none;
+}
+
+.tax-lesson-list a {
+  display: block;
+  padding: 0.55rem 0.75rem;
+  border-radius: 14px;
+  background: #eef2f8;
+  text-decoration: none;
+  color: inherit;
+}
+
+.tax-lesson-list a.is-on {
+  background: #1b2744;
+  color: #fff;
+}
+
+.ls-beats,
+.tax-chips,
+.tax-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.ls-beats button,
+.tax-chips button {
+  border-radius: 999px;
+  border: 1px solid #d7dee9;
+  min-height: 36px;
+  padding: 0 0.8rem;
+  cursor: pointer;
+  font-weight: 800;
+  background: #fff;
+}
+
+.ls-beats button.is-on,
+.tax-chips button.is-on {
+  background: #1b2744;
+  color: #fff;
+}
+
+.tax-beat {
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.tax-big {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0.3rem 0;
+}
+
+.tax-guess {
+  border: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.tax-guess label {
+  border: 1px solid #e5eaf3;
+  border-radius: 14px;
+  padding: 0.55rem 0.7rem;
+  background: #f8fafc;
+}
+
+.tax-split-bars {
+  display: flex;
+  height: 28px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0.6rem 0 1rem;
+}
+
+.tax-split-bars .is-spend {
+  background: #fb923c;
+}
+
+.tax-split-bars .is-save {
+  background: #38bdf8;
+}
+
+.tax-split-bars .is-keep {
+  background: #f5c400;
+}
+
+.tax-points {
+  padding-left: 1.1rem;
+}
+
+.tax-empty {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  color: #64748b;
+}
+
+.tax-foot {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .tax-hero,
+  .tax-split,
+  .tax-hero-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .tax-cub {
+    grid-template-columns: 1fr;
+  }
+}

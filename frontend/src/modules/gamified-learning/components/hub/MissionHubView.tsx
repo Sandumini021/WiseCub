@@ -116,7 +116,7 @@ export const MissionHubView: React.FC<MissionHubViewProps> = ({
                 >
                   <span className="btn-icon">📈</span>
                   <span className="btn-label-group">
-                    <strong>My Money Journey</strong>
+                    <strong>{t("missions.journey")}</strong>
                     <small>Analytics & ML Recommendations</small>
                   </span>
                   <span className="btn-chevron">➔</span>
@@ -164,7 +164,7 @@ export const MissionHubView: React.FC<MissionHubViewProps> = ({
                 </div>
                 <div className="character-meta-info">
                   <span className="competency-badge badge-blue">🎯 Budgeting & Emergency Reserve</span>
-                  <h3 className="mission-title">Rescue the Injured Puppy</h3>
+                  <h3 className="mission-title">{t("missions.puppy")}</h3>
                   <div className="companion-tag">
                     <span className="companion-name">Barnaby</span>
                     <span className="companion-status status-healthy">8 Chapter Arc</span>

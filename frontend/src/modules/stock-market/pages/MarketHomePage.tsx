@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { SiteTopBar } from "../../../components/layout/SiteTopBar";
+import { useLang } from "../../../i18n/useLang";
 import "../../../styles/dashboard-long.css";
 import "../../../styles/market-home.css";
+import "../../../styles/market-dashboard.css";
+import { CubCoachCard } from "../components/CubCoachCard";
+import { pickCoach, type CoachCard } from "../data/decisionCoach";
 import {
   DEMO_COMPANIES,
   LESSONS,
@@ -16,17 +20,17 @@ import { buildQuotes, sliceHistory, type Quote } from "../data/syntheticPrices";
 
 const SIDE_LINKS: Array<{
   to: string;
-  label: string;
+  key: string;
   icon: string;
   end: boolean;
   hash?: string;
 }> = [
-  { to: "/market", label: "Market Home", icon: "▤", end: true },
-  { to: "/market/terminal", label: "Market Terminal", icon: "⌘", end: false },
-  { to: "/market/portfolio", label: "My Portfolio", icon: "☰", end: false },
-  { to: "/market/portfolio", label: "Trade History", icon: "⟳", end: false, hash: "history" },
-  { to: "/market/lessons/1", label: "Lessons", icon: "▣", end: false },
-  { to: "/progress", label: "Leaderboard", icon: "♛", end: false },
+  { to: "/market", key: "market.home", icon: "▤", end: true },
+  { to: "/market/terminal", key: "market.terminal", icon: "⌘", end: false },
+  { to: "/market/portfolio", key: "market.portfolio", icon: "☰", end: false },
+  { to: "/market/portfolio", key: "market.history", icon: "⟳", end: false, hash: "history" },
+  { to: "/market/lessons/1", key: "market.lessons", icon: "▣", end: false },
+  { to: "/progress", key: "market.leaderboard", icon: "♛", end: false },
 ];
 
 const COMPANY_MARK = {
@@ -41,11 +45,11 @@ function rupees(value: number) {
   return `Rs ${Math.round(value).toLocaleString("en-LK")}`;
 }
 
-function OverviewChart({ points }: { points: number[] }) {
+function OverviewChart({ points, empty }: { points: number[]; empty: string }) {
   const width = 520;
   const height = 160;
   if (points.length < 2) {
-    return <p className="muted">No chart points.</p>;
+    return <p className="muted">{empty}</p>;
   }
   const min = Math.min(...points);
   const max = Math.max(...points);
@@ -72,26 +76,23 @@ function OverviewChart({ points }: { points: number[] }) {
 }
 
 export function MarketHomePage() {
+  const { lang, t } = useLang();
   const quotes = useMemo(() => buildQuotes(), []);
   const [lesson1Done, setLesson1Done] = useState(() => readLesson1Complete());
-  const [finished, setFinished] = useState<Record<number, boolean>>(() => ({
-    1: readLessonComplete(1),
-    2: readLessonComplete(2),
-    3: readLessonComplete(3),
-    4: readLessonComplete(4),
-  }));
+  const [finished, setFinished] = useState<Record<number, boolean>>(() =>
+    Object.fromEntries(LESSONS.map((lesson) => [lesson.n, readLessonComplete(lesson.n)])),
+  );
   const [range, setRange] = useState<"1D" | "1W" | "1M" | "1Y">("1W");
+  const [coach, setCoach] = useState<CoachCard | null>(null);
   const book = readBook();
 
   useEffect(() => {
     setLesson1Done(readLesson1Complete());
-    setFinished({
-      1: readLessonComplete(1),
-      2: readLessonComplete(2),
-      3: readLessonComplete(3),
-      4: readLessonComplete(4),
-    });
-  }, []);
+    setFinished(
+      Object.fromEntries(LESSONS.map((lesson) => [lesson.n, readLessonComplete(lesson.n)])),
+    );
+    setCoach(pickCoach({ lang, path: "home" }));
+  }, [lang]);
 
   const prices = Object.fromEntries(quotes.map((item) => [item.ticker, item.price]));
   const invested = book.holdings.reduce(
@@ -119,68 +120,64 @@ export function MarketHomePage() {
         <aside className="mkt-side" aria-label="Market pages">
           {SIDE_LINKS.map((item) => (
             <NavLink
-              key={item.label}
+              key={item.key}
               to={item.hash ? `${item.to}#${item.hash}` : item.to}
               end={item.end}
               className={({ isActive }) => (isActive && !item.hash ? "is-on" : undefined)}
             >
               <span aria-hidden="true">{item.icon}</span>
-              {item.label}
+              {t(item.key)}
             </NavLink>
           ))}
         </aside>
 
         <div className="mkt-main" id="main">
+          {coach ? <CubCoachCard card={coach} lang={lang} onDismiss={() => setCoach(null)} /> : null}
           <section className="mkt-hero" aria-labelledby="market-hero-title">
             <div className="mkt-hero-art">
               <img src="/images/dash/cub-hero.png" alt="Cub exploring the market" />
-              <p className="mkt-speech">
-                Let’s explore the stock market together!
-              </p>
+              <p className="mkt-speech">{t("market.speech")}</p>
             </div>
             <div className="mkt-hero-copy">
               <h1 id="market-hero-title">
-                A real market.
+                {t("market.heroH1a")}
                 <br />
-                Fake money. No regrets.
+                {t("market.heroH1b")}
               </h1>
-              <p>
-                Trade listed companies at real prices with Rs {PRACTICE_CASH_LKR.toLocaleString()} of
-                virtual money. Cub explains every move before you confirm.
-              </p>
+              <p>{t("market.heroP", { cash: PRACTICE_CASH_LKR.toLocaleString() })}</p>
             </div>
             <aside className="mkt-wallet">
               <div className="mkt-wallet-head">
-                <strong>Your Practice Account</strong>
-                <span>Virtual Money</span>
+                <strong>{t("market.account")}</strong>
+                <span>{t("market.virtual")}</span>
               </div>
               <p className="mkt-cash">{rupees(book.cash)}</p>
               <dl>
                 <div>
-                  <dt>Invested</dt>
+                  <dt>{t("market.invested")}</dt>
                   <dd>{rupees(invested)}</dd>
                 </div>
                 <div>
-                  <dt>Available Cash</dt>
+                  <dt>{t("market.available")}</dt>
                   <dd>{rupees(book.cash)}</dd>
                 </div>
                 <div>
-                  <dt>Today’s Gain / Loss</dt>
+                  <dt>{t("market.today")}</dt>
                   <dd className={dayPnl >= 0 ? "up" : "down"}>
                     {rupees(dayPnl)} ({dayPct.toFixed(0)}%)
                   </dd>
                 </div>
               </dl>
               <Link className="mkt-start" to={tradeTo}>
-                {lesson1Done ? "Start Trading" : "Start Lesson 1"} →
+                {lesson1Done ? t("market.startTrade") : t("market.startL1")} →
               </Link>
             </aside>
           </section>
 
           <section className="mkt-lessons" aria-labelledby="lessons-title">
             <div className="mkt-lessons-head">
-              <h2 id="lessons-title">Four Lessons — Unlock the Market</h2>
-              <p>Complete each lesson to unlock the next. Lesson 1 opens the market terminal.</p>
+              <h2 id="lessons-title">{t("market.ten")}</h2>
+              <p>{t("market.tenP")}</p>
             </div>
             <ol>
               {LESSONS.map((lesson) => {
@@ -195,11 +192,11 @@ export function MarketHomePage() {
                     <p>{lesson.blurb}</p>
                     {open ? (
                       <Link to={`/market/lessons/${lesson.n}`}>
-                        {complete ? "Review Lesson" : "Start Lesson"}
+                        {complete ? t("market.review") : t("market.startLesson")}
                       </Link>
                     ) : (
-                      <span className="mkt-lock" aria-label="Locked">
-                        Locked
+                      <span className="mkt-lock" aria-label={t("market.locked")}>
+                        {t("market.locked")}
                       </span>
                     )}
                   </li>
@@ -211,15 +208,15 @@ export function MarketHomePage() {
           <div className="mkt-grid">
             <section className="mkt-card" aria-labelledby="companies-title">
               <div className="mkt-card-head">
-                <h2 id="companies-title">Popular Companies</h2>
-                <Link to="/market/terminal">View All</Link>
+                <h2 id="companies-title">{t("market.popular")}</h2>
+                <Link to="/market/terminal">{t("market.viewAll")}</Link>
               </div>
               <table>
                 <thead>
                   <tr>
-                    <th>Company</th>
-                    <th>Price (LKR)</th>
-                    <th>Change</th>
+                    <th>{t("market.company")}</th>
+                    <th>{t("market.price")}</th>
+                    <th>{t("market.change")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -229,9 +226,11 @@ export function MarketHomePage() {
                     return (
                       <tr key={quote.ticker}>
                         <td>
-                          <span aria-hidden="true">{COMPANY_MARK[quote.ticker]}</span>
-                          <b>{quote.ticker}</b>
-                          <em>{company?.name}</em>
+                          <Link to={`/market/terminal?ticker=${quote.ticker}`}>
+                            <span aria-hidden="true">{COMPANY_MARK[quote.ticker]}</span>
+                            <b>{quote.ticker}</b>
+                            <em>{company?.name}</em>
+                          </Link>
                         </td>
                         <td>{quote.price.toFixed(2)}</td>
                         <td className={up ? "up" : "down"}>
@@ -246,7 +245,7 @@ export function MarketHomePage() {
 
             <section className="mkt-card" aria-labelledby="overview-title">
               <div className="mkt-card-head">
-                <h2 id="overview-title">Market Overview</h2>
+                <h2 id="overview-title">{t("market.overview")}</h2>
                 <div className="mkt-ranges" role="group" aria-label="Chart range">
                   {(["1D", "1W", "1M", "1Y"] as const).map((item) => (
                     <button
@@ -260,7 +259,7 @@ export function MarketHomePage() {
                   ))}
                 </div>
               </div>
-              <OverviewChart points={sliceHistory(overview.history, range)} />
+              <OverviewChart points={sliceHistory(overview.history, range)} empty={t("market.noChart")} />
               <ul className="mkt-days" aria-hidden="true">
                 <li>Mon</li>
                 <li>Tue</li>
@@ -270,16 +269,16 @@ export function MarketHomePage() {
               </ul>
               <div className="mkt-stats">
                 <p>
-                  Market Status <b className="up">Open</b>
+                  {t("market.status")} <b className="up">{t("market.open")}</b>
                 </p>
                 <p>
-                  Top Gainer{" "}
+                  {t("market.gainer")}{" "}
                   <b className="up">
                     {gainer.ticker} +{gainer.changePct.toFixed(1)}%
                   </b>
                 </p>
                 <p>
-                  Top Loser{" "}
+                  {t("market.loser")}{" "}
                   <b className="down">
                     {loser.ticker} {loser.changePct.toFixed(1)}%
                   </b>
@@ -290,16 +289,14 @@ export function MarketHomePage() {
             <section className="mkt-card mkt-tip" aria-labelledby="cub-tip-title">
               <div className="mkt-tip-head">
                 <img src="/images/dash/cub-logo.png" alt="" />
-                <h2 id="cub-tip-title">Cub’s Tip</h2>
+                <h2 id="cub-tip-title">{t("market.tip")}</h2>
               </div>
-              <p>
-                Company names are fictional stand-ins for now. Focus on learning, not profit ranking.
-              </p>
-              <p className="mkt-measure-title">What gets measured?</p>
+              <p>{t("market.tipP")}</p>
+              <p className="mkt-measure-title">{t("market.measure")}</p>
               <ul className="mkt-measure">
-                <li>Patience after a drop</li>
-                <li>Spreading money</li>
-                <li>Reading before buying</li>
+                <li>{t("market.m1")}</li>
+                <li>{t("market.m2")}</li>
+                <li>{t("market.m3")}</li>
               </ul>
             </section>
           </div>

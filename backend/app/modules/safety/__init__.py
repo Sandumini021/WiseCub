@@ -1,0 +1,3 @@
+"""
+WiseCub Scam Safety Module.
+"""

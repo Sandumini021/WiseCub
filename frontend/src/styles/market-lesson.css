@@ -1,0 +1,127 @@
+.ls-lead {
+  margin: 0 0 0.75rem;
+  font-size: 1.02rem;
+}
+
+.ls-beats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.65rem;
+}
+
+.ls-beats button {
+  border: 1px solid #d7dee9;
+  background: #fff;
+  border-radius: 999px;
+  min-height: 40px;
+  padding: 0 0.85rem;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.ls-beats button.is-on {
+  background: #1b2744;
+  color: #fff;
+  border-color: #1b2744;
+}
+
+.ls-beat-body {
+  margin: 0 0 0.75rem;
+  padding: 0.7rem 0.85rem;
+  background: #f8fafc;
+  border-radius: 14px;
+  font-weight: 650;
+}
+
+.ls-q {
+  font-weight: 700;
+}
+
+.ls-glyph,
+.ls-lock,
+.ls-pause {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  font-weight: 800;
+}
+
+.ls-glyph.is-buy strong {
+  color: #15803d;
+}
+
+.ls-glyph.is-sell strong {
+  color: #dc2626;
+}
+
+.ls-steps {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.ls-steps i {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f5c400;
+  color: #1b2744;
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.ls-crowd {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.ls-crowd b {
+  width: 18px;
+  height: 42px;
+  border-radius: 9px 9px 4px 4px;
+  background: #cbd5e1;
+}
+
+.ls-crowd b:nth-child(2) {
+  height: 54px;
+}
+
+.ls-crowd em {
+  font-style: normal;
+  font-weight: 800;
+  color: #163a8a;
+}
+
+.tk-ai {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed #c9d6ee;
+}
+
+.tk-trend {
+  margin: 0 0 0.25rem;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.tk-trend.is-upward {
+  color: #15803d;
+}
+
+.tk-trend.is-downward {
+  color: #dc2626;
+}
+
+.tk-trend.is-sideways {
+  color: #163a8a;
+}
+
+.tk-ai-meta {
+  margin: 0 0 0.55rem;
+  color: #64748b;
+  font-size: 0.85rem;
+}

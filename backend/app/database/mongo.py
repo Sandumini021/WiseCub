@@ -56,12 +56,35 @@ async def connect() -> None:
             [("child_id", 1), ("module", 1)],
             unique=True,
         )
-        await db.market_events.create_index([("child_id", 1), ("at", 1)])
-        await db.market_events.create_index([("child_id", 1), ("session_id", 1)])
+        from app.modules.stock_market.store import ALL_FOLDERS, EVENTS, FOLDER_HABITS
+
+        names = await db.list_collection_names()
+        for name in ALL_FOLDERS:
+            if name not in names:
+                await db.create_collection(name)
+            coll = db[name]
+            await coll.create_index([("child_id", 1), ("at", 1)])
+            await coll.create_index([("child_id", 1), ("session_id", 1)])
+        await db[EVENTS].create_index([("folder", 1), ("child_id", 1)])
+        await db[FOLDER_HABITS].create_index(
+            [("kind", 1), ("child_id", 1), ("session_id", 1)],
+        )
+
+        # Scam safety guardian consent and simulation indexes
+        await db.guardian_consent.create_index("child_id", unique=True)
+        await db.safety_simulations.create_index(
+            [("child_id", 1), ("category_id", 1), ("attempt_id", 1)],
+            unique=True,
+        )
+        await db.safety_simulations.create_index("simulation_id", unique=True)
 
         # Gamified-learning collections
         from app.modules.gamified_learning.indexes import ensure_gamified_indexes
         await ensure_gamified_indexes(db)
+
+        # Decision-making (Choice Town) collections
+        from app.modules.decision_making.indexes import ensure_decision_making_indexes
+        await ensure_decision_making_indexes(db)
     except PyMongoError:
         # API still starts. /health reports database as down until Mongo is running.
         pass

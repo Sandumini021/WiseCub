@@ -13,6 +13,12 @@ CUB_ROUTE_ALLOWLIST = frozenset(
         "/market/lessons/2",
         "/market/lessons/3",
         "/market/lessons/4",
+        "/market/lessons/5",
+        "/market/lessons/6",
+        "/market/lessons/7",
+        "/market/lessons/8",
+        "/market/lessons/9",
+        "/market/lessons/10",
         "/market/terminal",
         "/market/confirm",
         "/market/portfolio",
@@ -21,6 +27,13 @@ CUB_ROUTE_ALLOWLIST = frozenset(
         "/safety",
         "/progress",
         "/profile",
+        "/tax",
+        "/tax/learn",
+        "/tax/simulate",
+        "/tax/challenge",
+        "/tax/decisions",
+        "/tax/quiz",
+        "/tax/sri-lanka",
         "/teacher/dashboard",
         "/teacher/classes",
         "/teacher/students",
@@ -43,9 +56,22 @@ DATASET_ROUTE_CORRECTIONS = {
 }
 
 INTENT_APP_ROUTES: dict[str, str | None] = {
+    "ASK_ABOUT_CHART": None,
+    "ASK_ABOUT_COMPANY": None,
     "ASK_ABOUT_NEEDS_WANTS": None,
+    "ASK_ABOUT_PORTFOLIO_MONEY": "/market/portfolio",
+    "ASK_ABOUT_PRICE": None,
     "ASK_ABOUT_SAVING": None,
+    "ASK_BEHAVIOUR_LESSON": "/market/portfolio",
     "ASK_FOR_HELP": None,
+    "CLARIFY_CONFUSION": None,
+    "FOLLOW_UP_EXPLAIN": None,
+    "HOW_TO_BUY": "/market/terminal",
+    "HOW_TO_CANCEL_ORDER": "/market/terminal",
+    "HOW_TO_SELL": "/market/terminal",
+    "HOW_TO_TRADE": None,
+    "MARKET_DROP_WHAT_TO_DO": None,
+    "OPEN_TERMINAL": "/market/terminal",
     "CHANGE_LANGUAGE_ENGLISH": None,
     "CHANGE_LANGUAGE_SINHALA": None,
     "EXPLAIN_BUDGETING": None,
@@ -69,7 +95,7 @@ INTENT_APP_ROUTES: dict[str, str | None] = {
 def is_allowed_cub_route(path: str) -> bool:
     if path in CUB_ROUTE_ALLOWLIST:
         return True
-    return bool(re.fullmatch(r"/market/lessons/\d+", path))
+    return bool(re.fullmatch(r"/market/lessons/\d+", path) or re.fullmatch(r"/tax(/[\w-]+)*", path))
 
 
 def home_path_for_role(role: str | None) -> str:

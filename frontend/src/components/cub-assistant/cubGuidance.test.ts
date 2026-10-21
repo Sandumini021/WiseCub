@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { detectSpokenLang, greetingFor, matchCubIntent } from "./cubGuidance";
 import { replyFromPrediction } from "./cubPredictedReply";
 import { canOpenRoute, isAllowedCubRoute, isAuthPath, shouldWarnBeforeLeave } from "./cubRoutes";
+import { canRetryListenError, errorNote, listenLangCandidates } from "./cubListen";
+import { cubUi } from "./cubUi";
 import { canSpeakSinhala, pickVoice } from "./cubSpeech";
 
 describe("cub routes", () => {
@@ -14,6 +16,8 @@ describe("cub routes", () => {
   it("allows listed routes only", () => {
     expect(isAllowedCubRoute("/market")).toBe(true);
     expect(isAllowedCubRoute("/market/lessons/3")).toBe(true);
+    expect(isAllowedCubRoute("/tax")).toBe(true);
+    expect(isAllowedCubRoute("/tax/learn/what-are-taxes")).toBe(true);
     expect(isAllowedCubRoute("https://evil.example")).toBe(false);
     expect(isAllowedCubRoute("/admin")).toBe(false);
   });
@@ -57,9 +61,15 @@ describe("cub intents", () => {
     expect(greetingFor("/safety", "si")).toMatch(/WiseCub/);
   });
 
-  it("does not treat Cub as a trained model", () => {
+  it("opens the market for go-to-trading phrases", () => {
+    const reply = matchCubIntent("I want to go to trading", "en", { path: "/student/dashboard", role: "student" });
+    expect(reply.path).toBe("/market");
+  });
+
+  it("asks for a known phrase when it does not match", () => {
     const reply = matchCubIntent("asdfgh", "en", { path: "/market", role: "student" });
-    expect(reply.text.toLowerCase()).toContain("not a trained ai model");
+    expect(reply.path).toBeUndefined();
+    expect(reply.text.toLowerCase()).toMatch(/open the market|buy a stock|portfolio/);
   });
 
   it("sends a teacher home instead of the student dashboard", () => {
@@ -104,6 +114,89 @@ describe("cub intents", () => {
       { path: "/home", role: "student" },
     );
     expect(quizzes?.path).toBeUndefined();
+  });
+
+  it("answers a buy-how-to intent instead of the generic unknown line", () => {
+    const reply = replyFromPrediction(
+      {
+        model_ready: true,
+        used_model: true,
+        model_note: "test",
+        intent: "HOW_TO_BUY",
+        confidence: 0.8,
+        reliable: true,
+        suggested_route: "/market/terminal",
+        navigation_blocked: false,
+        blocked_reason: null,
+        needs_confirm: false,
+      },
+      "en",
+      { path: "/market", role: "student" },
+    );
+    expect(reply?.path).toBe("/market/terminal");
+    expect(reply?.text.toLowerCase()).toMatch(/buy/);
+    expect(reply?.text.toLowerCase()).not.toMatch(/didn’t catch/);
+  });
+
+  it("repeats the last trade answer on a follow-up intent", () => {
+    const reply = replyFromPrediction(
+      {
+        model_ready: true,
+        used_model: true,
+        model_note: "test",
+        intent: "FOLLOW_UP_EXPLAIN",
+        confidence: 0.7,
+        reliable: true,
+        suggested_route: null,
+        navigation_blocked: false,
+        blocked_reason: null,
+        needs_confirm: false,
+      },
+      "en",
+      { path: "/market", role: "student", lastIntent: "HOW_TO_TRADE" },
+    );
+    expect(reply?.text.toLowerCase()).toMatch(/slower/);
+    expect(reply?.text.toLowerCase()).toMatch(/terminal/);
+  });
+
+  it("asks for a rephrase when confidence is low", () => {
+    const reply = replyFromPrediction(
+      {
+        model_ready: true,
+        used_model: true,
+        model_note: "test",
+        intent: "HOW_TO_BUY",
+        confidence: 0.1,
+        reliable: false,
+        suggested_route: "/market/terminal",
+        navigation_blocked: false,
+        blocked_reason: null,
+        needs_confirm: false,
+        example_questions: ["how do I buy a stock"],
+      },
+      "en",
+      { path: "/market", role: "student" },
+    );
+    expect(reply?.intent).toBe("LOW_CONFIDENCE");
+    expect(reply?.text.toLowerCase()).toMatch(/not sure|another way/);
+  });
+});
+
+describe("cub listen helpers", () => {
+  it("retries Sinhala STT with English when Chrome reports network", () => {
+    expect(listenLangCandidates("si")).toEqual(["si-LK", "si", "en-US"]);
+    expect(canRetryListenError("network", 0, 3)).toBe(true);
+    expect(canRetryListenError("network", 2, 3)).toBe(false);
+  });
+
+  it("tells the child to type when the hearing API is down", () => {
+    expect(cubUi("en", "apiDown").toLowerCase()).toMatch(/type|8000/);
+  });
+
+  it("does not blame the internet when the device is online", () => {
+    expect(errorNote("network", "en", { online: true }).toLowerCase()).not.toMatch(/internet/);
+    expect(errorNote("network", "si", { online: true })).toMatch(/English|ලිය/);
+    expect(errorNote("network", "en", { online: false }).toLowerCase()).toMatch(/internet/);
   });
 });
 

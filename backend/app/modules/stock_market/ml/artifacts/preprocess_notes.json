@@ -1,0 +1,42 @@
+{
+  "source_data": "C:\\Users\\ADMIN\\Downloads\\archive\\indexData.csv",
+  "source_info": "C:\\Users\\ADMIN\\Downloads\\archive\\indexInfo.csv",
+  "raw_rows": 112457,
+  "clean_price_rows": 110253,
+  "feature_rows": 109903,
+  "symbols": [
+    "000001.SS",
+    "399001.SZ",
+    "GDAXI",
+    "GSPTSE",
+    "HSI",
+    "IXIC",
+    "J203.JO",
+    "KS11",
+    "N100",
+    "N225",
+    "NSEI",
+    "NYA",
+    "SSMI",
+    "TWII"
+  ],
+  "date_min": "1965-02-04",
+  "date_max": "2021-05-27",
+  "dropped_missing_ohlc": "Rows missing close/open/high/low were dropped.",
+  "duplicates": "Dropped duplicate symbol+date.",
+  "volume": "Zeros kept; many early index days have no volume.",
+  "category": "All symbols in this Kaggle set are market indices, not single company stocks.",
+  "ks11": "KS11 is in indexData but not indexProcessed (no CloseUSD).",
+  "leakage": "Labels use close[t+5]/close[t]-1. Features use only data through t.",
+  "label_rule": {
+    "horizon_days": 5,
+    "upward": "future_ret >= 0.012",
+    "downward": "future_ret <= -0.012",
+    "sideways": "otherwise"
+  },
+  "class_counts": {
+    "sideways": 44313,
+    "upward": 36833,
+    "downward": 28757
+  }
+}
