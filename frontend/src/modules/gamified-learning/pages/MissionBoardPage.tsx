@@ -144,8 +144,29 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
   };
 
   const activeLevel =
-    currentMission.levels.find((l) => l.levelNumber === currentLevelNumber) ||
-    currentMission.levels[0];
+    currentMission.levels.find((l) => l.levelNumber === currentLevelNumber) || null;
+
+  // Backend-confirmed mission completion: flag is true AND all level numbers are confirmed completed
+  const isMissionBackendCompleted =
+    Boolean(puppyProgress?.isMissionCompleted) &&
+    currentMission.levels.length > 0 &&
+    currentMission.levels.every((lvl) =>
+      puppyProgress?.completedLevelNumbers?.includes(lvl.levelNumber)
+    );
+
+  // Safety guard: prevent silently rendering Level 1 when an invalid level is requested
+  useEffect(() => {
+    if (viewMode === 'PLAY_LEVEL' && !activeLevel) {
+      if (isMissionBackendCompleted) {
+        setViewMode('MISSION_COMPLETE');
+      } else {
+        console.warn(
+          `Requested level ${currentLevelNumber} not found in mission ${selectedMissionId}. Returning to level map.`
+        );
+        setViewMode('MAP');
+      }
+    }
+  }, [viewMode, activeLevel, isMissionBackendCompleted, currentLevelNumber, selectedMissionId]);
 
   // -------------------------------------------------------------
   // Navigation Handlers
@@ -159,6 +180,19 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
   };
 
   const handleSelectLevelFromMap = async (lvlNumber: number) => {
+    const targetLevelDef = currentMission.levels.find((l) => l.levelNumber === lvlNumber);
+    if (!targetLevelDef) {
+      if (isMissionBackendCompleted) {
+        setViewMode('MISSION_COMPLETE');
+      } else {
+        console.warn(
+          `Level ${lvlNumber} does not exist in mission ${currentMission.id}. Returning to level map.`
+        );
+        setViewMode('MAP');
+      }
+      return;
+    }
+
     const isUnlocked = lvlNumber <= puppyProgress.unlockedLevelNumber;
     if (isUnlocked) {
       try {
@@ -169,7 +203,7 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
       setCurrentLevelNumber(lvlNumber);
       DecisionLogger.logEvent(
         selectedMissionId,
-        `level_${lvlNumber}`,
+        targetLevelDef.id,
         lvlNumber,
         (puppyProgress.attemptsByLevel[lvlNumber]?.length || 0) + 1,
         'LEVEL_STARTED',
@@ -199,6 +233,7 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
   // Authoritative Backend Decision Handlers (CDEMF + MongoDB)
   // -------------------------------------------------------------
   const handleOptionSelectionSubmit = async (selectedOptionIds: string[]) => {
+    if (!activeLevel) return;
     DecisionLogger.logEvent(
       selectedMissionId,
       activeLevel.id,
@@ -221,6 +256,7 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
   };
 
   const handleCategoryAllocationsSubmit = async (allocations: Record<string, number>) => {
+    if (!activeLevel) return;
     DecisionLogger.logEvent(
       selectedMissionId,
       activeLevel.id,
@@ -245,6 +281,7 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
   const handleMultiPeriodSavingSubmit = async (
     weeklyDecisions: Array<{ period: number; savedAmountLKR: number; resistedTemptation: boolean }>
   ) => {
+    if (!activeLevel) return;
     DecisionLogger.logEvent(
       selectedMissionId,
       activeLevel.id,
@@ -273,6 +310,7 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
     selectedOptionIds: string[],
     selectedRationaleId: string
   ) => {
+    if (!activeLevel) return;
     DecisionLogger.logEvent(
       selectedMissionId,
       activeLevel.id,
@@ -299,18 +337,23 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
   // Flow Handlers after Evaluation
   // -------------------------------------------------------------
   const handleProceedAfterEvaluation = () => {
-    if (activeLevel.levelNumber >= currentMission.totalLevels && lastMasteryResult?.passed) {
+    const isFinalLevel = activeLevel && activeLevel.levelNumber >= currentMission.totalLevels;
+    if (isFinalLevel && lastMasteryResult?.passed) {
       setViewMode('MISSION_COMPLETE');
     } else {
       const targetLevel = lastMasteryResult?.passed
         ? Math.min(puppyProgress.unlockedLevelNumber, currentMission.totalLevels)
-        : activeLevel.levelNumber;
+        : (activeLevel?.levelNumber || 1);
       setCurrentLevelNumber(targetLevel);
       setViewMode('MAP');
     }
   };
 
-  const handleRetryFromRemediation = () => {
+  const handleRetryFromRemediation = async () => {
+    if (!activeLevel) {
+      setViewMode('MAP');
+      return;
+    }
     DecisionLogger.logEvent(
       selectedMissionId,
       activeLevel.id,
@@ -319,6 +362,11 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
       'LEVEL_RETRIED',
       { levelNumber: activeLevel.levelNumber }
     );
+    try {
+      await beginLevel(activeLevel.levelNumber);
+    } catch (e) {
+      console.warn('Begin level error on retry:', e);
+    }
     setViewMode('PLAY_LEVEL');
   };
 
@@ -429,14 +477,27 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
           />
 
           <div className="map-bottom-cta">
-            <button
-              type="button"
-              className="btn-confirm-decision btn-enter-level"
-              onClick={() => handleSelectLevelFromMap(puppyProgress.unlockedLevelNumber)}
-            >
-              Enter Unlocked Challenge (Level {puppyProgress.unlockedLevelNumber}:{' '}
-              {currentMission.levels[puppyProgress.unlockedLevelNumber - 1]?.title}) ➔
-            </button>
+            {isMissionBackendCompleted ? (
+              <button
+                type="button"
+                className="btn-confirm-decision btn-enter-level"
+                onClick={() => setViewMode('MISSION_COMPLETE')}
+              >
+                🎉 Mission Completed · View Celebration ➔
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn-confirm-decision btn-enter-level"
+                onClick={() => {
+                  const nextPlayable = Math.min(puppyProgress.unlockedLevelNumber, currentMission.totalLevels);
+                  handleSelectLevelFromMap(nextPlayable);
+                }}
+              >
+                Enter Unlocked Challenge (Level {Math.min(puppyProgress.unlockedLevelNumber, currentMission.totalLevels)}:{' '}
+                {currentMission.levels[Math.min(puppyProgress.unlockedLevelNumber, currentMission.totalLevels) - 1]?.title}) ➔
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -625,6 +686,14 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
             <button
               type="button"
               className="btn-secondary-action"
+              style={{ background: '#0f766e', color: '#ffffff', borderColor: '#0f766e', fontWeight: 700 }}
+              onClick={() => setViewMode('JOURNEY')}
+            >
+              📈 My Money Journey
+            </button>
+            <button
+              type="button"
+              className="btn-secondary-action"
               onClick={() => setViewMode('HUB')}
             >
               Return to Mission Hub
@@ -658,10 +727,11 @@ export function MissionBoardPage({ initialViewMode = 'HUB' }: MissionBoardPagePr
                 className="btn-confirm-decision"
                 onClick={() => {
                   setLockedAlertLevel(null);
-                  handleSelectLevelFromMap(puppyProgress.unlockedLevelNumber);
+                  const activeLvl = Math.min(puppyProgress.unlockedLevelNumber, currentMission.totalLevels);
+                  handleSelectLevelFromMap(activeLvl);
                 }}
               >
-                Go to Active Level {puppyProgress.unlockedLevelNumber}
+                Go to Active Level {Math.min(puppyProgress.unlockedLevelNumber, currentMission.totalLevels)}
               </button>
               <button
                 type="button"

@@ -30,6 +30,12 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
     (characterState.characterId === 'char_squirrel_nutty' ||
       characterState.name?.toLowerCase().includes('nutty'));
 
+  const themeClass = isPanda
+    ? 'companion-theme-panda'
+    : isSquirrel
+    ? 'companion-theme-squirrel'
+    : 'companion-theme-puppy';
+
   // Format labels for child-friendly reading
   const conditionLabelMap: Record<string, { label: string; tone: string }> = {
     // Puppy conditions
@@ -93,29 +99,41 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
     text: emotionalState.replace(/_/g, ' '),
   };
 
+  const companionRoleSubtitle = isPanda
+    ? 'Treasurer of the School Fair'
+    : isSquirrel
+    ? 'Forest Saver preparing for Winter'
+    : 'Injured Puppy in Recovery';
+
   if (compact) {
     return (
-      <div className="character-stage-compact">
-        {isPanda ? (
-          <PandaCharacterSvg condition={physicalCondition} emotion={emotionalState} size={70} />
-        ) : isSquirrel ? (
-          <SquirrelCharacterSvg condition={physicalCondition} emotion={emotionalState} size={70} />
-        ) : (
-          <PuppyCharacterSvg condition={physicalCondition} emotion={emotionalState} size={70} />
-        )}
+      <div className={`character-stage-compact ${themeClass}`}>
+        <div className="compact-avatar-wrapper">
+          {isPanda ? (
+            <PandaCharacterSvg condition={physicalCondition} emotion={emotionalState} size={72} />
+          ) : isSquirrel ? (
+            <SquirrelCharacterSvg condition={physicalCondition} emotion={emotionalState} size={72} />
+          ) : (
+            <PuppyCharacterSvg condition={physicalCondition} emotion={emotionalState} size={72} />
+          )}
+        </div>
         <div className="stage-compact-meta">
-          <div className="stage-pills-row">
+          <div className="compact-header-row">
+            <span className="compact-name">{characterState.name}</span>
             <span className={`condition-pill ${conditionInfo.tone}`}>{conditionInfo.label}</span>
             <span className="emotion-pill">
               {emotionInfo.emoji} {emotionInfo.text}
             </span>
           </div>
           <div className="mini-meters">
-            <div className="meter-label">
-              {isPanda ? 'Fair Readiness' : isSquirrel ? 'Preparedness' : 'Vitality'}: {vitalityScore}%
+            <div className="mini-meter-row">
+              <span className="meter-label">
+                {isPanda ? '🎪 Fair Readiness' : isSquirrel ? '❄️ Preparedness' : '❤️ Vitality'}:
+              </span>
+              <strong className="meter-val-text">{vitalityScore}%</strong>
             </div>
             <div className="meter-bar">
-              <div className="meter-fill fill-vitality" style={{ width: `${vitalityScore}%` }} />
+              <div className="meter-fill fill-vitality" style={{ width: `${Math.max(6, vitalityScore)}%` }} />
             </div>
           </div>
         </div>
@@ -124,23 +142,32 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
   }
 
   return (
-    <div className="character-stage-card">
+    <div className={`character-stage-card ${themeClass}`}>
       <div className="character-stage-header">
         <div className="character-name-group">
-          <h3 className="character-display-name">{characterState.name}</h3>
+          <div className="character-title-row">
+            <span className="character-avatar-badge">{isPanda ? '🐼' : isSquirrel ? '🐿️' : '🐶'}</span>
+            <div>
+              <h3 className="character-display-name">{characterState.name}</h3>
+              <p className="character-subtitle">{companionRoleSubtitle}</p>
+            </div>
+          </div>
           <p className="character-condition-blurb">{characterState.conditionDescription}</p>
         </div>
         <div className="character-badges-row">
-          <span className={`condition-pill ${conditionInfo.tone}`}>{conditionInfo.label}</span>
-          <span className="emotion-pill">
+          <span className={`condition-pill ${conditionInfo.tone}`} title="Physical / Mission Status">
+            {conditionInfo.label}
+          </span>
+          <span className="emotion-pill" title="Emotional State">
             {emotionInfo.emoji} {emotionInfo.text}
           </span>
         </div>
       </div>
 
       <div className="character-stage-main">
-        {/* Animated Visual Character */}
+        {/* Animated Visual Character with Pedestal */}
         <div className="character-visual-container">
+          <div className="character-pedestal-glow" aria-hidden="true" />
           {isPanda ? (
             <PandaCharacterSvg
               condition={physicalCondition}
@@ -162,11 +189,19 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
           )}
         </div>
 
-        {/* Speech/Thought Bubble */}
+        {/* Modern Emotional Speech / Thought Bubble */}
         {showDialogue && activeDialogue && (
-          <div className="character-speech-bubble" role="region" aria-label="Character thought">
-            <div className="speech-tail" />
-            <p className="speech-quote">"{activeDialogue}"</p>
+          <div className="character-speech-bubble" role="region" aria-label={`${characterState.name}'s thoughts`}>
+            <div className="speech-tail" aria-hidden="true" />
+            <div className="speech-bubble-inner">
+              <div className="speech-meta-header">
+                <span className="speech-speaker-tag">
+                  {emotionInfo.emoji} {characterState.name}’s Thoughts
+                </span>
+                <span className="speech-status-tag">Current Feeling</span>
+              </div>
+              <p className="speech-quote">“{activeDialogue}”</p>
+            </div>
           </div>
         )}
       </div>
@@ -182,12 +217,12 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
                 ? '❄️ Winter Preparedness'
                 : '❤️ Vitality & Health'}
             </span>
-            <span className="meter-value">{vitalityScore} / 100</span>
+            <span className="meter-value-badge">{vitalityScore}%</span>
           </div>
-          <div className="meter-track">
+          <div className="meter-track" role="progressbar" aria-valuenow={vitalityScore} aria-valuemin={0} aria-valuemax={100}>
             <div
               className="meter-fill fill-vitality"
-              style={{ width: `${Math.max(5, vitalityScore)}%` }}
+              style={{ width: `${Math.max(6, Math.min(100, vitalityScore))}%` }}
             />
           </div>
         </div>
@@ -201,12 +236,12 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
                 ? '✨ Security & Mood'
                 : '✨ Mood & Happiness'}
             </span>
-            <span className="meter-value">{happinessScore} / 100</span>
+            <span className="meter-value-badge">{happinessScore}%</span>
           </div>
-          <div className="meter-track">
+          <div className="meter-track" role="progressbar" aria-valuenow={happinessScore} aria-valuemin={0} aria-valuemax={100}>
             <div
               className="meter-fill fill-happiness"
-              style={{ width: `${Math.max(5, happinessScore)}%` }}
+              style={{ width: `${Math.max(6, Math.min(100, happinessScore))}%` }}
             />
           </div>
         </div>
@@ -214,66 +249,50 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
 
       {/* Squirrel Condition Dimensions Sub-grid if present */}
       {isSquirrel && (
-        <div
-          style={{
-            marginTop: '0.75rem',
-            paddingTop: '0.75rem',
-            borderTop: '1px dashed #e2e8f0',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-            gap: '0.5rem',
-            fontSize: '0.8rem',
-            color: '#4b5563',
-          }}
-        >
-          <div style={{ background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '6px' }}>
-            <span>🌰 Food: </span>
-            <strong>{characterState.foodSupply ?? 50}%</strong>
-          </div>
-          <div style={{ background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '6px' }}>
-            <span>💰 Savings: </span>
-            <strong>{characterState.savingsReserve ?? 40}%</strong>
-          </div>
-          <div style={{ background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '6px' }}>
-            <span>🏡 Shelter: </span>
-            <strong>{characterState.shelterReadiness ?? 35}%</strong>
-          </div>
-          <div style={{ background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '6px' }}>
-            <span>🛡️ Resilience: </span>
-            <strong>{characterState.winterPreparedness ?? 45}%</strong>
+        <div className="companion-subdimension-section">
+          <div className="subdimension-title">🌰 Winter Preparedness Breakdown</div>
+          <div className="subdimension-grid">
+            <div className="subdimension-card">
+              <div className="subdimension-label"><span>🌰 Food Stock</span><strong>{characterState.foodSupply ?? 50}%</strong></div>
+              <div className="subdimension-bar"><div className="subdimension-fill fill-squirrel-food" style={{ width: `${Math.max(6, characterState.foodSupply ?? 50)}%` }} /></div>
+            </div>
+            <div className="subdimension-card">
+              <div className="subdimension-label"><span>💰 Acorn Savings</span><strong>{characterState.savingsReserve ?? 40}%</strong></div>
+              <div className="subdimension-bar"><div className="subdimension-fill fill-squirrel-savings" style={{ width: `${Math.max(6, characterState.savingsReserve ?? 40)}%` }} /></div>
+            </div>
+            <div className="subdimension-card">
+              <div className="subdimension-label"><span>🏡 Shelter Readiness</span><strong>{characterState.shelterReadiness ?? 35}%</strong></div>
+              <div className="subdimension-bar"><div className="subdimension-fill fill-squirrel-shelter" style={{ width: `${Math.max(6, characterState.shelterReadiness ?? 35)}%` }} /></div>
+            </div>
+            <div className="subdimension-card">
+              <div className="subdimension-label"><span>🛡️ Winter Resilience</span><strong>{characterState.winterPreparedness ?? 45}%</strong></div>
+              <div className="subdimension-bar"><div className="subdimension-fill fill-squirrel-resilience" style={{ width: `${Math.max(6, characterState.winterPreparedness ?? 45)}%` }} /></div>
+            </div>
           </div>
         </div>
       )}
 
       {/* Panda Condition Dimensions Sub-grid if present */}
       {isPanda && (
-        <div
-          style={{
-            marginTop: '0.75rem',
-            paddingTop: '0.75rem',
-            borderTop: '1px dashed #e2e8f0',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-            gap: '0.5rem',
-            fontSize: '0.8rem',
-            color: '#4b5563',
-          }}
-        >
-          <div style={{ background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '6px' }}>
-            <span>📊 Budget: </span>
-            <strong>{characterState.budgetHealth ?? 60}%</strong>
-          </div>
-          <div style={{ background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '6px' }}>
-            <span>🎪 Staging: </span>
-            <strong>{characterState.fairReadiness ?? 30}%</strong>
-          </div>
-          <div style={{ background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '6px' }}>
-            <span>📚 Charity: </span>
-            <strong>{characterState.charityGoalProgress ?? 0}%</strong>
-          </div>
-          <div style={{ background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '6px' }}>
-            <span>🤝 Vendors: </span>
-            <strong>{characterState.vendorRelationships ?? 50}%</strong>
+        <div className="companion-subdimension-section">
+          <div className="subdimension-title">🎪 School Fair Stewardship Breakdown</div>
+          <div className="subdimension-grid">
+            <div className="subdimension-card">
+              <div className="subdimension-label"><span>📊 Budget Health</span><strong>{characterState.budgetHealth ?? 60}%</strong></div>
+              <div className="subdimension-bar"><div className="subdimension-fill fill-panda-budget" style={{ width: `${Math.max(6, characterState.budgetHealth ?? 60)}%` }} /></div>
+            </div>
+            <div className="subdimension-card">
+              <div className="subdimension-label"><span>🎪 Fair Staging</span><strong>{characterState.fairReadiness ?? 30}%</strong></div>
+              <div className="subdimension-bar"><div className="subdimension-fill fill-panda-staging" style={{ width: `${Math.max(6, characterState.fairReadiness ?? 30)}%` }} /></div>
+            </div>
+            <div className="subdimension-card">
+              <div className="subdimension-label"><span>📚 Charity Progress</span><strong>{characterState.charityGoalProgress ?? 0}%</strong></div>
+              <div className="subdimension-bar"><div className="subdimension-fill fill-panda-charity" style={{ width: `${Math.max(6, characterState.charityGoalProgress ?? 0)}%` }} /></div>
+            </div>
+            <div className="subdimension-card">
+              <div className="subdimension-label"><span>🤝 Vendor Trust</span><strong>{characterState.vendorRelationships ?? 50}%</strong></div>
+              <div className="subdimension-bar"><div className="subdimension-fill fill-panda-vendor" style={{ width: `${Math.max(6, characterState.vendorRelationships ?? 50)}%` }} /></div>
+            </div>
           </div>
         </div>
       )}
