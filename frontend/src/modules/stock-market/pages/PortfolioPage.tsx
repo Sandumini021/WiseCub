@@ -6,7 +6,6 @@ import { childId, readCubLanguage } from "../../../pages/auth/demoSession";
 import { getMarketBehaviour, type BehaviourReport } from "../../../services/apiClient";
 import { portfolioAllocation } from "../data/allocation";
 import { marketSessionId, recordMarketEvent } from "../data/behaviourEvents";
-import { DEMO_COMPANIES } from "../data/demoMarket";
 import { readBook, realizedPnL, totalEquity, type DemoBook, unrealizedPnL } from "../data/demoPortfolio";
 import { CubCoachCard } from "../components/CubCoachCard";
 import { HabitPopup } from "../components/HabitPopup";
@@ -69,7 +68,6 @@ function AllocationRing({
   selected: string | null;
   onPick: (key: string) => void;
 }) {
-  const size = 168;
   const r = 58;
   const c = 2 * Math.PI * r;
   let offset = 0;
