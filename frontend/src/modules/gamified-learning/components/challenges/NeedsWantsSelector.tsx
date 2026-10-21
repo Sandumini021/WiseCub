@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LevelDefinition } from '../../types/mission.types';
 
 interface NeedsWantsSelectorProps {
@@ -35,14 +35,14 @@ export const NeedsWantsSelector: React.FC<NeedsWantsSelectorProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedIds.length === 0) return;
+    if (selectedIds.length === 0 || isOverBudget) return;
     onSubmit(selectedIds);
   };
 
   return (
     <form onSubmit={handleSubmit} className="challenge-form">
       {/* Live Financial Ledger Bar */}
-      <div className={`financial-ledger-banner ${isOverBudget ? 'ledger-over' : 'ledger-ok'}`}>
+      <div className={`financial-ledger-banner ${isOverBudget ? 'ledger-over' : 'ledger-ok'}`} aria-label="Budget Ledger">
         <div className="ledger-stat">
           <span className="stat-label">Available Budget</span>
           <span className="stat-amount">Rs. {startingBudget.toLocaleString()}</span>
@@ -60,15 +60,15 @@ export const NeedsWantsSelector: React.FC<NeedsWantsSelectorProps> = ({
       </div>
 
       {isOverBudget && (
-        <div className="ledger-warning-box">
-          ⚠️ <strong>Over budget warning:</strong> You have selected Rs.{' '}
-          {Math.abs(remainingCash).toLocaleString()} more than your available cash! You must
-          deselect non-essentials to balance your funds.
+        <div className="ledger-warning-box" role="alert">
+          ⚠️ <strong>Over Budget:</strong> You have selected Rs.{' '}
+          {Math.abs(remainingCash).toLocaleString()} more than your available cash! Deselect
+          optional wants to balance your spending.
         </div>
       )}
 
       {/* Options Cards Grid */}
-      <div className="options-selection-grid">
+      <div className="options-selection-grid" role="group" aria-label="Needs and Wants Options">
         {options.map((opt) => {
           const isSelected = selectedIds.includes(opt.id);
           return (
@@ -76,9 +76,16 @@ export const NeedsWantsSelector: React.FC<NeedsWantsSelectorProps> = ({
               key={opt.id}
               className={`decision-option-card ${isSelected ? 'option-selected' : ''}`}
               onClick={() => toggleOption(opt.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleOption(opt.id);
+                }
+              }}
               role="checkbox"
               aria-checked={isSelected}
-              tabIndex={0}
+              tabIndex={disabled ? -1 : 0}
+              aria-label={`${opt.title}, ${opt.isEssential ? 'Essential Need' : 'Optional Want'}, cost Rs. ${opt.costLKR.toLocaleString()}`}
             >
               <div className="option-card-header">
                 <span className={`option-category-badge ${opt.isEssential ? 'badge-essential' : 'badge-discretionary'}`}>
@@ -97,16 +104,19 @@ export const NeedsWantsSelector: React.FC<NeedsWantsSelectorProps> = ({
               )}
 
               <div className="option-action-row">
+                <div className={`option-check-pill ${isSelected ? 'pill-checked' : ''}`}>
+                  <span className="check-icon">{isSelected ? '✓' : '+'}</span>
+                  <span className="check-label">{isSelected ? 'Selected' : 'Select Item'}</span>
+                </div>
                 <input
                   type="checkbox"
                   checked={isSelected}
                   onChange={() => toggleOption(opt.id)}
                   disabled={disabled}
-                  className="option-checkbox"
+                  className="sr-only-checkbox"
+                  tabIndex={-1}
+                  aria-hidden="true"
                 />
-                <span className="option-select-text">
-                  {isSelected ? 'Selected' : 'Select Item'}
-                </span>
               </div>
             </div>
           );
@@ -117,9 +127,13 @@ export const NeedsWantsSelector: React.FC<NeedsWantsSelectorProps> = ({
         <button
           type="submit"
           className="btn-confirm-decision"
-          disabled={disabled || selectedIds.length === 0}
+          disabled={disabled || selectedIds.length === 0 || isOverBudget}
         >
-          Confirm Financial Choices & Evaluate Recovery
+          {isOverBudget
+            ? `⚠️ Over Budget by Rs. ${Math.abs(remainingCash).toLocaleString()}`
+            : selectedIds.length === 0
+            ? 'Select at least one item to continue'
+            : `Confirm Choices & Evaluate (Rs. ${totalCost.toLocaleString()}) ➔`}
         </button>
       </div>
     </form>

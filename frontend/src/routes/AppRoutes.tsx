@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { AppLayout } from "../components/layout/AppLayout";
 import { LevelsPage } from "../modules/decision-making/pages/LevelsPage";
+import { ScenarioPage } from "../modules/decision-making/pages/ScenarioPage";
 import { MissionBoardPage } from "../modules/gamified-learning/pages/MissionBoardPage";
 import { ScamHomePage } from "../modules/scam-safety/pages/ScamHomePage";
 import { SimulatedInboxPage } from "../modules/scam-safety/pages/SimulatedInboxPage";
@@ -17,8 +18,6 @@ import { SplashPage } from "../pages/SplashPage";
 import { StudentDashboardPage } from "../pages/student/StudentDashboardPage";
 import { TeacherDashboardPage, TeacherStubPage } from "../pages/teacher/TeacherDashboardPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
-
-
 
 export function AppRoutes() {
   return (
@@ -50,6 +49,8 @@ export function AppRoutes() {
         <Route path="/market/confirm" element={<TradeConfirmationPage />} />
         <Route path="/market/portfolio" element={<PortfolioPage />} />
         <Route path="/choices" element={<LevelsPage />} />
+        <Route path="/choices/levels/:levelId" element={<ScenarioPage />} />
+        <Route path="/choices/levels/:levelId/:step" element={<ScenarioPage />} />
         <Route path="/missions" element={<MissionBoardPage />} />
         <Route path="/progress" element={<MissionBoardPage initialViewMode="JOURNEY" />} />
         <Route path="/profile" element={<ProfilePage />} />
