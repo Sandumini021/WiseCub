@@ -23,6 +23,7 @@ function notifySession() {
 export type DemoChild = {
   name: string;
   enteredAt: string;
+  childId?: string;
   email?: string;
   username?: string;
   role?: AccountRole;
@@ -51,6 +52,12 @@ export type SignupProfile = {
 export function childId(): string {
   let id = window.localStorage.getItem(ID_KEY);
   if (!id) {
+    const demo = readDemoChild();
+    if (demo?.childId) {
+      id = demo.childId;
+      window.localStorage.setItem(ID_KEY, id);
+      return id;
+    }
     id = window.crypto.randomUUID();
     window.localStorage.setItem(ID_KEY, id);
   }
@@ -80,6 +87,7 @@ export function setChildId(id: string) {
 function fromRemote(account: RemoteAccount): DemoChild {
   return {
     name: account.name,
+    childId: account.child_id,
     enteredAt: account.entered_at || new Date().toISOString(),
     email: account.email,
     username: account.username,

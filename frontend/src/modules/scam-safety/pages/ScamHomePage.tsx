@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { SiteTopBar } from "../../../components/layout/SiteTopBar";
 import "../../../styles/dashboard-long.css";
@@ -401,6 +401,8 @@ export function ScamHomePage() {
   });
   const [simulations, setSimulations] = useState<Record<string, LevelSimulationStatus | null>>({});
   const [learningMetrics, setLearningMetrics] = useState<SafetyLearningMetrics | null>(null);
+  const [guardianLoading, setGuardianLoading] = useState(true);
+  const activeChildIdRef = useRef<string>("");
   const [guardianSaving, setGuardianSaving] = useState(false);
   const [guardianMsg, setGuardianMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isEditingGuardian, setIsEditingGuardian] = useState(false);
@@ -411,12 +413,20 @@ export function ScamHomePage() {
   const [actionLoadingCategory, setActionLoadingCategory] = useState<string | null>(null);
 
   const loadGuardianAndSimulations = useCallback((id: string) => {
-    if (!id) return;
+    if (!id) {
+      setGuardianLoading(false);
+      return;
+    }
+    activeChildIdRef.current = id;
+    setGuardianLoading(true);
     void Promise.allSettled([
       getGuardianDetails(id),
       getSimulationStatuses(id),
       getSafetyLearningMetrics(id),
     ]).then(([guardRes, simRes, metricsRes]) => {
+      // Discard response if a newer child ID was requested
+      if (activeChildIdRef.current !== id) return;
+
       if (guardRes.status === "fulfilled" && guardRes.value) {
         setGuardian(guardRes.value);
         if (guardRes.value.configured) {
@@ -428,6 +438,8 @@ export function ScamHomePage() {
             simulation_enabled: guardRes.value.simulation_enabled,
           });
         }
+      } else if (guardRes.status === "rejected") {
+        console.warn("Could not load guardian details for child:", id, guardRes.reason);
       }
       if (simRes.status === "fulfilled" && simRes.value?.by_category) {
         setSimulations(simRes.value.by_category);
@@ -435,6 +447,7 @@ export function ScamHomePage() {
       if (metricsRes.status === "fulfilled" && metricsRes.value) {
         setLearningMetrics(metricsRes.value);
       }
+      setGuardianLoading(false);
     });
   }, []);
 
@@ -1169,17 +1182,25 @@ export function ScamHomePage() {
               <span>👨‍👩‍👧</span> Parent / Guardian Details & Safety Simulations
             </h2>
             <div>
-              {guardian?.verification_status === "verified" && guardian.consent_confirmed && guardian.simulation_enabled && (
-                <span className="safety-badge verified">✓ Verified & Simulations Active</span>
-              )}
-              {guardian?.verification_status === "verified" && (!guardian.consent_confirmed || !guardian.simulation_enabled) && (
-                <span className="safety-badge disabled">⚠️ Simulations Disabled</span>
-              )}
-              {guardian?.verification_status === "pending" && (
-                <span className="safety-badge pending">⏳ Awaiting Email Verification</span>
-              )}
-              {(!guardian || guardian.verification_status === "unconfigured") && (
-                <span className="safety-badge unconfigured">ℹ️ Details Incomplete</span>
+              {guardianLoading ? (
+                <span className="safety-badge" style={{ background: "#f1f5f9", color: "#475569" }}>
+                  ⏳ Loading Details...
+                </span>
+              ) : (
+                <>
+                  {guardian?.verification_status === "verified" && guardian.consent_confirmed && guardian.simulation_enabled && (
+                    <span className="safety-badge verified">✓ Verified & Simulations Active</span>
+                  )}
+                  {guardian?.verification_status === "verified" && (!guardian.consent_confirmed || !guardian.simulation_enabled) && (
+                    <span className="safety-badge disabled">⚠️ Simulations Disabled</span>
+                  )}
+                  {guardian?.verification_status === "pending" && (
+                    <span className="safety-badge pending">⏳ Awaiting Email Verification</span>
+                  )}
+                  {(!guardian || guardian.verification_status === "unconfigured") && (
+                    <span className="safety-badge unconfigured">ℹ️ Details Incomplete</span>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -1206,7 +1227,11 @@ export function ScamHomePage() {
             </div>
           )}
 
-          {(!guardian?.configured || isEditingGuardian) ? (
+          {guardianLoading && !guardian ? (
+            <div style={{ padding: "32px 16px", textAlign: "center", color: "#64748b", fontSize: "0.95rem" }}>
+              Loading parent / guardian settings from WiseCub database...
+            </div>
+          ) : (!guardian?.configured || isEditingGuardian) ? (
             <form onSubmit={handleSaveGuardian}>
               <div className="safety-guardian-grid">
                 <div className="safety-input-group">
