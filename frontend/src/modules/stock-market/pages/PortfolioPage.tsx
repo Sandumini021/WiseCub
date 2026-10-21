@@ -6,7 +6,6 @@ import { childId, readCubLanguage } from "../../../pages/auth/demoSession";
 import { getMarketBehaviour, type BehaviourReport } from "../../../services/apiClient";
 import { portfolioAllocation } from "../data/allocation";
 import { marketSessionId, recordMarketEvent } from "../data/behaviourEvents";
-import { DEMO_COMPANIES } from "../data/demoMarket";
 import { readBook, realizedPnL, totalEquity, type DemoBook, unrealizedPnL } from "../data/demoPortfolio";
 import { CubCoachCard } from "../components/CubCoachCard";
 import { HabitPopup } from "../components/HabitPopup";
@@ -74,7 +73,7 @@ function AllocationRing({
   const c = 2 * Math.PI * r;
   let offset = 0;
   return (
-    <svg className="pf-ring" viewBox="0 0 168 168" role="img" aria-label="How your bag is split">
+    <svg className="pf-ring" viewBox={`0 0 ${size} ${size}`} role="img" aria-label="How your bag is split">
       <circle cx="84" cy="84" r={r} fill="none" stroke="#eef2f8" strokeWidth="22" />
       {slices
         .filter((slice) => slice.pct > 0.4)

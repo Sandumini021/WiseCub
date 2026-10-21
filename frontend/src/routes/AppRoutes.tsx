@@ -17,6 +17,16 @@ import { SplashPage } from "../pages/SplashPage";
 import { StudentDashboardPage } from "../pages/student/StudentDashboardPage";
 import { TeacherDashboardPage, TeacherStubPage } from "../pages/teacher/TeacherDashboardPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
+import { TaxShell } from "../modules/tax-learning/pages/TaxShell";
+import {
+  TaxChallengePage,
+  TaxDecisionsPage,
+  TaxHomePage,
+  TaxLearnPage,
+  TaxQuizPage,
+  TaxSimulatePage,
+  TaxSriLankaPage,
+} from "../modules/tax-learning/pages/TaxPages";
 
 
 
@@ -40,6 +50,16 @@ export function AppRoutes() {
       <Route path="/guardian/progress" element={<GuardianStubPage title="Progress" />} />
       <Route path="/guardian/quizzes" element={<GuardianStubPage title="Quiz results" />} />
       <Route path="/guardian/tips" element={<GuardianStubPage title="Recommendations" />} />
+      <Route path="/tax" element={<TaxShell />}>
+        <Route index element={<TaxHomePage />} />
+        <Route path="learn" element={<TaxLearnPage />} />
+        <Route path="learn/:id" element={<TaxLearnPage />} />
+        <Route path="simulate" element={<TaxSimulatePage />} />
+        <Route path="challenge" element={<TaxChallengePage />} />
+        <Route path="decisions" element={<TaxDecisionsPage />} />
+        <Route path="quiz" element={<TaxQuizPage />} />
+        <Route path="sri-lanka" element={<TaxSriLankaPage />} />
+      </Route>
       <Route path="/market" element={<MarketHomePage />} />
       <Route path="/safety" element={<ScamHomePage />} />
       <Route path="/safety/inbox" element={<SimulatedInboxPage />} />

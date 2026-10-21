@@ -345,7 +345,7 @@
 
 .dash-worlds {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 0.85rem;
   margin-top: 0.8rem;
 }
@@ -396,6 +396,10 @@
 
 .dash-world.tone-teal .dash-world-ico {
   background: #d7f3ee;
+}
+
+.dash-world.tone-navy .dash-world-ico {
+  background: #dbe4ff;
 }
 
 .dash-learn-band,

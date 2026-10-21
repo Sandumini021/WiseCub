@@ -96,6 +96,10 @@ const PAGE_TIPS: Record<string, Copy> = {
     en: "Progress shows learning habits, not who made more pretend money.",
     si: "ප්‍රගතිය පෙන්වන්නේ ඉගෙනුම් පුරුදු. අභ්‍යාස මුදල් වැඩි කාටද කියලා නෙවෙයි.",
   },
+  "/tax": {
+    en: "Cub’s Tax Practice Lab. Common area only. Practice numbers, plus labelled IRD 2025/2026 figures. Not tax advice.",
+    si: "Cub ගේ බදු lab එක. Common area එකේ විතරයි. අභ්‍යාස රූප සහ IRD 2025/2026. බදු උපදෙස් නෙවෙයි.",
+  },
   "/profile": {
     en: "Profile. Students can change the practice avatar. Passwords stay hashed on the server.",
     si: "පැතිකඩ. සිසුන්ට avatar එක වෙනස් කරන්න පුළුවන්. මුරපද server එකේ hash විදිහට තියෙනවා.",
@@ -113,6 +117,9 @@ const PAGE_TIPS: Record<string, Copy> = {
 export function greetingFor(path: string, lang: CubLang = "en"): string {
   if (PAGE_TIPS[path]) {
     return pick(lang, PAGE_TIPS[path]);
+  }
+  if (path.startsWith("/tax")) {
+    return pick(lang, PAGE_TIPS["/tax"]);
   }
   if (path.startsWith("/market/lessons")) {
     return pick(lang, PAGE_TIPS["/market/lessons/1"]);
@@ -287,6 +294,9 @@ export function matchCubIntent(
   }
   if (/(how to sell|when (do i|to) sell|selling wise|විකුණන්නේ)/.test(text)) {
     return go(lang, "/market/lessons/6", { en: "Opening the sell lesson.", si: "විකුණුම් පාඩම අරඹනවා." }, role, from);
+  }
+  if (/(tax lab|tax practice|බදු|open tax)/.test(text)) {
+    return go(lang, "/tax", { en: "Opening Cub’s Tax Practice Lab.", si: "බදු lab එක අරිනවා." }, role, from);
   }
   if (/(how to decide|how do i decide|before i (buy|sell)|pause and compare)/.test(text)) {
     return go(lang, "/market/lessons/7", { en: "Opening how to decide.", si: "තීරණ පාඩම අරඹනවා." }, role, from);

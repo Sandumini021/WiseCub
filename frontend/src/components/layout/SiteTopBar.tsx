@@ -9,6 +9,7 @@ const STUDENT_TABS = [
   { to: "/market", label: "Market", icon: "▤" },
   { to: "/safety", label: "Stay Safe", icon: "◈" },
   { to: "/choices", label: "Life Choices", icon: "◎" },
+  { to: "/tax", label: "Tax Lab", icon: "▣" },
 ] as const;
 
 export function SiteTopBar() {
@@ -17,6 +18,7 @@ export function SiteTopBar() {
   const navigate = useNavigate();
   const onMarket = location.pathname.startsWith("/market");
   const onSafety = location.pathname.startsWith("/safety");
+  const onTax = location.pathname.startsWith("/tax");
   const displayName = child?.name?.trim() || "";
   const home = homePathForRole(child?.role);
 
@@ -46,6 +48,8 @@ export function SiteTopBar() {
                     ? onMarket
                     : tab.to === "/safety"
                     ? onSafety
+                    : tab.to === "/tax"
+                      ? onTax
                     : isActive || Boolean(matchesHome);
                 if (!on) {
                   return undefined;

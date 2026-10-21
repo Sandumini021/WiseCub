@@ -1,0 +1,199 @@
+.tax-lab {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 1rem 2rem;
+}
+
+.tax-head h1 {
+  margin: 0.2rem 0 0.6rem;
+}
+
+.tax-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tax-nav a {
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  background: #eef2f8;
+  color: #1b2744;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.tax-nav a.active {
+  background: #1b2744;
+  color: #fff;
+}
+
+.tax-cards {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.7rem;
+  padding: 0;
+}
+
+.tax-cards a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-height: 110px;
+  padding: 0.9rem;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  text-decoration: none;
+  color: inherit;
+}
+
+.tax-cub {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.6rem;
+  align-items: center;
+  background: #fff8e8;
+  border-radius: 20px;
+  padding: 0.7rem;
+  margin: 0.8rem 0;
+}
+
+.tax-result {
+  background: #fff;
+  border-radius: 20px;
+  padding: 1rem;
+  margin-top: 0.8rem;
+  border-top: 4px solid #f5c400;
+}
+
+.tax-result.is-verified {
+  border-top-color: #163a8a;
+}
+
+.tax-result dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+
+.tax-result dt {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.tax-result dd {
+  margin: 0;
+  font-weight: 800;
+}
+
+.tax-bars {
+  margin: 0.6rem 0;
+}
+
+.tax-bars i {
+  display: block;
+  height: 10px;
+  border-radius: 99px;
+  margin-bottom: 0.25rem;
+}
+
+.tax-bars .is-gross {
+  background: #dbeafe;
+}
+
+.tax-bars .is-tax {
+  background: #f97316;
+}
+
+.tax-mode {
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.tax-warn,
+.tax-err {
+  background: #fee2e2;
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+}
+
+.tax-ok {
+  background: #dcfce7;
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+}
+
+.tax-opt,
+.tax-learn label,
+.tax-lab label {
+  display: block;
+  margin: 0.45rem 0;
+}
+
+.tax-lab input[type="range"] {
+  width: 100%;
+}
+
+.tax-lab select,
+.tax-lab input[type="number"] {
+  min-height: 40px;
+  margin-left: 0.4rem;
+}
+
+.tax-lesson-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0;
+  list-style: none;
+}
+
+.tax-lesson-list a {
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: #eef2f8;
+  text-decoration: none;
+  color: inherit;
+}
+
+.tax-lesson-list a.is-on {
+  background: #1b2744;
+  color: #fff;
+}
+
+.ls-beats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.ls-beats button {
+  border-radius: 999px;
+  border: 1px solid #d7dee9;
+  min-height: 36px;
+  padding: 0 0.8rem;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.ls-beats button.is-on {
+  background: #1b2744;
+  color: #fff;
+}
+
+.tax-foot {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 700px) {
+  .tax-cub {
+    grid-template-columns: 1fr;
+  }
+}
