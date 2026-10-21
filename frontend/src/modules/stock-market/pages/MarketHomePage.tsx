@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { SiteTopBar } from "../../../components/layout/SiteTopBar";
+import { readCubLanguage } from "../../../pages/auth/demoSession";
 import "../../../styles/dashboard-long.css";
 import "../../../styles/market-home.css";
+import "../../../styles/market-dashboard.css";
+import { CubCoachCard } from "../components/CubCoachCard";
+import { pickCoach, type CoachCard } from "../data/decisionCoach";
 import {
   DEMO_COMPANIES,
   LESSONS,
@@ -74,23 +78,20 @@ function OverviewChart({ points }: { points: number[] }) {
 export function MarketHomePage() {
   const quotes = useMemo(() => buildQuotes(), []);
   const [lesson1Done, setLesson1Done] = useState(() => readLesson1Complete());
-  const [finished, setFinished] = useState<Record<number, boolean>>(() => ({
-    1: readLessonComplete(1),
-    2: readLessonComplete(2),
-    3: readLessonComplete(3),
-    4: readLessonComplete(4),
-  }));
+  const [finished, setFinished] = useState<Record<number, boolean>>(() =>
+    Object.fromEntries(LESSONS.map((lesson) => [lesson.n, readLessonComplete(lesson.n)])),
+  );
   const [range, setRange] = useState<"1D" | "1W" | "1M" | "1Y">("1W");
+  const [coach, setCoach] = useState<CoachCard | null>(null);
   const book = readBook();
+  const lang = readCubLanguage();
 
   useEffect(() => {
     setLesson1Done(readLesson1Complete());
-    setFinished({
-      1: readLessonComplete(1),
-      2: readLessonComplete(2),
-      3: readLessonComplete(3),
-      4: readLessonComplete(4),
-    });
+    setFinished(
+      Object.fromEntries(LESSONS.map((lesson) => [lesson.n, readLessonComplete(lesson.n)])),
+    );
+    setCoach(pickCoach({ lang: readCubLanguage(), path: "home" }));
   }, []);
 
   const prices = Object.fromEntries(quotes.map((item) => [item.ticker, item.price]));
@@ -131,6 +132,7 @@ export function MarketHomePage() {
         </aside>
 
         <div className="mkt-main" id="main">
+          {coach ? <CubCoachCard card={coach} lang={lang} onDismiss={() => setCoach(null)} /> : null}
           <section className="mkt-hero" aria-labelledby="market-hero-title">
             <div className="mkt-hero-art">
               <img src="/images/dash/cub-hero.png" alt="Cub exploring the market" />
@@ -145,8 +147,9 @@ export function MarketHomePage() {
                 Fake money. No regrets.
               </h1>
               <p>
-                Trade listed companies at real prices with Rs {PRACTICE_CASH_LKR.toLocaleString()} of
-                virtual money. Cub explains every move before you confirm.
+                {lang === "si"
+                  ? `අභ්‍යාස රුපියල් ${PRACTICE_CASH_LKR.toLocaleString()} සමඟ කොටස් පුරුදු වෙන්න. මිල උඩට හෝ පහළට යන්න පුළුවන්. ඇත්ත බැංකුවක් නැහැ.`
+                  : `Practise with Rs ${PRACTICE_CASH_LKR.toLocaleString()} of virtual money. Prices can rise or fall. Cub checks your thinking before you confirm.`}
               </p>
             </div>
             <aside className="mkt-wallet">
@@ -179,8 +182,8 @@ export function MarketHomePage() {
 
           <section className="mkt-lessons" aria-labelledby="lessons-title">
             <div className="mkt-lessons-head">
-              <h2 id="lessons-title">Four Lessons — Unlock the Market</h2>
-              <p>Complete each lesson to unlock the next. Lesson 1 opens the market terminal.</p>
+              <h2 id="lessons-title">Ten short lessons</h2>
+              <p>Tap through buy, sell, decisions, and drops. Lesson 1 still opens the terminal.</p>
             </div>
             <ol>
               {LESSONS.map((lesson) => {
@@ -229,9 +232,11 @@ export function MarketHomePage() {
                     return (
                       <tr key={quote.ticker}>
                         <td>
-                          <span aria-hidden="true">{COMPANY_MARK[quote.ticker]}</span>
-                          <b>{quote.ticker}</b>
-                          <em>{company?.name}</em>
+                          <Link to={`/market/terminal?ticker=${quote.ticker}`}>
+                            <span aria-hidden="true">{COMPANY_MARK[quote.ticker]}</span>
+                            <b>{quote.ticker}</b>
+                            <em>{company?.name}</em>
+                          </Link>
                         </td>
                         <td>{quote.price.toFixed(2)}</td>
                         <td className={up ? "up" : "down"}>

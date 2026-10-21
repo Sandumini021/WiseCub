@@ -4,9 +4,11 @@ import { CubMascot } from "../../../components/cub-assistant/CubMascot";
 import {
   getLesson,
   isLessonUnlocked,
+  LESSON_COUNT,
   saveLessonComplete,
 } from "../data/demoMarket";
 import "../../../styles/market-dashboard.css";
+import "../../../styles/market-lesson.css";
 
 function LessonArt({ icon }: { icon: string }) {
   if (icon === "bars") {
@@ -44,6 +46,61 @@ function LessonArt({ icon }: { icon: string }) {
       </div>
     );
   }
+  if (icon === "buy") {
+    return (
+      <div className="lesson-art ls-glyph is-buy" aria-hidden="true">
+        <span>↓ cash</span>
+        <strong>Buy</strong>
+        <span>↑ slices</span>
+      </div>
+    );
+  }
+  if (icon === "sell") {
+    return (
+      <div className="lesson-art ls-glyph is-sell" aria-hidden="true">
+        <span>↑ cash</span>
+        <strong>Sell</strong>
+        <span>↓ slices</span>
+      </div>
+    );
+  }
+  if (icon === "think") {
+    return (
+      <div className="lesson-art ls-steps" aria-hidden="true">
+        <i>1</i>
+        <i>2</i>
+        <i>3</i>
+      </div>
+    );
+  }
+  if (icon === "crowd") {
+    return (
+      <div className="lesson-art ls-crowd" aria-hidden="true">
+        <b />
+        <b />
+        <b />
+        <b />
+        <em>you</em>
+      </div>
+    );
+  }
+  if (icon === "lock") {
+    return (
+      <div className="lesson-art ls-lock" aria-hidden="true">
+        <span>paper</span>
+        <strong>🔒</strong>
+        <span>locked</span>
+      </div>
+    );
+  }
+  if (icon === "pause") {
+    return (
+      <div className="lesson-art ls-pause" aria-hidden="true">
+        <strong>⏸</strong>
+        <span>drop drill</span>
+      </div>
+    );
+  }
   return <div className="pie" aria-hidden="true" />;
 }
 
@@ -55,12 +112,14 @@ export function MarketLessonPage() {
   const [checked, setChecked] = useState(false);
   const [done, setDone] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [beat, setBeat] = useState(0);
 
   useEffect(() => {
     setPicked(null);
     setChecked(false);
     setDone(false);
     setSpeaking(false);
+    setBeat(0);
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
@@ -88,7 +147,8 @@ export function MarketLessonPage() {
   }
 
   const isCorrect = picked === lesson.check.correct;
-  const nextN = n < 4 ? n + 1 : null;
+  const nextN = n < LESSON_COUNT ? n + 1 : null;
+  const openBeat = lesson.beats[beat] ?? lesson.beats[0];
 
   function hearAloud() {
     if (!("speechSynthesis" in window) || !lesson) {
@@ -114,9 +174,9 @@ export function MarketLessonPage() {
   }
 
   return (
-    <div className="lesson-page">
+    <div className="lesson-page ls-shell">
       <p className="muted">
-        <Link to="/market">← Market Floor</Link> · Lesson {n} of 4 · {lesson.duration}
+        <Link to="/market">← Market Floor</Link> · {n} / {LESSON_COUNT} · {lesson.duration}
       </p>
       <h1>{lesson.title}</h1>
 
@@ -128,14 +188,24 @@ export function MarketLessonPage() {
           </p>
         </div>
         <div>
-          {lesson.story.map((para) => (
-            <p key={para}>{para}</p>
-          ))}
-          <ul className="lesson-points">
-            {lesson.points.map((point) => (
-              <li key={point}>{point}</li>
+          <p className="ls-lead">{lesson.story[0]}</p>
+          <div className="ls-beats" role="tablist" aria-label="Lesson beats">
+            {lesson.beats.map((item, index) => (
+              <button
+                key={item.t}
+                type="button"
+                role="tab"
+                aria-selected={beat === index}
+                className={beat === index ? "is-on" : ""}
+                onClick={() => setBeat(index)}
+              >
+                {item.t}
+              </button>
             ))}
-          </ul>
+          </div>
+          <p className="ls-beat-body" role="tabpanel">
+            {openBeat.d}
+          </p>
           <button className="btn btn-ghost" type="button" onClick={hearAloud} aria-pressed={speaking}>
             {speaking ? "Stop" : "Hear it aloud"}
           </button>
@@ -143,8 +213,8 @@ export function MarketLessonPage() {
       </section>
 
       <section className="panel" aria-labelledby="check-title">
-        <h2 id="check-title">Quick check — nothing is scored against other children</h2>
-        <p>{lesson.check.question}</p>
+        <h2 id="check-title">Quick check</h2>
+        <p className="ls-q">{lesson.check.question}</p>
         <div className="check-options" role="radiogroup" aria-label="Choose one answer">
           {lesson.check.options.map((option) => (
             <label

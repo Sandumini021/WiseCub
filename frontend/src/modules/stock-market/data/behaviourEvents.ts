@@ -15,7 +15,10 @@ export type MarketEventType =
   | "portfolio_reviewed"
   | "trade_reason_submitted"
   | "coaching_shown"
-  | "coaching_response";
+  | "coaching_response"
+  | "habit_popup_opened"
+  | "habit_card_tapped"
+  | "lesson_completed";
 
 export type MarketEventInput = {
   type: MarketEventType;
