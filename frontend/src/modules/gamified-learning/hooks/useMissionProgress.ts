@@ -185,6 +185,8 @@ export function useMissionProgress(missionId: string, childKey?: string) {
   // ── Start a level (enforces server-side lock) ──────────────────────────────
   const beginLevel = useCallback(async (levelNumber: number) => {
     setState((prev) => ({ ...prev, error: null }));
+    // Rotate session ID when beginning a genuinely new level attempt or replay
+    resetSessionId();
     try {
       await startLevel(missionId, levelNumber);
     } catch (err) {
@@ -208,6 +210,9 @@ export function useMissionProgress(missionId: string, childKey?: string) {
       selectedOptionIds: string[];
       selectedRationaleId?: string;
     }): Promise<EvaluationResultApi> => {
+      if (state.submitting) {
+        throw new Error('A decision submission is already in progress.');
+      }
       setState((prev) => ({ ...prev, submitting: true, error: null }));
       try {
         const result = await submitOptionDecision({
@@ -230,10 +235,6 @@ export function useMissionProgress(missionId: string, childKey?: string) {
           progress: progressFromApiResponse(freshProgress),
           error: null,
         }));
-        // Rotate session ID so retries get a fresh idempotency key
-        if (!result.passed) {
-          resetSessionId();
-        }
         return result;
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Submission failed.';
@@ -241,7 +242,7 @@ export function useMissionProgress(missionId: string, childKey?: string) {
         throw err;
       }
     },
-    [missionId]
+    [missionId, state.submitting]
   );
 
   // ── Submit allocation decisions ───────────────────────────────────────────
@@ -252,6 +253,9 @@ export function useMissionProgress(missionId: string, childKey?: string) {
       interactionType: string;
       allocations: Record<string, number>;
     }): Promise<EvaluationResultApi> => {
+      if (state.submitting) {
+        throw new Error('A decision submission is already in progress.');
+      }
       setState((prev) => ({ ...prev, submitting: true, error: null }));
       try {
         const result = await submitAllocationDecision({
@@ -272,7 +276,6 @@ export function useMissionProgress(missionId: string, childKey?: string) {
           progress: progressFromApiResponse(freshProgress),
           error: null,
         }));
-        if (!result.passed) resetSessionId();
         return result;
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Submission failed.';
@@ -280,7 +283,7 @@ export function useMissionProgress(missionId: string, childKey?: string) {
         throw err;
       }
     },
-    [missionId]
+    [missionId, state.submitting]
   );
 
   // ── Submit multi-period saving decisions ──────────────────────────────────
@@ -290,6 +293,9 @@ export function useMissionProgress(missionId: string, childKey?: string) {
       levelNumber: number;
       weeklyDecisions: WeeklyDecisionInput[];
     }): Promise<EvaluationResultApi> => {
+      if (state.submitting) {
+        throw new Error('A decision submission is already in progress.');
+      }
       setState((prev) => ({ ...prev, submitting: true, error: null }));
       try {
         const result = await submitMultiPeriodDecision({
@@ -309,7 +315,6 @@ export function useMissionProgress(missionId: string, childKey?: string) {
           progress: progressFromApiResponse(freshProgress),
           error: null,
         }));
-        if (!result.passed) resetSessionId();
         return result;
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Submission failed.';
@@ -317,7 +322,7 @@ export function useMissionProgress(missionId: string, childKey?: string) {
         throw err;
       }
     },
-    [missionId]
+    [missionId, state.submitting]
   );
 
   // ── Clear error ────────────────────────────────────────────────────────────

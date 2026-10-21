@@ -81,6 +81,10 @@ async def connect() -> None:
         # Gamified-learning collections
         from app.modules.gamified_learning.indexes import ensure_gamified_indexes
         await ensure_gamified_indexes(db)
+
+        # Decision-making (Choice Town) collections
+        from app.modules.decision_making.indexes import ensure_decision_making_indexes
+        await ensure_decision_making_indexes(db)
     except PyMongoError:
         # API still starts. /health reports database as down until Mongo is running.
         pass

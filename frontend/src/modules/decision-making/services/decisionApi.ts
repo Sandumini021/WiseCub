@@ -4,7 +4,9 @@ import type {
   ChoiceTownProgress,
   DecisionOption,
   DecisionOptionId,
+  ScenarioDefinition,
 } from "../types/decisionMaking";
+import { SCENARIOS, getScenario } from "../data/scenarios";
 import { recommendFromAnalysis } from "./adaptiveRecommendations";
 import { analyzeReasoning } from "./reasoningAnalysis";
 import {
@@ -24,8 +26,32 @@ export type ReasoningSubmission = {
   recommendations: AdaptiveRecommendation[];
 };
 
+export type AnalyticsSummary = {
+  childId: string;
+  childName?: string;
+  completedLevelsCount: number;
+  completedLevelIds: number[];
+  currentLevelId: number;
+  totalAttempts: number;
+  averageDimensionScores: Record<string, number>;
+  persistentStrengths: string[];
+  persistentLearningGaps: string[];
+  recentAttemptsSummary: Array<{
+    attemptId: string;
+    levelId: number;
+    selectedOptionId?: string;
+    startedAt: string;
+    completedAt?: string;
+    completionStatus: string;
+    scores: Record<string, number>;
+    highlights: string[];
+  }>;
+  disclaimer: string;
+};
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: "include",
     ...init,
     headers: {
       "Content-Type": "application/json",
@@ -36,6 +62,30 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(`Choice Town API returned ${response.status}`);
   }
   return (await response.json()) as T;
+}
+
+export async function fetchScenarios(): Promise<ScenarioDefinition[]> {
+  try {
+    const remote = await request<ScenarioDefinition[]>("/api/decision-making/scenarios");
+    if (Array.isArray(remote) && remote.length > 0) {
+      return remote;
+    }
+    return SCENARIOS;
+  } catch {
+    return SCENARIOS;
+  }
+}
+
+export async function fetchScenario(levelId: number): Promise<ScenarioDefinition | undefined> {
+  try {
+    const remote = await request<ScenarioDefinition>(`/api/decision-making/scenarios/${levelId}`);
+    if (remote && remote.options) {
+      return remote;
+    }
+    return getScenario(levelId);
+  } catch {
+    return getScenario(levelId);
+  }
 }
 
 export async function refreshProgress(): Promise<ChoiceTownProgress> {
@@ -116,5 +166,30 @@ export async function persistCompletion(levelId: number): Promise<ChoiceTownProg
     return writeProgress(remote);
   } catch {
     return completeLevelLocal(levelId);
+  }
+}
+
+export async function resetProgress(): Promise<ChoiceTownProgress> {
+  try {
+    const remote = await request<{ ok: boolean; progress: ChoiceTownProgress }>(
+      "/api/decision-making/reset",
+      { method: "POST" },
+    );
+    return writeProgress(remote.progress);
+  } catch {
+    return writeProgress({
+      completedLevelIds: [],
+      currentLevelId: 1,
+      sessions: {},
+      updatedAt: new Date().toISOString(),
+    });
+  }
+}
+
+export async function fetchAnalytics(childId: string): Promise<AnalyticsSummary | null> {
+  try {
+    return await request<AnalyticsSummary>(`/api/decision-making/analytics/${childId}`);
+  } catch {
+    return null;
   }
 }

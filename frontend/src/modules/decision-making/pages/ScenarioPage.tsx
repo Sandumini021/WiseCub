@@ -11,6 +11,7 @@ import { REASONING_MIN_CHARS } from "../data/phoneScenario";
 import { getScenario } from "../data/scenarios";
 import { buildConsequences } from "../services/consequenceEngine";
 import {
+  fetchScenario,
   persistCompletion,
   persistDecision,
   persistReasoning,
@@ -24,6 +25,7 @@ import {
 import type {
   AdaptiveRecommendation as Recommendation,
   DecisionOptionId,
+  ScenarioDefinition,
 } from "../types/decisionMaking";
 import "../styles/choice-town.css";
 
@@ -39,7 +41,7 @@ export function ScenarioPage() {
   const navigate = useNavigate();
   const numericId = Number(levelId);
   const level = getLevel(numericId);
-  const scenario = getScenario(numericId);
+  const [scenario, setScenario] = useState<ScenarioDefinition | undefined>(() => getScenario(numericId));
   const progress = readProgress();
   const status = level ? getLevelStatus(level.id, progress) : "locked";
   const stored = getSession(numericId, progress);
@@ -54,6 +56,18 @@ export function ScenarioPage() {
   const [saving, setSaving] = useState(false);
   const touched = useRef(false);
   const currentStep: Step = isStep(step) ? step : "decide";
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchScenario(numericId).then((data) => {
+      if (!cancelled && data) {
+        setScenario(data);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [numericId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -174,7 +188,7 @@ export function ScenarioPage() {
 
       <p>
         <Link to="/choices">Back to Choice Town</Link>
-        {" · "}Answers are saved to the Choice Town API when it is running, and kept in this browser as well.
+        {" · "}Answers are saved to MongoDB when connected, and cached locally for your profile.
       </p>
 
       {currentStep === "decide" ? (

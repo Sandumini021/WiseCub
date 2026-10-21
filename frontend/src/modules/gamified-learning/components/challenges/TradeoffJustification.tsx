@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LevelDefinition } from '../../types/mission.types';
 
 interface TradeoffJustificationProps {
@@ -46,7 +46,7 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
   return (
     <form onSubmit={handleSubmit} className="challenge-form">
       {/* Live Financial Ledger Bar */}
-      <div className={`financial-ledger-banner ${isOverBudget ? 'ledger-over' : 'ledger-ok'}`}>
+      <div className={`financial-ledger-banner ${isOverBudget ? 'ledger-over' : 'ledger-ok'}`} aria-label="Tradeoff Ledger">
         <div className="ledger-stat">
           <span className="stat-label">Available Fund</span>
           <span className="stat-amount">Rs. {startingBudget.toLocaleString()}</span>
@@ -56,7 +56,7 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
           <span className="stat-amount">Rs. {totalCost.toLocaleString()}</span>
         </div>
         <div className="ledger-stat">
-          <span className="stat-label">Remaining Savings</span>
+          <span className="stat-label">Remaining Balance</span>
           <span className={`stat-amount ${isOverBudget ? 'amount-negative' : 'amount-positive'}`}>
             Rs. {remainingCash.toLocaleString()}
           </span>
@@ -64,19 +64,20 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
       </div>
 
       {isOverBudget && (
-        <div className="ledger-warning-box">
-          ⚠️ <strong>Over budget warning:</strong> You cannot fund all three options. You must
-          make a prioritized trade-off to keep total spending under Rs. {startingBudget.toLocaleString()}.
+        <div className="ledger-warning-box" role="alert">
+          ⚠️ <strong>Over Budget:</strong> You cannot fund all choices at once. Make a prioritized
+          tradeoff to keep total spending under Rs. {startingBudget.toLocaleString()}.
         </div>
       )}
 
       {/* Part 1: Competing Choices */}
       <div className="tradeoff-section-heading">
-        <h4>Step 1: Choose Your Spending Priorities</h4>
+        <div className="step-badge">STEP 1</div>
+        <h4>Choose Your Spending Priorities</h4>
         <p>Select which items to fund within your Rs. {startingBudget.toLocaleString()} budget:</p>
       </div>
 
-      <div className="options-selection-grid">
+      <div className="options-selection-grid" role="group" aria-label="Step 1 Spending Priorities">
         {options.map((opt) => {
           const isSelected = selectedOptionIds.includes(opt.id);
           return (
@@ -84,9 +85,16 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
               key={opt.id}
               className={`decision-option-card ${isSelected ? 'option-selected' : ''}`}
               onClick={() => toggleOption(opt.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleOption(opt.id);
+                }
+              }}
               role="checkbox"
               aria-checked={isSelected}
-              tabIndex={0}
+              tabIndex={disabled ? -1 : 0}
+              aria-label={`${opt.title}, ${opt.isEssential ? 'Preventive Care' : 'Luxury Extra'}, cost Rs. ${opt.costLKR.toLocaleString()}`}
             >
               <div className="option-card-header">
                 <span className={`option-category-badge ${opt.isEssential ? 'badge-essential' : 'badge-discretionary'}`}>
@@ -99,16 +107,19 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
               <p className="option-description">{opt.description}</p>
 
               <div className="option-action-row">
+                <div className={`option-check-pill ${isSelected ? 'pill-checked' : ''}`}>
+                  <span className="check-icon">{isSelected ? '✓' : '+'}</span>
+                  <span className="check-label">{isSelected ? 'Selected' : 'Select Item'}</span>
+                </div>
                 <input
                   type="checkbox"
                   checked={isSelected}
                   onChange={() => toggleOption(opt.id)}
                   disabled={disabled}
-                  className="option-checkbox"
+                  className="sr-only-checkbox"
+                  tabIndex={-1}
+                  aria-hidden="true"
                 />
-                <span className="option-select-text">
-                  {isSelected ? 'Selected' : 'Select Item'}
-                </span>
               </div>
             </div>
           );
@@ -116,12 +127,13 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
       </div>
 
       {/* Part 2: Reasoning Justification */}
-      <div className="tradeoff-section-heading" style={{ marginTop: '24px' }}>
-        <h4>Step 2: Why Did You Pick This?</h4>
-        <p>Explain why your choice is the smartest move for Barnaby:</p>
+      <div className="tradeoff-section-heading tradeoff-step-2">
+        <div className="step-badge">STEP 2</div>
+        <h4>Why Did You Choose This Strategy?</h4>
+        <p>Select the financial rationale that best justifies your decision:</p>
       </div>
 
-      <div className="rationales-list">
+      <div className="rationales-list" role="radiogroup" aria-label="Step 2 Reasoning Rationale">
         {rationales.map((rat) => {
           const isSelected = selectedRationaleId === rat.id;
           return (
@@ -129,19 +141,31 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
               key={rat.id}
               className={`rationale-card ${isSelected ? 'rationale-selected' : ''}`}
               onClick={() => !disabled && setSelectedRationaleId(rat.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  if (!disabled) setSelectedRationaleId(rat.id);
+                }
+              }}
               role="radio"
               aria-checked={isSelected}
-              tabIndex={0}
+              tabIndex={disabled ? -1 : 0}
+              aria-label={rat.text}
             >
+              <div className="rationale-radio-indicator">
+                <span className="radio-dot">{isSelected ? '●' : '○'}</span>
+              </div>
+              <span className="rationale-text">{rat.text}</span>
               <input
                 type="radio"
                 name="tradeoff_rationale"
                 checked={isSelected}
                 onChange={() => setSelectedRationaleId(rat.id)}
                 disabled={disabled}
-                className="rationale-radio"
+                className="sr-only-checkbox"
+                tabIndex={-1}
+                aria-hidden="true"
               />
-              <span className="rationale-text">{rat.text}</span>
             </div>
           );
         })}
@@ -153,7 +177,13 @@ export const TradeoffJustification: React.FC<TradeoffJustificationProps> = ({
           className="btn-confirm-decision"
           disabled={disabled || selectedOptionIds.length === 0 || !selectedRationaleId || isOverBudget}
         >
-          Submit Decision & Check Results
+          {selectedOptionIds.length === 0
+            ? 'Step 1: Select your spending priorities'
+            : isOverBudget
+            ? `⚠️ Over budget by Rs. ${Math.abs(remainingCash).toLocaleString()}`
+            : !selectedRationaleId
+            ? 'Step 2: Choose your financial rationale'
+            : 'Submit Decision & Evaluate Rationale ➔'}
         </button>
       </div>
     </form>

@@ -1,0 +1,347 @@
+{
+  "metadata": {
+    "experiment_version": "v2_corrected",
+    "dataset_path": "/Users/tharushinethra/Desktop/WiseCub/WiseCub/research/scam-awareness-ml/v2_corrected/data/scam_messages_dataset_v2.csv",
+    "random_seed": 42,
+    "train_rows": 1722,
+    "val_rows": 404,
+    "test_rows": 374,
+    "train_groups": 500,
+    "val_groups": 107,
+    "test_groups": 108,
+    "best_model_selected": "TFIDF_Logistic_Regression"
+  },
+  "similarity_leakage_audit": {
+    "max_cosine_sim_train_val": 0.6276,
+    "max_cosine_sim_train_test": 0.6121,
+    "max_cosine_sim_val_test": 0.6117,
+    "pairs_train_test_similarity_ge_070": 0,
+    "sample_high_similarity_pairs": []
+  },
+  "cross_validation_5fold": {
+    "Majority_Baseline": {
+      "mean_macro_f1": 0.3435,
+      "std_macro_f1": 0.0045,
+      "fold_macro_f1s": [
+        0.3454,
+        0.3454,
+        0.3472,
+        0.3346,
+        0.3448
+      ]
+    },
+    "TFIDF_Logistic_Regression": {
+      "mean_macro_f1": 0.9436,
+      "std_macro_f1": 0.0294,
+      "fold_macro_f1s": [
+        0.9565,
+        0.971,
+        0.904,
+        0.9128,
+        0.9737
+      ]
+    },
+    "TFIDF_Multinomial_NB": {
+      "mean_macro_f1": 0.9447,
+      "std_macro_f1": 0.0307,
+      "fold_macro_f1s": [
+        0.9622,
+        0.9681,
+        0.8982,
+        0.9186,
+        0.9766
+      ]
+    },
+    "TFIDF_Linear_SVC": {
+      "mean_macro_f1": 0.95,
+      "std_macro_f1": 0.0315,
+      "fold_macro_f1s": [
+        0.9565,
+        0.9855,
+        0.904,
+        0.9243,
+        0.9796
+      ]
+    }
+  },
+  "validation_set_comparison": {
+    "Majority_Baseline": {
+      "accuracy": 0.5941,
+      "precision_scam": 0.5941,
+      "recall_scam": 1.0,
+      "f1_scam": 0.7453,
+      "precision_legit": 0.0,
+      "recall_legit": 0.0,
+      "f1_legit": 0.0,
+      "macro_f1": 0.3727,
+      "confusion_matrix": [
+        [
+          0,
+          164
+        ],
+        [
+          0,
+          240
+        ]
+      ],
+      "true_negatives": 0,
+      "false_positives": 164,
+      "false_negatives": 0,
+      "true_positives": 240
+    },
+    "TFIDF_Logistic_Regression": {
+      "accuracy": 0.9777,
+      "precision_scam": 0.9793,
+      "recall_scam": 0.9833,
+      "f1_scam": 0.9813,
+      "precision_legit": 0.9755,
+      "recall_legit": 0.9695,
+      "f1_legit": 0.9725,
+      "macro_f1": 0.9769,
+      "confusion_matrix": [
+        [
+          159,
+          5
+        ],
+        [
+          4,
+          236
+        ]
+      ],
+      "true_negatives": 159,
+      "false_positives": 5,
+      "false_negatives": 4,
+      "true_positives": 236
+    },
+    "TFIDF_Multinomial_NB": {
+      "accuracy": 0.9728,
+      "precision_scam": 0.9831,
+      "recall_scam": 0.9708,
+      "f1_scam": 0.9769,
+      "precision_legit": 0.9581,
+      "recall_legit": 0.9756,
+      "f1_legit": 0.9668,
+      "macro_f1": 0.9719,
+      "confusion_matrix": [
+        [
+          160,
+          4
+        ],
+        [
+          7,
+          233
+        ]
+      ],
+      "true_negatives": 160,
+      "false_positives": 4,
+      "false_negatives": 7,
+      "true_positives": 233
+    },
+    "TFIDF_Linear_SVC": {
+      "accuracy": 0.9827,
+      "precision_scam": 0.9916,
+      "recall_scam": 0.9792,
+      "f1_scam": 0.9853,
+      "precision_legit": 0.9701,
+      "recall_legit": 0.9878,
+      "f1_legit": 0.9789,
+      "macro_f1": 0.9821,
+      "confusion_matrix": [
+        [
+          162,
+          2
+        ],
+        [
+          5,
+          235
+        ]
+      ],
+      "true_negatives": 162,
+      "false_positives": 2,
+      "false_negatives": 5,
+      "true_positives": 235
+    }
+  },
+  "final_test_set_evaluation": {
+    "overall": {
+      "accuracy": 0.893,
+      "precision_scam": 0.7447,
+      "recall_scam": 0.9633,
+      "f1_scam": 0.84,
+      "precision_legit": 0.9828,
+      "recall_legit": 0.8642,
+      "f1_legit": 0.9197,
+      "macro_f1": 0.8798,
+      "confusion_matrix": [
+        [
+          229,
+          36
+        ],
+        [
+          4,
+          105
+        ]
+      ],
+      "true_negatives": 229,
+      "false_positives": 36,
+      "false_negatives": 4,
+      "true_positives": 105
+    },
+    "synthetic_subset": {
+      "n_samples": 280,
+      "scam_samples": 70,
+      "legit_samples": 210,
+      "metrics": {
+        "accuracy": 0.8714,
+        "precision_scam": 0.6604,
+        "recall_scam": 1.0,
+        "f1_scam": 0.7955,
+        "precision_legit": 1.0,
+        "recall_legit": 0.8286,
+        "f1_legit": 0.9062,
+        "macro_f1": 0.8509,
+        "confusion_matrix": [
+          [
+            174,
+            36
+          ],
+          [
+            0,
+            70
+          ]
+        ],
+        "true_negatives": 174,
+        "false_positives": 36,
+        "false_negatives": 0,
+        "true_positives": 70
+      }
+    },
+    "public_subset": {
+      "n_samples": 94,
+      "scam_samples": 39,
+      "legit_samples": 55,
+      "metrics": {
+        "accuracy": 0.9574,
+        "precision_scam": 1.0,
+        "recall_scam": 0.8974,
+        "f1_scam": 0.9459,
+        "precision_legit": 0.9322,
+        "recall_legit": 1.0,
+        "f1_legit": 0.9649,
+        "macro_f1": 0.9554,
+        "confusion_matrix": [
+          [
+            55,
+            0
+          ],
+          [
+            4,
+            35
+          ]
+        ],
+        "true_negatives": 55,
+        "false_positives": 0,
+        "false_negatives": 4,
+        "true_positives": 35
+      }
+    }
+  },
+  "all_models_test_comparison": {
+    "Majority_Baseline": {
+      "accuracy": 0.2914,
+      "precision_scam": 0.2914,
+      "recall_scam": 1.0,
+      "f1_scam": 0.4513,
+      "precision_legit": 0.0,
+      "recall_legit": 0.0,
+      "f1_legit": 0.0,
+      "macro_f1": 0.2257,
+      "confusion_matrix": [
+        [
+          0,
+          265
+        ],
+        [
+          0,
+          109
+        ]
+      ],
+      "true_negatives": 0,
+      "false_positives": 265,
+      "false_negatives": 0,
+      "true_positives": 109
+    },
+    "TFIDF_Logistic_Regression": {
+      "accuracy": 0.893,
+      "precision_scam": 0.7447,
+      "recall_scam": 0.9633,
+      "f1_scam": 0.84,
+      "precision_legit": 0.9828,
+      "recall_legit": 0.8642,
+      "f1_legit": 0.9197,
+      "macro_f1": 0.8798,
+      "confusion_matrix": [
+        [
+          229,
+          36
+        ],
+        [
+          4,
+          105
+        ]
+      ],
+      "true_negatives": 229,
+      "false_positives": 36,
+      "false_negatives": 4,
+      "true_positives": 105
+    },
+    "TFIDF_Multinomial_NB": {
+      "accuracy": 0.8797,
+      "precision_scam": 0.7105,
+      "recall_scam": 0.9908,
+      "f1_scam": 0.8276,
+      "precision_legit": 0.9955,
+      "recall_legit": 0.834,
+      "f1_legit": 0.9076,
+      "macro_f1": 0.8676,
+      "confusion_matrix": [
+        [
+          221,
+          44
+        ],
+        [
+          1,
+          108
+        ]
+      ],
+      "true_negatives": 221,
+      "false_positives": 44,
+      "false_negatives": 1,
+      "true_positives": 108
+    },
+    "TFIDF_Linear_SVC": {
+      "accuracy": 0.9332,
+      "precision_scam": 0.8281,
+      "recall_scam": 0.9725,
+      "f1_scam": 0.8945,
+      "precision_legit": 0.9878,
+      "recall_legit": 0.917,
+      "f1_legit": 0.9511,
+      "macro_f1": 0.9228,
+      "confusion_matrix": [
+        [
+          243,
+          22
+        ],
+        [
+          3,
+          106
+        ]
+      ],
+      "true_negatives": 243,
+      "false_positives": 22,
+      "false_negatives": 3,
+      "true_positives": 106
+    }
+  }
+}

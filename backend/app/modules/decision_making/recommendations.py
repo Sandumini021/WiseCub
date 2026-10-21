@@ -33,24 +33,39 @@ def _title(level_id: int) -> str:
 
 def recommend(
     analysis: AnalysisResult,
-    sessions: dict[str, LevelSession],
+    sessions: dict[str, LevelSession] | None = None,
+    past_attempts: list[dict] | None = None,
 ) -> list[AdaptiveRecommendation]:
-    """Suggest a next scenario from this answer, or from a repeated gap."""
-    analyzed = [session.analysis for session in sessions.values() if session.analysis is not None]
+    """Suggest a next scenario from this answer, or from repeated gaps across past attempts."""
     weakest = min(analysis.dimensions, key=lambda item: item.score)
     strongest = max(analysis.dimensions, key=lambda item: item.score)
     average = sum(item.score for item in analysis.dimensions) / len(analysis.dimensions)
     recommendations: list[AdaptiveRecommendation] = []
 
+    past_analyses: list[dict] = []
+    if past_attempts:
+        for attempt in past_attempts:
+            an = attempt.get("analysis")
+            if an and isinstance(an, dict):
+                past_analyses.append(an)
+    if sessions:
+        for session in sessions.values():
+            if session.analysis is not None:
+                past_analyses.append(session.analysis.model_dump())
+
     repeated = False
     if weakest.score < 55:
-        repeated = sum(
-            1
-            for previous in analyzed
-            for dimension in previous.dimensions
-            if dimension.id == weakest.id and dimension.score < 55
-        ) >= 2
-        level_id = GAP_TO_LEVEL[weakest.id]
+        prev_weak_count = 0
+        for prev in past_analyses:
+            dims = prev.get("dimensions", [])
+            for dim in dims:
+                dim_id = dim.get("id") if isinstance(dim, dict) else getattr(dim, "id", None)
+                dim_score = dim.get("score") if isinstance(dim, dict) else getattr(dim, "score", 100)
+                if dim_id == weakest.id and dim_score is not None and dim_score < 55:
+                    prev_weak_count += 1
+
+        repeated = prev_weak_count >= 2
+        level_id = GAP_TO_LEVEL.get(weakest.id, 5)
         if repeated:
             reason = (
                 f"{weakest.label} was less visible in more than one completed explanation. "
@@ -63,6 +78,7 @@ def recommend(
                 f"{weakest.evidence} A later scenario on that topic can give you more practice."
             )
             basis = "single-response"
+
         recommendations.append(
             AdaptiveRecommendation(
                 id=f"gap-{weakest.id}",
@@ -73,6 +89,7 @@ def recommend(
             )
         )
 
+    total_prior = len(past_analyses)
     if average >= 70:
         recommendations.append(
             AdaptiveRecommendation(
@@ -83,11 +100,11 @@ def recommend(
                     "A complex decision can be a stretch. This is not a judgement of ability."
                 ),
                 suggested_level_id=10,
-                based_on="pattern" if len(analyzed) >= 2 else "single-response",
+                based_on="pattern" if total_prior >= 2 else "single-response",
             )
         )
 
-    if len(analyzed) < 2:
+    if total_prior < 2:
         recommendations.append(
             AdaptiveRecommendation(
                 id="one-answer-note",

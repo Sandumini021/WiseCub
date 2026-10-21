@@ -807,7 +807,7 @@ const COMPLEX: ScenarioDefinition = {
   ],
 };
 
-const SCENARIOS: ScenarioDefinition[] = [
+export const SCENARIOS: ScenarioDefinition[] = [
   BIRTHDAY,
   FRIEND_LOAN,
   BUY_NOW,
