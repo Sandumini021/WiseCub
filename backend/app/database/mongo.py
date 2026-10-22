@@ -70,19 +70,24 @@ async def connect() -> None:
             [("kind", 1), ("child_id", 1), ("session_id", 1)],
         )
 
-        # Scam safety guardian consent and simulation indexes
-        await db.guardian_consent.create_index("child_id", unique=True)
-        await db.safety_simulations.create_index(
+        from app.database.folders import (
+            SS_CONSENT,
+            SS_SIMULATIONS,
+            ensure_module_folders,
+        )
+
+        await ensure_module_folders(db)
+
+        await db[SS_CONSENT].create_index("child_id", unique=True)
+        await db[SS_SIMULATIONS].create_index(
             [("child_id", 1), ("category_id", 1), ("attempt_id", 1)],
             unique=True,
         )
-        await db.safety_simulations.create_index("simulation_id", unique=True)
+        await db[SS_SIMULATIONS].create_index("simulation_id", unique=True)
 
-        # Gamified-learning collections
         from app.modules.gamified_learning.indexes import ensure_gamified_indexes
         await ensure_gamified_indexes(db)
 
-        # Decision-making (Choice Town) collections
         from app.modules.decision_making.indexes import ensure_decision_making_indexes
         await ensure_decision_making_indexes(db)
     except PyMongoError:

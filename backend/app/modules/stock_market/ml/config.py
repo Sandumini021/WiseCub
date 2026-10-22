@@ -48,6 +48,6 @@ DEMO_INDEX_MAP = {
 }
 
 DISCLAIMER = (
-    "This classroom model looks at old index prices. It can be wrong. "
+    "This classroom model looks at old prices. It can be wrong. "
     "It is not a tip to buy or sell, and no real money is involved."
 )

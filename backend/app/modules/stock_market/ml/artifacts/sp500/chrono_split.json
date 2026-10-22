@@ -1,0 +1,26 @@
+{
+  "train_end": "2018-10-04",
+  "val_end": "2022-10-05",
+  "date_min": "2000-02-01",
+  "date_max": "2026-10-13",
+  "n_dates": 6715,
+  "shuffle": false,
+  "train_rows": 1949054,
+  "val_rows": 488464,
+  "test_rows": 501080,
+  "class_counts_all": {
+    "upward": 1157893,
+    "downward": 933414,
+    "sideways": 847291
+  },
+  "class_counts_train": {
+    "upward": 758679,
+    "downward": 608232,
+    "sideways": 582143
+  },
+  "class_counts_test": {
+    "upward": 200127,
+    "downward": 163577,
+    "sideways": 137376
+  }
+}

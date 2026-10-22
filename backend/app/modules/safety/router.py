@@ -16,6 +16,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
+from app.database.folders import module_state_coll, safety_consent, safety_simulations
 from app.database.mongo import get_db
 from app.modules.accounts.security import COOKIE_NAME, read_token
 from app.modules.safety.email_service import LEVEL_TEMPLATES, send_simulation_email
@@ -128,7 +129,7 @@ async def get_guardian_details(child_id: str, request: Request) -> dict[str, Any
     """
     check_student_authorization(request, child_id)
     db = require_db()
-    doc = await db.guardian_consent.find_one({"child_id": child_id}, {"_id": 0})
+    doc = await safety_consent(db).find_one({"child_id": child_id}, {"_id": 0})
     if not doc:
         return {
             "child_id": child_id,
@@ -180,7 +181,7 @@ async def save_guardian_details(child_id: str, body: GuardianIn, request: Reques
         raise HTTPException(status_code=400, detail="Please enter a valid parent/guardian email address.")
 
     db = require_db()
-    existing = await db.guardian_consent.find_one({"child_id": child_id})
+    existing = await safety_consent(db).find_one({"child_id": child_id})
 
     # If email changed or not previously verified, set to pending
     previous_email = (existing.get("email") or "").lower() if existing else ""
@@ -209,7 +210,7 @@ async def save_guardian_details(child_id: str, body: GuardianIn, request: Reques
         "updated_at": now,
     }
 
-    await db.guardian_consent.update_one(
+    await safety_consent(db).update_one(
         {"child_id": child_id},
         {"$set": record},
         upsert=True,
@@ -237,7 +238,7 @@ async def verify_guardian_email(child_id: str, body: VerifyIn) -> dict[str, Any]
     Verifies the parent/guardian email address using a verification token or manual confirmation.
     """
     db = require_db()
-    doc = await db.guardian_consent.find_one({"child_id": child_id})
+    doc = await safety_consent(db).find_one({"child_id": child_id})
     if not doc:
         raise HTTPException(status_code=404, detail="Guardian details not found for this child.")
 
@@ -254,7 +255,7 @@ async def verify_guardian_email(child_id: str, body: VerifyIn) -> dict[str, Any]
         if (body.is_simulated_dev_verification or not settings.is_smtp_configured)
         else "email_link"
     )
-    await db.guardian_consent.update_one(
+    await safety_consent(db).update_one(
         {"child_id": child_id},
         {
             "$set": {
@@ -282,12 +283,12 @@ async def update_guardian_consent(child_id: str, body: ConsentUpdateIn, request:
     """
     check_student_authorization(request, child_id)
     db = require_db()
-    doc = await db.guardian_consent.find_one({"child_id": child_id})
+    doc = await safety_consent(db).find_one({"child_id": child_id})
     if not doc:
         raise HTTPException(status_code=404, detail="Guardian details not found for this child.")
 
     now = datetime.now(timezone.utc).isoformat()
-    await db.guardian_consent.update_one(
+    await safety_consent(db).update_one(
         {"child_id": child_id},
         {
             "$set": {
@@ -343,7 +344,7 @@ async def trigger_level_simulation(child_id: str, body: SimulationTriggerIn, req
     db = require_db()
 
     # 1. Check guardian consent and verification
-    guardian = await db.guardian_consent.find_one({"child_id": child_id})
+    guardian = await safety_consent(db).find_one({"child_id": child_id})
     if not guardian:
         return {
             "eligible": False,
@@ -378,7 +379,7 @@ async def trigger_level_simulation(child_id: str, body: SimulationTriggerIn, req
 
     # 2. Server-Side Idempotency & Safe Retry Check
     attempt_id = body.attempt_id.strip()
-    existing_attempt = await db.safety_simulations.find_one(
+    existing_attempt = await safety_simulations(db).find_one(
         {"child_id": child_id, "category_id": category_id, "attempt_id": attempt_id},
         {"_id": 0},
     )
@@ -431,7 +432,7 @@ async def trigger_level_simulation(child_id: str, body: SimulationTriggerIn, req
             "simulated_body": template.get("simulated_body", ""),
             "updated_at": now,
         }
-        await db.safety_simulations.update_one(
+        await safety_simulations(db).update_one(
             {"child_id": child_id, "category_id": category_id, "attempt_id": attempt_id},
             {"$set": update_fields},
         )
@@ -514,7 +515,7 @@ async def trigger_level_simulation(child_id: str, body: SimulationTriggerIn, req
         "updated_at": now,
     }
 
-    await db.safety_simulations.insert_one(sim_doc)
+    await safety_simulations(db).insert_one(sim_doc)
 
     return {
         "eligible": True,
@@ -544,7 +545,7 @@ async def trigger_passed_level_simulation(child_id: str, category_id: str, reque
 
     db = require_db()
     # Check recorded module state (collection in routes.py is module_state, payload in 'data')
-    mod_doc = await db.module_state.find_one({"module": "safety", "child_id": child_id})
+    mod_doc = await module_state_coll(db).find_one({"module": "safety", "child_id": child_id})
     if not mod_doc and hasattr(db, "module_states"):
         mod_doc = await db.module_states.find_one({"module": "safety", "child_id": child_id})
     state_payload = (mod_doc.get("data") or mod_doc.get("state") or {}) if mod_doc else {}
@@ -553,7 +554,7 @@ async def trigger_passed_level_simulation(child_id: str, category_id: str, reque
     recorded_score = scores.get(category_id)
 
     # Check existing simulation record
-    existing_sim = await db.safety_simulations.find_one(
+    existing_sim = await safety_simulations(db).find_one(
         {"child_id": child_id, "category_id": category_id}
     )
 
@@ -595,7 +596,7 @@ async def get_simulation_status(child_id: str, request: Request) -> dict[str, An
     """
     check_student_authorization(request, child_id)
     db = require_db()
-    cursor = db.safety_simulations.find({"child_id": child_id}, {"_id": 0}).sort("created_at", -1)
+    cursor = safety_simulations(db).find({"child_id": child_id}, {"_id": 0}).sort("created_at", -1)
     simulations = await cursor.to_list(length=100)
 
     # Group by category (keep latest attempt for each category)
@@ -626,7 +627,7 @@ async def get_simulated_inbox(child_id: str, request: Request) -> dict[str, Any]
     """
     check_student_authorization(request, child_id)
     db = require_db()
-    cursor = db.safety_simulations.find({"child_id": child_id}, {"_id": 0}).sort("created_at", -1)
+    cursor = safety_simulations(db).find({"child_id": child_id}, {"_id": 0}).sort("created_at", -1)
     simulations = await cursor.to_list(length=100)
 
     inbox_items: list[dict[str, Any]] = []
@@ -687,7 +688,7 @@ async def record_simulation_event(simulation_id: str, body: SimulationEventIn, r
     - 'marked_safe': Child classified the email as safe without clicking link.
     """
     db = require_db()
-    sim = await db.safety_simulations.find_one({"simulation_id": simulation_id})
+    sim = await safety_simulations(db).find_one({"simulation_id": simulation_id})
     if not sim:
         raise HTTPException(status_code=404, detail="Simulation session not found.")
 
@@ -701,7 +702,7 @@ async def record_simulation_event(simulation_id: str, body: SimulationEventIn, r
 
     if event_type in ("open", "inbox_opened"):
         if not sim.get("inbox_opened"):
-            await db.safety_simulations.update_one(
+            await safety_simulations(db).update_one(
                 {"simulation_id": simulation_id},
                 {"$set": {"inbox_opened": True, "inbox_opened_at": now, "updated_at": now}},
             )
@@ -732,7 +733,7 @@ async def record_simulation_event(simulation_id: str, body: SimulationEventIn, r
             update_set["classification_submitted_at"] = now
             initial_classification = "clicked_unsafe_link"
 
-        await db.safety_simulations.update_one(
+        await safety_simulations(db).update_one(
             {"simulation_id": simulation_id},
             {"$set": update_set},
         )
@@ -761,7 +762,7 @@ async def record_simulation_event(simulation_id: str, body: SimulationEventIn, r
             "outcome": outcome,
             "updated_at": now,
         }
-        await db.safety_simulations.update_one(
+        await safety_simulations(db).update_one(
             {"simulation_id": simulation_id},
             {"$set": update_set},
         )
@@ -788,7 +789,7 @@ async def record_simulation_event(simulation_id: str, body: SimulationEventIn, r
             "outcome": outcome,
             "updated_at": now,
         }
-        await db.safety_simulations.update_one(
+        await safety_simulations(db).update_one(
             {"simulation_id": simulation_id},
             {"$set": update_set},
         )
@@ -815,7 +816,7 @@ async def submit_simulation_follow_up(simulation_id: str, body: FollowUpIn, requ
     Evaluates and records the child's response to the follow-up understanding check question.
     """
     db = require_db()
-    sim = await db.safety_simulations.find_one({"simulation_id": simulation_id})
+    sim = await safety_simulations(db).find_one({"simulation_id": simulation_id})
     if not sim:
         raise HTTPException(status_code=404, detail="Simulation session not found.")
 
@@ -834,7 +835,7 @@ async def submit_simulation_follow_up(simulation_id: str, body: FollowUpIn, requ
     is_correct = (body.selected_index == correct_index)
     now = datetime.now(timezone.utc).isoformat()
 
-    await db.safety_simulations.update_one(
+    await safety_simulations(db).update_one(
         {"simulation_id": simulation_id},
         {
             "$set": {
@@ -868,7 +869,7 @@ async def get_simulation_feedback(simulation_id: str, request: Request) -> dict[
     Does NOT collect credentials, passwords, or personal financial details.
     """
     db = require_db()
-    doc = await db.safety_simulations.find_one({"simulation_id": simulation_id}, {"_id": 0})
+    doc = await safety_simulations(db).find_one({"simulation_id": simulation_id}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Educational simulation session not found.")
 
@@ -900,7 +901,7 @@ async def get_simulation_feedback(simulation_id: str, request: Request) -> dict[
 
         if update_fields:
             update_fields["updated_at"] = now
-            await db.safety_simulations.update_one(
+            await safety_simulations(db).update_one(
                 {"simulation_id": simulation_id},
                 {"$set": update_fields},
             )
@@ -944,7 +945,7 @@ async def get_simulation_learning_metrics(child_id: str, request: Request) -> di
     """
     check_student_authorization(request, child_id)
     db = require_db()
-    cursor = db.safety_simulations.find({"child_id": child_id}, {"_id": 0}).sort("created_at", -1)
+    cursor = safety_simulations(db).find({"child_id": child_id}, {"_id": 0}).sort("created_at", -1)
     simulations = await cursor.to_list(length=200)
 
     total = len(simulations)

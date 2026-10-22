@@ -16,6 +16,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
 
+from app.database.folders import safety_consent
 from app.database.mongo import get_db
 from app.modules.accounts.security import COOKIE_NAME, public_account, read_token
 from app.modules.decision_making.analysis import analyze_reasoning
@@ -113,7 +114,7 @@ async def authorize_analytics_access(request: Request, target_child_id: str) -> 
         if not guardian_email:
             raise HTTPException(status_code=403, detail="Unauthorized: Guardian account has no verified email.")
 
-        consent_record = await db.guardian_consent.find_one(
+        consent_record = await safety_consent(db).find_one(
             {"child_id": target_child_id, "email": guardian_email}
         )
         if not consent_record and user_id != target_child_id:

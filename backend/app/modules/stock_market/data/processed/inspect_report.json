@@ -1,0 +1,95 @@
+{
+  "stocks_file": "C:\\Users\\ADMIN\\WiseCub-J26-IT-418\\backend\\app\\modules\\stock_market\\data\\raw\\sp500_stocks.csv",
+  "companies_file": "C:\\Users\\ADMIN\\WiseCub-J26-IT-418\\backend\\app\\modules\\stock_market\\data\\raw\\sp500_companies.csv",
+  "stocks_rows": 2951162,
+  "stocks_columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "symbol"
+  ],
+  "stocks_dtypes": {
+    "date": "datetime64[us]",
+    "open": "float64",
+    "high": "float64",
+    "low": "float64",
+    "close": "float64",
+    "volume": "float64",
+    "symbol": "str"
+  },
+  "stocks_missing": {
+    "date": 0,
+    "open": 0,
+    "high": 0,
+    "low": 0,
+    "close": 0,
+    "volume": 0,
+    "symbol": 0
+  },
+  "stocks_duplicate_rows": 0,
+  "stocks_duplicate_symbol_date": 0,
+  "symbol_count": 503,
+  "date_min": "2000-01-03",
+  "date_max": "2026-10-20",
+  "close_nonpositive": 0,
+  "companies_rows": 503,
+  "companies_columns": [
+    "symbol",
+    "company",
+    "sector",
+    "sub_industry",
+    "headquarters",
+    "date_added",
+    "founded"
+  ],
+  "companies_dtypes": {
+    "symbol": "str",
+    "company": "str",
+    "sector": "str",
+    "sub_industry": "str",
+    "headquarters": "str",
+    "date_added": "str",
+    "founded": "str"
+  },
+  "companies_missing": {
+    "symbol": 0,
+    "company": 0,
+    "sector": 0,
+    "sub_industry": 0,
+    "headquarters": 0,
+    "date_added": 0,
+    "founded": 0
+  },
+  "companies_duplicate_symbol": 0,
+  "sectors": {
+    "Industrials": 83,
+    "Financials": 76,
+    "Information Technology": 75,
+    "Health Care": 60,
+    "Consumer Discretionary": 47,
+    "Consumer Staples": 34,
+    "Utilities": 31,
+    "Real Estate": 30,
+    "Materials": 24,
+    "Communication Services": 22,
+    "Energy": 21
+  },
+  "symbols_in_prices_not_companies": [],
+  "symbols_in_companies_not_prices": [],
+  "originals_unchanged": true,
+  "note": "S&P 500 company daily bars. Not WiseCub fictional tickers (SUNTEA, \u2026). Education only.",
+  "clean_price_rows": 2951162,
+  "feature_rows": 2938598,
+  "feature_date_min": "2000-02-01",
+  "feature_date_max": "2026-10-13",
+  "class_counts": {
+    "upward": 1157893,
+    "downward": 933414,
+    "sideways": 847291
+  },
+  "processed_companies": "C:\\Users\\ADMIN\\WiseCub-J26-IT-418\\backend\\app\\modules\\stock_market\\data\\processed\\sp500_companies_clean.csv",
+  "processed_prices": "C:\\Users\\ADMIN\\WiseCub-J26-IT-418\\backend\\app\\modules\\stock_market\\data\\processed\\sp500_prices_clean.parquet"
+}

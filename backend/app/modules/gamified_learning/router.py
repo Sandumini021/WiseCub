@@ -24,6 +24,14 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
 
+from app.database.folders import (
+    missions_attempts,
+    missions_character,
+    missions_competency,
+    missions_decisions,
+    missions_progress,
+    module_state_coll,
+)
 from app.database.mongo import get_db
 from app.modules.accounts.router import current_account
 from app.modules.gamified_learning.catalog import (
@@ -229,7 +237,7 @@ async def _get_or_create_progress(db, child_id: str, mission_id: str) -> dict[st
     if not mission:
         raise HTTPException(status_code=404, detail="Mission not found.")
 
-    doc = await db.gamified_progress.find_one(
+    doc = await missions_progress(db).find_one(
         {"child_id": child_id, "mission_id": mission_id},
         {"_id": 0},
     )
@@ -253,7 +261,7 @@ async def _get_or_create_progress(db, child_id: str, mission_id: str) -> dict[st
         "started_at": now,
         "updated_at": now,
     }
-    await db.gamified_progress.update_one(
+    await missions_progress(db).update_one(
         {"child_id": child_id, "mission_id": mission_id},
         {"$setOnInsert": new_doc},
         upsert=True,
@@ -421,7 +429,7 @@ async def reset_mission_progress(
         "started_at": now,
         "updated_at": now,
     }
-    await db.gamified_progress.replace_one(
+    await missions_progress(db).replace_one(
         {"child_id": child_id, "mission_id": mission_id},
         reset_doc,
         upsert=True,
@@ -538,7 +546,7 @@ async def submit_decision(
     idem_key = _idempotency_key(
         child_id, body.mission_id, body.level_id, body.session_id
     )
-    existing = await db.financial_decisions.find_one(
+    existing = await missions_decisions(db).find_one(
         {"idempotency_key": idem_key}, {"_id": 0, "idempotency_key": 1}
     )
     if existing:
@@ -559,7 +567,7 @@ async def submit_decision(
 
     # ── Competency profile snapshot for adaptive engine ──────────────────────
     # Use module_state if available, otherwise use safe defaults
-    module_state_doc = await db.module_state.find_one(
+    module_state_doc = await module_state_coll(db).find_one(
         {"child_id": child_id, "module": "missions"}, {"_id": 0}
     )
     comp_data: dict = (module_state_doc or {}).get("data", {}).get("competencyProfile", {})
@@ -678,7 +686,7 @@ async def submit_decision(
         "char_transition_direction": transition.direction,
         "char_transition_reason": transition.reason,
     }
-    await db.financial_decisions.insert_one(decision_doc)
+    await missions_decisions(db).insert_one(decision_doc)
 
     # ── Persist: mission_attempts ─────────────────────────────────────────────
     attempt_doc = {
@@ -705,7 +713,7 @@ async def submit_decision(
         },
         "schema_version": SCHEMA_VERSION,
     }
-    await db.mission_attempts.insert_one(attempt_doc)
+    await missions_attempts(db).insert_one(attempt_doc)
 
     # ── Persist: competency_assessments ──────────────────────────────────────
     assessment_doc = {
@@ -733,7 +741,7 @@ async def submit_decision(
         },
         "schema_version": SCHEMA_VERSION,
     }
-    await db.competency_assessments.insert_one(assessment_doc)
+    await missions_competency(db).insert_one(assessment_doc)
 
     # ── Persist: character_state_history ─────────────────────────────────────
     char_history_doc = {
@@ -755,7 +763,7 @@ async def submit_decision(
         "visual_cue": transition.visual_cue,
         "schema_version": SCHEMA_VERSION,
     }
-    await db.character_state_history.insert_one(char_history_doc)
+    await missions_character(db).insert_one(char_history_doc)
 
     # ── Atomically update gamified_progress ──────────────────────────────────
     attempt_record = {
@@ -796,7 +804,7 @@ async def submit_decision(
         if body.level_number >= total_levels:
             update_ops["$set"]["is_mission_completed"] = True  # type: ignore[index]
 
-    await db.gamified_progress.update_one(
+    await missions_progress(db).update_one(
         {"child_id": child_id, "mission_id": body.mission_id},
         update_ops,
     )
@@ -877,7 +885,7 @@ async def get_competency_history(
     db = require_db()
 
     docs = (
-        await db.competency_assessments.find(
+        await missions_competency(db).find(
             {"child_id": child_id, "mission_id": mission_id},
             {"_id": 0},
         )
@@ -938,7 +946,7 @@ async def get_character_history(
     db = require_db()
 
     docs = (
-        await db.character_state_history.find(
+        await missions_character(db).find(
             {"child_id": child_id, "mission_id": mission_id},
             {"_id": 0},
         )
@@ -996,7 +1004,7 @@ async def get_journey_overview(request: Request) -> JourneyOverviewOut:
 
     # 1. Fetch progress records for all 3 missions
     progress_docs = (
-        await db.gamified_progress.find(
+        await missions_progress(db).find(
             {"child_id": child_id},
             {"_id": 0},
         ).to_list(10)
@@ -1078,7 +1086,7 @@ async def get_journey_overview(request: Request) -> JourneyOverviewOut:
 
     # 3. Fetch all competency assessments
     assessments = (
-        await db.competency_assessments.find(
+        await missions_competency(db).find(
             {"child_id": child_id},
             {"_id": 0},
         )
@@ -1209,7 +1217,7 @@ async def get_journey_overview(request: Request) -> JourneyOverviewOut:
 
     # 6. Fetch attempts for verified badge checking
     attempts = (
-        await db.mission_attempts.find({"child_id": child_id}, {"_id": 0}).to_list(1000)
+        await missions_attempts(db).find({"child_id": child_id}, {"_id": 0}).to_list(1000)
     )
 
     puppy_sum = next((m for m in mission_summaries if m.mission_id == "mission_rescue_puppy"), None)
@@ -1290,7 +1298,7 @@ async def get_journey_overview(request: Request) -> JourneyOverviewOut:
 
     # 7. Character Emotional Impact Showcase
     char_history_docs = (
-        await db.character_state_history.find(
+        await missions_character(db).find(
             {"child_id": child_id},
             {"_id": 0},
         )
@@ -1442,7 +1450,7 @@ async def get_journey_mission_detail(
     if not mission:
         raise HTTPException(status_code=404, detail="Mission not found.")
 
-    p_doc = await db.gamified_progress.find_one(
+    p_doc = await missions_progress(db).find_one(
         {"child_id": child_id, "mission_id": mission_id},
         {"_id": 0},
     )
@@ -1483,7 +1491,7 @@ async def get_journey_mission_detail(
         )
 
     recent_attempts = (
-        await db.mission_attempts.find(
+        await missions_attempts(db).find(
             {"child_id": child_id, "mission_id": mission_id},
             {"_id": 0},
         )
@@ -1492,7 +1500,7 @@ async def get_journey_mission_detail(
     )
 
     char_history_docs = (
-        await db.character_state_history.find(
+        await missions_character(db).find(
             {"child_id": child_id, "mission_id": mission_id},
             {"_id": 0},
         )
