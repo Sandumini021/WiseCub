@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { SiteTopBar } from "../../../components/layout/SiteTopBar";
 import { useLang } from "../../../i18n/useLang";
 import "../../../styles/dashboard-long.css";
 import "../../../styles/market-home.css";
 import "../../../styles/market-dashboard.css";
 import { CubCoachCard } from "../components/CubCoachCard";
+import { MarketSideNav } from "../components/MarketSideNav";
 import { pickCoach, type CoachCard } from "../data/decisionCoach";
 import {
   DEMO_COMPANIES,
@@ -17,21 +18,6 @@ import {
 } from "../data/demoMarket";
 import { readBook } from "../data/demoPortfolio";
 import { buildQuotes, sliceHistory, type Quote } from "../data/syntheticPrices";
-
-const SIDE_LINKS: Array<{
-  to: string;
-  key: string;
-  icon: string;
-  end: boolean;
-  hash?: string;
-}> = [
-  { to: "/market", key: "market.home", icon: "▤", end: true },
-  { to: "/market/terminal", key: "market.terminal", icon: "⌘", end: false },
-  { to: "/market/portfolio", key: "market.portfolio", icon: "☰", end: false },
-  { to: "/market/portfolio", key: "market.history", icon: "⟳", end: false, hash: "history" },
-  { to: "/market/lessons/1", key: "market.lessons", icon: "▣", end: false },
-  { to: "/progress", key: "market.leaderboard", icon: "♛", end: false },
-];
 
 const COMPANY_MARK = {
   SUNTEA: "🍃",
@@ -117,19 +103,7 @@ export function MarketHomePage() {
     <div className="mkt-shell">
       <SiteTopBar />
       <div className="mkt-body">
-        <aside className="mkt-side" aria-label="Market pages">
-          {SIDE_LINKS.map((item) => (
-            <NavLink
-              key={item.key}
-              to={item.hash ? `${item.to}#${item.hash}` : item.to}
-              end={item.end}
-              className={({ isActive }) => (isActive && !item.hash ? "is-on" : undefined)}
-            >
-              <span aria-hidden="true">{item.icon}</span>
-              {t(item.key)}
-            </NavLink>
-          ))}
-        </aside>
+        <MarketSideNav />
 
         <div className="mkt-main" id="main">
           {coach ? <CubCoachCard card={coach} lang={lang} onDismiss={() => setCoach(null)} /> : null}

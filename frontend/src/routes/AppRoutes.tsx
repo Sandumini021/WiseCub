@@ -62,14 +62,14 @@ export function AppRoutes() {
         <Route path="sri-lanka" element={<TaxSriLankaPage />} />
       </Route>
       <Route path="/market" element={<MarketHomePage />} />
+      <Route path="/market/portfolio" element={<PortfolioPage />} />
+      <Route path="/market/terminal" element={<MarketTerminalPage />} />
       <Route path="/safety" element={<ScamHomePage />} />
       <Route path="/safety/inbox" element={<SimulatedInboxPage />} />
       <Route path="/safety/simulation-feedback" element={<SimulationFeedbackPage />} />
       <Route element={<AppLayout />}>
         <Route path="/market/lessons/:n" element={<MarketLessonPage />} />
-        <Route path="/market/terminal" element={<MarketTerminalPage />} />
         <Route path="/market/confirm" element={<TradeConfirmationPage />} />
-        <Route path="/market/portfolio" element={<PortfolioPage />} />
         <Route path="/choices" element={<LevelsPage />} />
         <Route path="/choices/levels/:levelId" element={<ScenarioPage />} />
         <Route path="/choices/levels/:levelId/:step" element={<ScenarioPage />} />

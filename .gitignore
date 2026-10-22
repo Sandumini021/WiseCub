@@ -167,9 +167,10 @@ dump/
 # Choice Town demo progress (not real learner data)
 backend/data/*.json
 
-# Virtual stock market bulky dumps (keep S&P CSVs and README in raw/)
+# Virtual stock market bulky dumps (keep smaller CSVs and README in raw/)
 backend/app/modules/stock_market/data/raw/indexData.csv
 backend/app/modules/stock_market/data/raw/indexProcessed.csv
+backend/app/modules/stock_market/data/raw/sp500_stocks.csv
 backend/app/modules/stock_market/data/processed/*.parquet
 backend/app/modules/stock_market/data/processed/sp500_features_sample.csv
 backend/app/modules/stock_market/ml/artifacts/*.parquet

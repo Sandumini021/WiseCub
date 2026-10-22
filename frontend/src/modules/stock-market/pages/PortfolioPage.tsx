@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { CubFace } from "../../../components/cub-assistant/CubFace";
-import { defaultDecisionCub } from "../../../components/cub-assistant/cubExpressions";
+import { Link, useLocation } from "react-router-dom";
+import { SiteTopBar } from "../../../components/layout/SiteTopBar";
 import { childId, readCubLanguage } from "../../../pages/auth/demoSession";
 import { getMarketBehaviour, type BehaviourReport } from "../../../services/apiClient";
 import { portfolioAllocation } from "../data/allocation";
@@ -9,9 +8,12 @@ import { marketSessionId, recordMarketEvent } from "../data/behaviourEvents";
 import { readBook, realizedPnL, totalEquity, type DemoBook, unrealizedPnL } from "../data/demoPortfolio";
 import { CubCoachCard } from "../components/CubCoachCard";
 import { HabitPopup } from "../components/HabitPopup";
+import { MarketSideNav } from "../components/MarketSideNav";
 import { pickCoach, type CoachCard } from "../data/decisionCoach";
-import { cubNoticed, reviewHabits } from "../data/sessionReview";
+import { reviewHabits } from "../data/sessionReview";
 import { buildQuotes, type Quote } from "../data/syntheticPrices";
+import "../../../styles/dashboard-long.css";
+import "../../../styles/market-home.css";
 import "../../../styles/market-dashboard.css";
 import "../../../styles/market-habit.css";
 
@@ -72,7 +74,7 @@ function AllocationRing({
   const c = 2 * Math.PI * r;
   let offset = 0;
   return (
-    <svg className="pf-ring" viewBox={`0 0 ${size} ${size}`} role="img" aria-label="How your bag is split">
+    <svg className="pf-ring" viewBox="0 0 168 168" role="img" aria-label="How your bag is split">
       <circle cx="84" cy="84" r={r} fill="none" stroke="#eef2f8" strokeWidth="22" />
       {slices
         .filter((slice) => slice.pct > 0.4)
@@ -118,6 +120,7 @@ function tradeTime(iso: string) {
 }
 
 export function PortfolioPage() {
+  const location = useLocation();
   const quotes = useMemo(() => buildQuotes(), []);
   const prices = useMemo(
     () => Object.fromEntries(quotes.map((item) => [item.ticker, item.price])),
@@ -130,7 +133,6 @@ export function PortfolioPage() {
   const [book] = useState<DemoBook>(() => readBook());
   const [report, setReport] = useState<BehaviourReport | null>(null);
   const [focus, setFocus] = useState<string | null>(null);
-  const [tab, setTab] = useState<"bag" | "activity">("bag");
   const [coach, setCoach] = useState<CoachCard | null>(null);
   const lang = readCubLanguage();
 
@@ -148,6 +150,13 @@ export function PortfolioPage() {
   ];
 
   useEffect(() => {
+    if (location.hash !== "#history") {
+      return;
+    }
+    document.getElementById("history")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [location.hash]);
+
+  useEffect(() => {
     recordMarketEvent({ type: "portfolio_reviewed", book, prices, cash: book.cash });
     setCoach(pickCoach({ lang: readCubLanguage(), path: "portfolio", tradeCount: readBook().trades.length }));
     void getMarketBehaviour(childId(), marketSessionId())
@@ -157,7 +166,11 @@ export function PortfolioPage() {
   }, []);
 
   return (
-    <div className="portfolio-page pf-page">
+    <div className="mkt-shell">
+      <SiteTopBar />
+      <div className="mkt-body">
+        <MarketSideNav />
+        <div className="mkt-main portfolio-page pf-page" id="main">
       <header className="pf-hero">
         <div>
           <p className="pf-kicker">
@@ -177,14 +190,18 @@ export function PortfolioPage() {
             <span>Cash</span>
             <b>{rupees(book.cash)}</b>
           </button>
-          <button type="button" className={`pf-stat ${paper < 0 ? "is-down" : "is-up"}`} onClick={() => setTab("bag")}>
-            <span>Paper</span>
+          <button type="button" className={`pf-stat ${paper < 0 ? "is-down" : "is-up"}`} onClick={() => setFocus(null)}>
+            <span>Paper P&amp;L</span>
             <b>
               {paper >= 0 ? "+" : "−"}
               {rupees(Math.abs(paper))}
             </b>
           </button>
-          <button type="button" className={`pf-stat ${locked < 0 ? "is-down" : "is-up"}`} onClick={() => setTab("activity")}>
+          <button
+            type="button"
+            className={`pf-stat ${locked < 0 ? "is-down" : "is-up"}`}
+            onClick={() => document.getElementById("history")?.scrollIntoView({ behavior: "smooth" })}
+          >
             <span>Locked in</span>
             <b>
               {locked >= 0 ? "+" : "−"}
@@ -201,24 +218,11 @@ export function PortfolioPage() {
         <CubCoachCard compact card={coach} lang={lang} onDismiss={() => setCoach(null)} />
       ) : null}
 
-      <div className="pf-tabs" role="tablist">
-        <button type="button" role="tab" aria-selected={tab === "bag"} className={tab === "bag" ? "is-on" : ""} onClick={() => setTab("bag")}>
-          Bag
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "activity"}
-          className={tab === "activity" ? "is-on" : ""}
-          onClick={() => setTab("activity")}
-        >
-          Activity
-        </button>
-      </div>
-
-      {tab === "bag" ? (
-        <div className="pf-grid">
+      <div className="pf-grid">
           <section className="pf-card pf-mix">
+            <div className="pf-card-head">
+              <h2>What's in the bag</h2>
+            </div>
             <AllocationRing slices={slices} selected={focus} onPick={setFocus} />
             <ul className="pf-legend">
               {slices.map((slice) => (
@@ -287,16 +291,13 @@ export function PortfolioPage() {
               </ul>
             )}
           </section>
-
-          <aside className="pf-card pf-cub">
-            <DecisionCubPanel report={report} fallback={cubNoticed(flags)} lang={lang} />
-            <HabitPopup report={report} flags={flags} lang={lang} />
-          </aside>
         </div>
-      ) : (
-        <section className="pf-card" id="history">
+
+      <HabitPopup report={report} flags={flags} lang={lang} />
+
+        <section className="pf-card pf-history" id="history">
           <div className="pf-card-head">
-            <h2>Today</h2>
+            <h2>Trade history</h2>
             <span className="pf-count">{today.length}</span>
           </div>
           {today.length === 0 ? (
@@ -325,42 +326,9 @@ export function PortfolioPage() {
             </ol>
           )}
         </section>
-      )}
+        </div>
+      </div>
     </div>
   );
 }
 
-function DecisionCubPanel({
-  report,
-  fallback,
-  lang,
-}: {
-  report: BehaviourReport | null;
-  fallback: string;
-  lang: "en" | "si";
-}) {
-  const visible = report?.indicators.filter((item) => item.level !== "insufficient_evidence") ?? [];
-  const review = visible.filter((item) => item.level === "worth_reviewing");
-  const expression = report
-    ? defaultDecisionCub({
-        hasReview: review.length > 0,
-        hasVisiblePatterns: visible.length > 0,
-        lang,
-      })
-    : { expression: "listening" as const, message: fallback };
-  const teaser =
-    lang === "si"
-      ? "කහ බොත්තම තියන්න. Cub පුරුදු ගැන popup එකකින් කියනවා."
-      : "Tap the yellow button. Cub pops up about this session’s habits — never a grade.";
-
-  return (
-    <div className="pf-cub-face">
-      <CubFace
-        expression={expression.expression}
-        message={review.length ? teaser : expression.message}
-        size={88}
-        lang={lang}
-      />
-    </div>
-  );
-}

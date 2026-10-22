@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { SiteTopBar } from "../../../components/layout/SiteTopBar";
 import { readCubLanguage } from "../../../pages/auth/demoSession";
 import { CubCoachCard } from "../components/CubCoachCard";
+import { MarketSideNav } from "../components/MarketSideNav";
 import { pickCoach, type CoachCard } from "../data/decisionCoach";
 import { flushQueuedEvents, recordMarketEvent } from "../data/behaviourEvents";
 import { CROWD_SCENARIO, DROP_SCENARIO } from "../data/crowdScenarios";
@@ -20,8 +22,24 @@ import {
 } from "../data/syntheticPrices";
 import { StockPriceChart } from "../components/StockPriceChart";
 import { MarketInsightsPanel } from "../components/MarketInsightsPanel";
+import "../../../styles/dashboard-long.css";
+import "../../../styles/market-home.css";
 import "../../../styles/market-dashboard.css";
 import "../../../styles/market-lesson.css";
+
+function TerminalLayout({ children }: { children: ReactNode }) {
+  return (
+    <div className="mkt-shell">
+      <SiteTopBar />
+      <div className="mkt-body">
+        <MarketSideNav />
+        <div className="mkt-main" id="main">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const RANGES = ["1D", "1W", "1M", "1Y"] as const;
 
@@ -179,24 +197,31 @@ export function MarketTerminalPage() {
 
   if (!unlocked) {
     return (
-      <section className="panel">
-        <h1>Market is closed</h1>
-        <p>Finish Lesson 1 first. The wireframe keeps the floor shut until you know what a share is.</p>
-        <Link className="btn-gold cub-send" to="/market/lessons/1">
-          Go to Lesson 1
-        </Link>
-      </section>
+      <TerminalLayout>
+        <section className="panel">
+          <h1>Market is closed</h1>
+          <p>Finish Lesson 1 first. The wireframe keeps the floor shut until you know what a share is.</p>
+          <Link className="btn-gold cub-send" to="/market/lessons/1">
+            Go to Lesson 1
+          </Link>
+        </section>
+      </TerminalLayout>
     );
   }
 
   if (!book) {
-    return <p>Loading practice account…</p>;
+    return (
+      <TerminalLayout>
+        <p>Loading practice account…</p>
+      </TerminalLayout>
+    );
   }
 
   const cashAfter = preview.error ? "—" : rupees(preview.cashAfter ?? 0);
   const concWarn = preview.percent >= 40 && !preview.error && side === "buy";
 
   return (
+    <TerminalLayout>
     <div className="terminal tk-shell">
       <header className="tk-top">
         <p className="tk-crumb">
@@ -414,5 +439,6 @@ export function MarketTerminalPage() {
         </aside>
       </div>
     </div>
+    </TerminalLayout>
   );
 }
