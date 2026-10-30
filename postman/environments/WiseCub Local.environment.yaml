@@ -1,0 +1,19 @@
+name: WiseCub Local
+values:
+  - key: base_url
+    value: 'http://127.0.0.1:8000'
+    enabled: true
+    type: default
+    description: Local FastAPI
+  - key: child_id
+    value: postman-vsm-child
+    enabled: true
+    type: default
+  - key: session_id
+    value: postman-vsm-session-1
+    enabled: true
+    type: default
+  - key: symbol
+    value: N225
+    enabled: true
+    type: default

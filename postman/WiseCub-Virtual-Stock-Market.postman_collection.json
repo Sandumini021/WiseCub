@@ -1,0 +1,1800 @@
+{
+  "info": {
+    "name": "WiseCub Virtual Stock Market",
+    "description": "Scenarios for the Virtual Stock Market API on http://127.0.0.1:8000.\n\nImport this file + WiseCub Local environment. Keep FastAPI running.\nFor all 15 event types at once: Runner \u2192 this collection \u2192 select postman/data/vsm-event-types.json on the data-driven request, or run the Events folder.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "child_id",
+      "value": "postman-vsm-child"
+    },
+    {
+      "key": "session_id",
+      "value": "postman-vsm-session-1"
+    },
+    {
+      "key": "symbol",
+      "value": "N225"
+    },
+    {
+      "key": "event_type",
+      "value": "company_viewed"
+    },
+    {
+      "key": "ticker",
+      "value": "SUNTEA"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 Health",
+      "item": [
+        {
+          "name": "API health + Mongo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('service wisecub', function () { pm.expect(j.service).to.eql('wisecub'); });",
+                  "pm.test('database connected', function () { pm.expect(j.database).to.eql('connected'); });",
+                  "pm.test('db name wisecub', function () { pm.expect(j.db_name).to.eql('wisecub'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 Classroom indexes",
+      "item": [
+        {
+          "name": "List assets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/assets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "assets"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test('indexes not companies', function () {",
+                  "  pm.expect(j.kind).to.eql('market_index');",
+                  "  pm.expect(j.assets.length).to.be.above(5);",
+                  "});",
+                  "pm.test('includes N225', function () {",
+                  "  pm.expect(j.assets.map(a => a.symbol)).to.include('N225');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "History N225 default limit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/history/{{symbol}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "history",
+                "{{symbol}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test('points', function () {",
+                  "  pm.expect(j.symbol).to.eql(pm.variables.get('symbol') || 'N225');",
+                  "  pm.expect(j.points.length).to.be.at.most(180);",
+                  "  pm.expect(j.points.length).to.be.at.least(20);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "History IXIC min limit 20",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/history/IXIC?limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "history",
+                "IXIC"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test('limit applied', function () { pm.expect(j.points.length).to.eql(20); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "History NYA max limit 500",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/history/NYA?limit=500",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "history",
+                "NYA"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "500"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test('capped', function () { pm.expect(j.points.length).to.be.at.most(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "History HSI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/history/HSI",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "history",
+                "HSI"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test('HSI history', function () { pm.expect(j.symbol).to.eql('HSI'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "History SUNTEA maps to NSEI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/history/SUNTEA",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "history",
+                "SUNTEA"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test('demo company uses index', function () { pm.expect(j.symbol).to.eql('NSEI'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Analysis N225",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/analysis/N225",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "analysis",
+                "N225"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test('has trend fields', function () {",
+                  "  pm.expect(j).to.have.property('symbol');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Analysis IXIC",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/analysis/IXIC",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "analysis",
+                "IXIC"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 Practice bag (module_state)",
+      "item": [
+        {
+          "name": "Save concentrated tea bag",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/state/{{child_id}}/market",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "state",
+                "{{child_id}}",
+                "market"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"cash\": 400,\n    \"holdings\": [\n      {\n        \"ticker\": \"SUNTEA\",\n        \"shares\": 40,\n        \"avgPrice\": 10\n      },\n      {\n        \"ticker\": \"LNKBNK\",\n        \"shares\": 2,\n        \"avgPrice\": 20\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test('saved market', function () {",
+                  "  pm.expect(j.ok).to.eql(true);",
+                  "  pm.expect(j.module).to.eql('market');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Read bag",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/state/{{child_id}}/market",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "state",
+                "{{child_id}}",
+                "market"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test('holdings persisted', function () {",
+                  "  pm.expect(j.module).to.eql('market');",
+                  "  pm.expect(j.data.holdings[0].ticker).to.eql('SUNTEA');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save lessons state",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/state/{{child_id}}/market_lessons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "state",
+                "{{child_id}}",
+                "market_lessons"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"completed\": [\n      \"lesson-diversify\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('module', function () { pm.expect(pm.response.json().module).to.eql('market_lessons'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 Market events (all types)",
+      "item": [
+        {
+          "name": "01 company_viewed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"company_viewed\",\n  \"ticker\": \"SUNTEA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs company_viewed into Virtual_Stock_Market.market_views (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('company_viewed'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_views'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 market_trend_viewed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"market_trend_viewed\",\n  \"ticker\": \"LNKBNK\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs market_trend_viewed into Virtual_Stock_Market.market_views (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('market_trend_viewed'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_views'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 risk_explanation_viewed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"risk_explanation_viewed\",\n  \"ticker\": \"CEYPOW\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs risk_explanation_viewed into Virtual_Stock_Market.market_views (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('risk_explanation_viewed'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_views'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 price_drop_observed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"price_drop_observed\",\n  \"ticker\": \"SUNTEA\",\n  \"change_pct\": -8\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs price_drop_observed into Virtual_Stock_Market.market_views (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('price_drop_observed'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_views'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 portfolio_reviewed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"portfolio_reviewed\",\n  \"cash\": 700\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs portfolio_reviewed into Virtual_Stock_Market.market_views (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('portfolio_reviewed'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_views'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 buy_order_placed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"buy_order_placed\",\n  \"ticker\": \"SUNTEA\",\n  \"side\": \"buy\",\n  \"shares\": 10,\n  \"price\": 12.5,\n  \"cash\": 875,\n  \"order_id\": \"ord-buy-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs buy_order_placed into Virtual_Stock_Market.market_orders (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('buy_order_placed'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_orders'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 sell_order_placed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"sell_order_placed\",\n  \"ticker\": \"SUNTEA\",\n  \"side\": \"sell\",\n  \"shares\": 4,\n  \"price\": 13.1,\n  \"sold_fraction\": 0.4,\n  \"order_id\": \"ord-sell-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs sell_order_placed into Virtual_Stock_Market.market_orders (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('sell_order_placed'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_orders'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 order_modified",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"order_modified\",\n  \"ticker\": \"SUNTEA\",\n  \"order_id\": \"ord-buy-1\",\n  \"modified\": true,\n  \"shares\": 8\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs order_modified into Virtual_Stock_Market.market_orders (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('order_modified'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_orders'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 order_cancelled",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"order_cancelled\",\n  \"ticker\": \"HARBOR\",\n  \"order_id\": \"ord-buy-2\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs order_cancelled into Virtual_Stock_Market.market_orders (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('order_cancelled'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_orders'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 trade_reason_submitted",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"trade_reason_submitted\",\n  \"ticker\": \"SUNTEA\",\n  \"reason\": \"I like tea companies\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs trade_reason_submitted into Virtual_Stock_Market.market_habits (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('trade_reason_submitted'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_habits'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 coaching_shown",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"coaching_shown\",\n  \"scenario_id\": \"habit-herd\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs coaching_shown into Virtual_Stock_Market.market_habits (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('coaching_shown'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_habits'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 coaching_response",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"coaching_response\",\n  \"scenario_id\": \"habit-herd\",\n  \"reason\": \"I will wait\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs coaching_response into Virtual_Stock_Market.market_habits (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('coaching_response'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_habits'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 habit_popup_opened",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"habit_popup_opened\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs habit_popup_opened into Virtual_Stock_Market.market_habits (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('habit_popup_opened'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_habits'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14 habit_card_tapped",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"habit_card_tapped\",\n  \"scenario_id\": \"habit-fomo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs habit_card_tapped into Virtual_Stock_Market.market_habits (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('habit_card_tapped'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_habits'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15 lesson_completed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"lesson_completed\",\n  \"scenario_id\": \"lesson-diversify\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs lesson_completed into Virtual_Stock_Market.market_lessons (and Virtual_Stock_Market.market_events)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('json body', function () { pm.response.to.be.json; });",
+                  "const j = pm.response.json();",
+                  "pm.test('event stored', function () { pm.expect(j.ok).to.eql(true); pm.expect(j.type).to.eql('lesson_completed'); });",
+                  "pm.test('Compass folder', function () { pm.expect(j.folder).to.eql('Virtual_Stock_Market.market_lessons'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Data-driven event (Collection Runner)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"{{child_id}}\",\n  \"session_id\": \"{{session_id}}\",\n  \"type\": \"{{event_type}}\",\n  \"ticker\": \"{{ticker}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Run the collection with postman/data/vsm-event-types.json selected as data file."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test('matches iteration type', function () {",
+                  "  pm.expect(j.type).to.eql(pm.iterationData.get('event_type') || j.type);",
+                  "});",
+                  "if (pm.iterationData.get('expected_folder')) {",
+                  "  pm.test('matches iteration folder', function () {",
+                  "    pm.expect(j.folder).to.eql(pm.iterationData.get('expected_folder'));",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 Behaviour engine",
+      "item": [
+        {
+          "name": "Behaviour for this child",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/behaviour/{{child_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "behaviour",
+                "{{child_id}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test('child echoed', function () { pm.expect(j.child_id).to.eql(pm.variables.get('child_id')); });",
+                  "pm.test('has indicators', function () { pm.expect(j).to.have.property('indicators'); });",
+                  "pm.test('has coaching', function () { pm.expect(j).to.have.property('coaching'); });",
+                  "pm.test('allocation from bag', function () {",
+                  "  pm.expect(j.allocation).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Behaviour filtered by session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/behaviour/{{child_id}}?session_id={{session_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "behaviour",
+                "{{child_id}}"
+              ],
+              "query": [
+                {
+                  "key": "session_id",
+                  "value": "{{session_id}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test('session echoed', function () { pm.expect(j.session_id).to.eql(pm.variables.get('session_id')); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Behaviour unknown child still 200 empty-ish",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/behaviour/unknown-child-xx",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "behaviour",
+                "unknown-child-xx"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test('child echoed', function () { pm.expect(j.child_id).to.eql('unknown-child-xx'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 Errors and validation",
+      "item": [
+        {
+          "name": "History unknown symbol \u2192 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/history/NOTANINDEX",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "history",
+                "NOTANINDEX"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 or 503', function () { pm.expect([404, 503]).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "History limit too small \u2192 422",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/history/N225?limit=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "history",
+                "N225"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', function () { pm.response.to.have.status(422); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "History limit too large \u2192 422",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/history/N225?limit=9999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "history",
+                "N225"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "9999"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', function () { pm.response.to.have.status(422); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Analysis unknown symbol \u2192 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/market/analysis/NOTANINDEX",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "analysis",
+                "NOTANINDEX"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 or 503', function () { pm.expect([404, 503]).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Event child_id too short \u2192 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"short\",\n  \"session_id\": \"postman-vsm-session-1\",\n  \"type\": \"company_viewed\",\n  \"ticker\": \"SUNTEA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', function () { pm.response.to.have.status(422); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Event session_id too short \u2192 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"postman-vsm-child\",\n  \"session_id\": \"x\",\n  \"type\": \"company_viewed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', function () { pm.response.to.have.status(422); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Event unknown type \u2192 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"postman-vsm-child\",\n  \"session_id\": \"postman-vsm-session-1\",\n  \"type\": \"not_a_real_event\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', function () { pm.response.to.have.status(422); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Event missing type \u2192 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"postman-vsm-child\",\n  \"session_id\": \"postman-vsm-session-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', function () { pm.response.to.have.status(422); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Event sold_fraction out of range \u2192 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/market/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "market",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"child_id\": \"postman-vsm-child\",\n  \"session_id\": \"postman-vsm-session-1\",\n  \"type\": \"sell_order_placed\",\n  \"sold_fraction\": 1.5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', function () { pm.response.to.have.status(422); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unknown module state \u2192 400",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/state/{{child_id}}/not_a_module",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "state",
+                "{{child_id}}",
+                "not_a_module"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

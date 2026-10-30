@@ -69,7 +69,10 @@ def collection(db: Any, name: str) -> Any:
 
 
 def events_collection(db: Any) -> Any:
-    return collection(db, EVENTS) or getattr(db, "market_events", None)
+    found = collection(db, EVENTS)
+    if found is not None:
+        return found
+    return getattr(db, "market_events", None)
 
 
 def folder_for(event_type: str) -> str:
@@ -80,10 +83,10 @@ async def insert_event(db: Any, event: MarketEvent) -> dict[str, Any]:
     doc = event.model_dump()
     doc["folder"] = folder_for(event.type)
     primary = events_collection(db)
-    await primary.insert_one(doc)
+    await primary.insert_one(dict(doc))
     extra = collection(db, doc["folder"])
     if extra is not None and doc["folder"] != EVENTS:
-        await extra.insert_one(doc)
+        await extra.insert_one(dict(doc))
     return doc
 
 
